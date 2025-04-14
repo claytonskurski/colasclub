@@ -1,0 +1,200 @@
+<%- include('layout', { title: 'Event Locations' }); %>
+
+<div class="container-fluid maps-container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="map-filters">
+                <h3>Filters</h3>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="showPastEvents" checked>
+                    <label class="form-check-label" for="showPastEvents">
+                        Past Events
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="showUpcomingEvents" checked>
+                    <label class="form-check-label" for="showUpcomingEvents">
+                        Upcoming Events
+                    </label>
+                </div>
+                
+                <h4 class="mt-4">Event Types</h4>
+                <div id="eventTypeFilters">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            
+            <div class="event-list mt-4">
+                <h3>Events</h3>
+                <div id="eventsList">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div id="map" style="height: 800px;"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.maps-container {
+    padding-top: 20px;
+}
+
+.map-filters {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.event-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.event-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.event-item:hover {
+    background: #f8f9fa;
+}
+
+.past-event {
+    color: #666;
+}
+
+.upcoming-event {
+    color: #2C5530;
+}
+</style>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+<script>
+let map;
+let markers = [];
+let events = [];
+
+// Initialize map
+function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 34.0007, lng: -81.0348 }, // Columbia, SC coordinates
+        zoom: 12
+    });
+    
+    // Load events
+    fetchEvents();
+}
+
+// Fetch events from API
+async function fetchEvents() {
+    try {
+        const response = await fetch('/api/events/locations');
+        events = await response.json();
+        
+        // Create event type filters
+        const eventTypes = [...new Set(events.map(event => event.type))];
+        const filtersHtml = eventTypes.map(type => `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="filter-${type}" checked>
+                <label class="form-check-label" for="filter-${type}">
+                    ${type}
+                </label>
+            </div>
+        `).join('');
+        document.getElementById('eventTypeFilters').innerHTML = filtersHtml;
+        
+        // Add event listeners to filters
+        document.querySelectorAll('.form-check-input').forEach(checkbox => {
+            checkbox.addEventListener('change', updateMap);
+        });
+        
+        // Initial map update
+        updateMap();
+    } catch (error) {
+        console.error('Error fetching events:', error);
+    }
+}
+
+// Update map based on filters
+function updateMap() {
+    // Clear existing markers
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+    
+    // Get filter states
+    const showPast = document.getElementById('showPastEvents').checked;
+    const showUpcoming = document.getElementById('showUpcomingEvents').checked;
+    const selectedTypes = [...document.querySelectorAll('#eventTypeFilters input:checked')]
+        .map(input => input.id.replace('filter-', ''));
+    
+    // Filter events
+    const now = new Date();
+    const filteredEvents = events.filter(event => {
+        const eventDate = new Date(event.dtstart);
+        const isPast = eventDate < now;
+        return (
+            ((isPast && showPast) || (!isPast && showUpcoming)) &&
+            selectedTypes.includes(event.type)
+        );
+    });
+    
+    // Update event list
+    const listHtml = filteredEvents.map(event => `
+        <div class="event-item ${new Date(event.dtstart) < now ? 'past-event' : 'upcoming-event'}"
+             onclick="centerMapOn(${event.location.lat}, ${event.location.lng})">
+            <h5>${event.summary}</h5>
+            <p>${new Date(event.dtstart).toLocaleDateString()}</p>
+        </div>
+    `).join('');
+    document.getElementById('eventsList').innerHTML = listHtml;
+    
+    // Add markers
+    filteredEvents.forEach(event => {
+        const marker = new google.maps.Marker({
+            position: { 
+                lat: event.location.lat, 
+                lng: event.location.lng 
+            },
+            map: map,
+            title: event.summary,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: new Date(event.dtstart) < now ? '#666' : '#2C5530',
+                fillOpacity: 0.8,
+                strokeColor: '#fff',
+                strokeWeight: 2,
+                scale: 8
+            }
+        });
+        
+        // Add info window
+        const infoWindow = new google.maps.InfoWindow({
+            content: `
+                <h5>${event.summary}</h5>
+                <p>${new Date(event.dtstart).toLocaleDateString()}</p>
+                <p>${event.location.name}</p>
+            `
+        });
+        
+        marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+        });
+        
+        markers.push(marker);
+    });
+}
+
+// Center map on coordinates
+function centerMapOn(lat, lng) {
+    map.setCenter({ lat, lng });
+    map.setZoom(15);
+}
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', initMap);
+</script> 

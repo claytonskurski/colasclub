@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Soda City Outdoors</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Processing Payment...</h1>
+        <p>Please wait while we redirect you to the payment page.</p>
+    </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        const stripe = Stripe('<%= stripePublishableKey %>');
+        const pendingUserId = new URLSearchParams(window.location.search).get('pendingUserId');
+
+        if (!pendingUserId) {
+            console.error('Pending user ID not found in URL');
+            alert('Error: Invalid request. Please sign up again.');
+            window.location.href = '/signup';
+        }
+
+        async function redirectToCheckout() {
+            try {
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ pendingUserId }),
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    console.error('Server responded with error:', result);
+                    alert(`Error: ${result.message || 'Could not redirect to payment page.'}`);
+                    window.location.href = '/signup';
+                    return;
+                }
+
+                if (result.url) {
+                    console.log('Redirecting to Stripe:', result.url);
+                    window.location.href = result.url;
+                } else {
+                    console.error('No URL in response:', result);
+                    alert('Error: Could not redirect to payment page. No URL provided.');
+                    window.location.href = '/signup';
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('Error: Could not connect to the server. Please try again.');
+                window.location.href = '/signup';
+            }
+        }
+
+        // Automatically redirect to Stripe Checkout
+        window.onload = redirectToCheckout;
+    </script>
+</body>
+</html>

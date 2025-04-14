@@ -1,0 +1,331 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Soda City Outdoors
+X-WR-TIMEZONE:America/New_York
+X-WR-CALDESC:Calendar of all Soda City Outdoor's events.
+BEGIN:VEVENT
+DTSTART:20250329T140000Z
+DTEND:20250329T180000Z
+DTSTAMP:20250326T180458Z
+UID:7d1nlr9sseid2qmtll57k94fut@google.com
+CREATED:20250325T221449Z
+DESCRIPTION:Join us on this 2.7-mile out-and-back trail near Windsor\, Sout
+ h Carolina. Generally considered an easy route\, it takes an average of 49 
+ min to complete. This is a popular trail for birding\, hiking\, and walking
+ \, but you can still enjoy some solitude during quieter times of day. The b
+ est times to visit this trail are January through April. Dogs are welcome\,
+  but must be on a leash.\n\nPlease RSVP below.
+LAST-MODIFIED:20250325T221449Z
+LOCATION:312 Picnic Cir\, Windsor\, SC 29856\, USA
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Aiken State Park - Jungle Nature Trail
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20250401T213000Z
+DTEND:20250401T233000Z
+DTSTAMP:20250326T180458Z
+UID:0uopj1cd9o4i0kigmte02ophfa@google.com
+CREATED:20250325T222520Z
+DESCRIPTION:Join us for our official launch and first event at Sesquicenten
+ nial State Park on this 4.6-mile loop trail near State Park\, South Carolin
+ a. Generally considered an easy route\, it takes an average of 1 h 31 min t
+ o complete. This is a popular trail for hiking\, mountain biking\, and runn
+ ing\, but you can still enjoy some solitude during quieter times of day. Th
+ e trail is open year-round and is beautiful to visit anytime. Dogs are welc
+ ome\, but must be on a leash.
+LAST-MODIFIED:20250325T222520Z
+LOCATION:9564 Two Notch Rd\, Columbia\, SC 29223\, USA
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Official Launch @ Sesquicentennial State Park
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20250404T170000Z
+DTEND:20250404T210000Z
+DTSTAMP:20250326T180458Z
+UID:1rceh09l5f8c2rtgu1j56132g7@google.com
+CREATED:20250325T221843Z
+DESCRIPTION:Head out on this 3.0-mile out-and-back trail near Hopkins\, Sou
+ th Carolina. Generally considered an easy route\, it takes an average of 52
+  min to complete. This is a popular trail for birding\, hiking\, and runnin
+ g\, but you can still enjoy some solitude during quieter times of day. The 
+ trail is open year-round and is beautiful to visit anytime. Dogs are welcom
+ e\, but must be on a leash. \n\n This trail leaves from the Harry Hampton V
+ isitor Center and follows the Bluff Trail and Caroline Sims Trail to Wise L
+ ake and back. The trail takes you through a dense forest. Depending on the 
+ time of year\, the trail can get very muddy\, so wearing appropriate footwe
+ ar is recommended. Be sure to bring bug spray\, because mosquitoes are comm
+ on on this trail. This is a great trail for viewing wildlife.\n\nPlease RSV
+ P below so we can get a headcount!
+LAST-MODIFIED:20250325T222539Z
+LOCATION:100 National Park Rd\, Hopkins\, SC 29061
+SEQUENCE:1
+STATUS:CONFIRMED
+SUMMARY:Congaree National Park - Sims Trail
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250405
+DTEND;VALUE=DATE:20250406
+DTSTAMP:20250326T180458Z
+UID:6f8qrsjpgtlp1q62m8mpac390q@google.com
+CREATED:20250325T223441Z
+DESCRIPTION:Check out this 4.0-mile loop trail near Greenville\, South Caro
+ lina. Generally considered a challenging route\, it takes an average of 1 h
+  51 min to complete. This is a very popular area for hiking\, mountain biki
+ ng\, and running\, so you'll likely encounter other people while exploring.
+  The trail is open year-round and is beautiful to visit anytime. Dogs are w
+ elcome\, but must be on a leash.The trail follows a creek and offers stunni
+ ng views of cascades and a lake. Though the first mile has some inclines\, 
+ the rest of the trail is relatively easy. The trail is well-maintained and 
+ mostly shaded. However\, the trailhead is quite popular\, so it's recommend
+ ed to start early. Overall\, this is a fantastic trail with a few sneaky up
+ hill portions.
+LAST-MODIFIED:20250325T223442Z
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Paris Mountain State Park - Sulphur Springs Trail
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20250407T223000Z
+DTEND:20250408T000000Z
+DTSTAMP:20250326T180458Z
+UID:0ui6afn8vol0mo0t7l4gp3dajp@google.com
+CREATED:20250325T232414Z
+DESCRIPTION:Get to know this 2.3-mile loop trail near Prosperity\, South Ca
+ rolina. Generally considered an easy route\, it takes an average of 49 min 
+ to complete. This is a popular trail for birding\, hiking\, and running\, b
+ ut you can still enjoy some solitude during quieter times of day. The trail
+  is open year-round and is beautiful to visit anytime. Dogs are welcome\, b
+ ut must be on a leash.Starting from the kiosk on Red Maple Drive\, the Litt
+ le Gap Trail is the most strenuous of the three trails in the park. Followi
+ ng the trail markers on the trees\, you will wander up and down through a t
+ hick forest of pines and hardwoods\, which is home to a number of animals a
+ nd birds. You may also be lucky enough to sight a bald eagle that nests in 
+ this area. Some interesting white rocks line the trail in spots as you make
+  a loop at the end of the peninsula.
+LAST-MODIFIED:20250325T232415Z
+LOCATION:1-53 Yellow Poplar Dr\, Prosperity\, SC 29127
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Dreher Island State Park - Little Gap Trail
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20250410T200000Z
+DTEND:20250410T220000Z
+DTSTAMP:20250326T180458Z
+UID:5q6f4o8pqke1ra9buc3apnj7lo@google.com
+CREATED:20250325T233320Z
+DESCRIPTION:Check out this 2.5-mile loop trail near Pelion\, South Carolina
+ . Generally considered an easy route\, it takes an average of 56 min to com
+ plete. This is a very popular area for hiking and running\, so you'll likel
+ y encounter other people while exploring. The trail is open year-round and 
+ is beautiful to visit anytime. Dogs are welcome\, but must be on a leash.Th
+ is route offers a picturesque journey through a breathtaking forest and lea
+ ds to a magnificent waterfall. However\, the trail is not clearly marked\, 
+ and there are many misleading social trails. The path around Little Peachtr
+ ee Rock can be particularly challenging to navigate. It is recommended to d
+ ownload the offline map to assist with directions.
+LAST-MODIFIED:20250325T233320Z
+LOCATION:883 Peachtree Rock Rd\, Lexington\, SC 29073
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Peachtree Rock Loop
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20250413T163000Z
+DTEND:20250413T210000Z
+DTSTAMP:20250326T180458Z
+UID:0rmluvfvtgcfsrf36tq3vn2sgu@google.com
+CREATED:20250325T233511Z
+DESCRIPTION:Check out this 5.7-mile loop trail near Edgefield\, South Carol
+ ina. Generally considered a moderately challenging route\, it takes an aver
+ age of 2 h 5 min to complete. This trail is great for hiking\, mountain bik
+ ing\, and running\, and it's unlikely you'll encounter many other people wh
+ ile exploring. The trail is open year-round and is beautiful to visit anyti
+ me. Dogs are welcome\, but must be on a leash.
+LAST-MODIFIED:20250325T233903Z
+LOCATION:Horn Creek Trail Trailhead\, State Hwy S-19-392\, Edgefield\, SC 2
+ 9824
+SEQUENCE:3
+STATUS:CONFIRMED
+SUMMARY:Horn Creek Trail
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250412
+DTEND;VALUE=DATE:20250413
+DTSTAMP:20250326T180458Z
+UID:2hci8937m7gjr5gtmlp8pbbkka@google.com
+CREATED:20250325T234111Z
+DESCRIPTION:Get to know this 4.3-mile out-and-back trail near Edisto Island
+ \, South Carolina. Generally considered an easy route\, it takes an average
+  of 1 h 15 min to complete. This trail is great for camping\, hiking\, and 
+ mountain biking\, and it's unlikely you'll encounter many other people whil
+ e exploring. The best times to visit this trail are September through June.
+  Dogs are welcome\, but must be on a leash.This is a lovely wide soft sandy
+  trail with several boardwalks that meanders through the trees and marsh.
+LAST-MODIFIED:20250325T234111Z
+LOCATION:8377 State Cabin Rd\, Edisto Island\, SC 29438\, USA
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Edisto Beach State Park Trail
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20250416T200000Z
+DTEND:20250416T230000Z
+DTSTAMP:20250326T180458Z
+UID:78iv6vj5q9452pehp8ns8dpcbr@google.com
+CREATED:20250325T234408Z
+DESCRIPTION:Discover this 2.1-mile loop trail near Hopkins\, South Carolina
+ . Generally considered an easy route\, it takes an average of 37 min to com
+ plete. This is a popular trail for hiking and running\, but you can still e
+ njoy some solitude during quieter times of day. The trail is open year-roun
+ d and is beautiful to visit anytime. Dogs are welcome\, but must be on a le
+ ash.This trail leaves from the Longleaf Campground\, and follows the longle
+ af trail to the Bluff Trail. Follow the Bluff Trail as it loops through den
+ se forest. The trail follows a wooden boardwalk most of the way is well-mai
+ ntained and well-marked. Keep an eye out for birds and other wildlife. Be s
+ ure to bring bug spray\, as mosquitoes are common in this area.
+LAST-MODIFIED:20250325T234408Z
+LOCATION:Longleaf Trail\, 201 National Park Rd\, Hopkins\, SC 29061\, USA
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Congaree National Park - Bluff Trail
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250419
+DTEND;VALUE=DATE:20250420
+DTSTAMP:20250326T180458Z
+UID:6s5ktl4u54a477kkc2fklt8r1f@google.com
+CREATED:20250325T234557Z
+DESCRIPTION:Check out this 8.9-mile out-and-back trail near Grover\, North 
+ Carolina. Generally considered a moderately challenging route\, it takes an
+  average of 3 h 21 min to complete. This is a popular trail for camping\, h
+ iking\, and running\, but you can still enjoy some solitude during quieter 
+ times of day. The trail is open year-round and is beautiful to visit anytim
+ e. Dogs are welcome and may be off-leash in some areas.At lower elevations 
+ the trail runs alongside clear babbling streams surrounded by dense forest 
+ cover\, an abundance of mountain laurel\, and thick carpets of ferns. At hi
+ gher elevations the tree cover is more sparse and the trail becomes much ro
+ ckier. There is a 1 mile roundtrip spur trail that leads to the top of Brow
+ ns Mountain (1\,045 feet) and a campsite at Garner Creek.
+LAST-MODIFIED:20250325T234557Z
+LOCATION:1277 Park Rd\, Blacksburg\, SC 29702\, USA
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Kings Mountain State Park - Kings Mountain Nature Trail
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20250424T210000Z
+DTEND:20250425T000000Z
+DTSTAMP:20250326T180458Z
+UID:678vd9gi9egt7mc69h2rqg0b4n@google.com
+CREATED:20250325T234817Z
+DESCRIPTION:Check out this 2.2-mile loop trail near West Columbia\, South C
+ arolina. Generally considered an easy route\, it takes an average of 40 min
+  to complete. This is a popular trail for hiking and walking\, but you can 
+ still enjoy some solitude during quieter times of day. The best times to vi
+ sit this trail are January through October.Part of Cayce Riverwalk - This i
+ s the South End of Cayce Riverwalk and is mainly a loop around Congaree Cre
+ ek with connection to the SCANA Parking and the Fort Congaree Entrance at t
+ he Cayce Tennis Courts.  It's a paved walkway great for runners\, walkers\,
+  Cyclists\, and nature lovers.  It's great for Wildflowers and Butterflies 
+ on Old State Road.  It connects to Cayce Riverwalk on the east end for a lo
+ nger hike.
+LAST-MODIFIED:20250325T234817Z
+LOCATION:Timmerman Trail\, Cayce\, SC 29172\, USA
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Timmerman Trail
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20250430T170000Z
+DTEND:20250430T220000Z
+DTSTAMP:20250326T180458Z
+UID:47jg337dda056mr0259ulc3mer@google.com
+CREATED:20250325T235009Z
+DESCRIPTION:Explore this 4.8-mile loop trail near Wedgefield\, South Caroli
+ na. Generally considered a moderately challenging route\, it takes an avera
+ ge of 1 h 42 min to complete. This is a popular trail for birding\, camping
+ \, and hiking\, but you can still enjoy some solitude during quieter times 
+ of day. The best times to visit this trail are October through June. Dogs a
+ re welcome\, but must be on a leash.This is a fun hike in Poinsett State Pa
+ rk. It begins from the parking lot on Poinsett Park Road\, where restrooms 
+ are available. This route uses several trails in the area. You'll want to h
+ ave the trail map handy to ensure you are on the right path. Along the way\
+ , you will see trees with Spanish moss and the ruins of old barns. The path
+  is well-shaded and padded with pine needles.
+LAST-MODIFIED:20250325T235010Z
+LOCATION:Rivian Waypoints\, 6660 Poinsett Park Rd\, Wedgefield\, SC 29168
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Poinsett State Park - The Knot Splice Loop
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250426
+DTEND;VALUE=DATE:20250427
+DTSTAMP:20250326T180458Z
+UID:2422dpopsjro3l3l238gor5oah@google.com
+CREATED:20250325T235149Z
+DESCRIPTION:Discover this 4.6-mile out-and-back trail near Long Creek\, Sou
+ th Carolina. Generally considered a moderately challenging route\, it takes
+  an average of 2 h 10 min to complete. This is a popular trail for hiking\,
+  but you can still enjoy some solitude during quieter times of day. The tra
+ il is open year-round and is beautiful to visit anytime. Dogs are welcome\,
+  but must be on a leash.The trailhead is located before the parking area\, 
+ between two boulders. The trail is well-maintained and relatively easy to n
+ avigate\, leading you to the breathtaking falls. Once you reach the Chattoo
+ ga River\, you'll find a beautiful beach where you can relax and enjoy the 
+ view. Be cautious as the trail becomes quite rocky as you approach the fall
+ s.
+LAST-MODIFIED:20250325T235149Z
+LOCATION:Turkey Ridge Rd\, Long Creek\, SC 29658
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Opossum Creek Falls Trail
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250427
+DTEND;VALUE=DATE:20250428
+DTSTAMP:20250326T180458Z
+UID:6vbt885itlo5dqoiih496g0a0c@google.com
+CREATED:20250325T235327Z
+DESCRIPTION:Get to know this 5.9-mile loop trail near Patrick\, South Carol
+ ina. Generally considered an easy route\, it takes an average of 1 h 59 min
+  to complete. This trail is great for birding and hiking\, and it's unlikel
+ y you'll encounter many other people while exploring. The best times to vis
+ it this trail are August through October.The Carolina Sandhills National Wi
+ ldlife Refuge is one of the Southeast’s premiere sites for viewing the rapi
+ dly diminishing longleaf pine/wiregrass ecosystem. Carolina Sandhills Natio
+ nal Wildlife Refuge was created in 1939. Its establishing purpose was to pr
+ ovide habitat for migratory birds\, to demonstrate sound management practic
+ es that enhance natural resource conservation\, and to provide wildlife-ori
+ ented recreation opportunities. The land was badly eroded and very little w
+ ildlife was to be found when the refuge was purchased by the federal govern
+ ment under the provisions of the Resettlement Act. Efforts began immediatel
+ y to restore this damaged\, barren land to a healthy\, rich habitat for the
+  plants and animals that once lived here.
+LAST-MODIFIED:20250325T235327Z
+LOCATION:Tates Tower Trail\, Tates Tower Trl\, South Carolina 29101\, USA
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Tate's Trail
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR

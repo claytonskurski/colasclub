@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title + ' - Soda City Outdoors' : 'Calendar - Soda City Outdoors' %></title>
+    <!-- Inherit styles from layout.ejs -->
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4" style="color: var(--primary-color);">Calendar</h1>
+        <div id="calendar"></div>
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger" role="alert">
+                <%= error %>
+            </div>
+        <% } %>
+    </div>
+
+    <script id="events-data" type="application/json">
+        <%- JSON.stringify(events || []) %>
+    </script>
+    <script>
+        // Wait for jQueryLoaded event
+        document.addEventListener('jQueryLoaded', function() {
+            if (typeof jQuery === 'undefined' || typeof moment === 'undefined' || typeof $.fn.fullCalendar === 'undefined') {
+                console.error('Required libraries (jQuery, Moment.js, or FullCalendar) not loaded.');
+                $('#calendar').html('<div class="alert alert-warning">Calendar failed to load. Check console for details.</div>');
+                return;
+            }
+
+            $(document).ready(function() {
+                try {
+                    var events = JSON.parse($('#events-data').text());
+                    console.log('Calendar events data:', events);
+
+                    $('#calendar').fullCalendar({
+                        header: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'month,agendaWeek,agendaDay'
+                        },
+                        defaultDate: new Date(),
+                        editable: false,
+                        eventLimit: true,
+                        events: events.map(function(event) {
+                            return {
+                                title: event.summary || 'No Title',
+                                start: event.dtstart,
+                                end: event.dtend,
+                                location: event.location,
+                                id: event.eventId // Ensure eventId is mapped for identification
+                            };
+                        }),
+                        eventRender: function(event, element) {
+                            // Add a link to the event element
+                            element.attr('href', '/events/event/' + event.id);
+                            element.attr('target', '_blank'); // Opens in new tab (optional)
+                        },
+                        eventClick: function(event) {
+                            // Navigate to the event detail page
+                            window.location.href = '/events/event/' + event.id;
+                            // Alternatively, use: window.open('/events/event/' + event.id, '_blank');
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error initializing calendar:', error);
+                    $('#calendar').html('<div class="alert alert-danger">Error loading calendar. Check console for details.</div>');
+                }
+            });
+        });
+
+        // Fallback if jQueryLoaded event fails
+        setTimeout(function() {
+            if (!document.querySelector('#calendar').innerHTML) {
+                console.warn('Calendar initialization timed out, retrying with available libraries.');
+                document.dispatchEvent(new Event('jQueryLoaded'));
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,429 @@
+/* Define Color Scheme */
+:root {
+    --primary-color: #0e747c; /* Teal */
+    --secondary-color: #80bec0; /* Light teal */
+    --accent-color: #090909; /* Dark gray/black */
+    --primary-hover: #0b5e64; /* Darker shade of primary for hover */
+    --secondary-hover: #6aa9ab; /* Darker shade of secondary for hover */
+    --text-color: #333; /* Default text color */
+    --light-text-color: #666; /* Lighter text color for secondary text */
+    --background-color: #f9f9f9; /* Background color */
+    --white: #ffffff; /* White */
+    --shadow-color: rgba(0, 0, 0, 0.1); /* Shadow color */
+}
+
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Base Styles */
+html, body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    flex: 1;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    text-align: center;
+}
+
+/* Updated Navigation Styles */
+nav {
+    background-color: #2C5530; /* Your secondary color - adjust as needed */
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+main {
+    margin-top: 80px; /* Adjust based on your nav height */
+    padding: 20px;
+}
+
+.nav-left a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo {
+    height: 50px;
+    width: auto;
+}
+
+.brand-name {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Modern Button Styles */
+.btn-primary {
+    background-color: #FF6B35; /* Your primary color - adjust as needed */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Event Card Styles */
+.event-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+}
+
+.event-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.event-details {
+    padding: 20px;
+}
+
+/* Tag Styles */
+.tag {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 15px;
+    background-color: #f0f0f0;
+    color: #333;
+    margin: 0 5px 5px 0;
+    font-size: 0.9rem;
+}
+
+/* Calendar Styles */
+.fc-event {
+    border-radius: 4px;
+    border: none;
+    padding: 3px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-right {
+        margin-left: auto;
+    }
+    
+    main {
+        margin-top: 60px;
+    }
+}
+
+/* Navigation Bar Styling */
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+nav ul.nav-left,
+nav ul.nav-right {
+    display: flex;
+    align-items: center;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 10px;
+}
+
+nav ul li.logo {
+    margin-right: 10px;
+}
+
+nav ul li a {
+    display: inline-block;
+    color: var(--white);
+    text-align: center;
+    padding: 10px 20px;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    background-color: var(--primary-hover);
+}
+
+nav ul li.sign-in a {
+    background-color: var(--secondary-color);
+    border-radius: 5px;
+}
+
+nav ul li.sign-in a:hover {
+    background-color: var(--secondary-hover);
+}
+
+/* Dropdown Menu Styling */
+.welcome a {
+    color: var(--white);
+    text-decoration: none;
+    padding: 10px;
+}
+
+.welcome a:hover {
+    color: var(--secondary-color);
+}
+
+.nav-right li {
+    display: inline-block;
+    margin-left: 15px;
+}
+
+.dropdown-menu {
+    z-index: 2000 !important; /* Ensure dropdown is above other elements */
+    background-color: var(--white);
+}
+
+.dropdown-menu .dropdown-item {
+    color: var(--text-color);
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: var(--secondary-color);
+    color: var(--white);
+}
+
+/* Hero Section Styling */
+.top-background {
+    background-image: url('/images/Congaree NP.webp');
+    background-size: cover;
+    background-position: top;
+    background-repeat: no-repeat;
+    padding-bottom: 20px;
+    margin-top: 0;
+    height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Semi-Transparent Box Styling */
+.semi-transparent-box {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 40px;
+    border-radius: 10px;
+    max-width: 800px;
+    width: 80%;
+    box-shadow: 0 0 10px var(--shadow-color);
+    margin-top: 100px;
+}
+
+.semi-transparent-box h1 {
+    font-size: 2.5em;
+    color: var(--primary-color);
+}
+
+.semi-transparent-box p {
+    font-size: 1.2em;
+    color: var(--light-text-color);
+}
+
+.semi-transparent-box .join-now-button {
+    font-size: 1.5em;
+    padding: 25px 50px;
+}
+
+/* Main Content Styling */
+h1 {
+    color: var(--primary-color);
+    text-align: center;
+    padding: 20px;
+}
+
+p {
+    color: var(--light-text-color);
+    text-align: center;
+    padding: 10px;
+}
+
+section {
+    width: 100%;
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+    box-shadow: 0 0 10px var(--shadow-color);
+    text-align: center;
+}
+
+/* Override background color for specific sections */
+#services,
+#about,
+#contact {
+    background: var(--white);
+}
+
+/* Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+label, input {
+    margin: 5px;
+}
+
+/* Contact Us Section Styling */
+#contact form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px var(--shadow-color);
+    width: 80%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+#contact label {
+    font-weight: bold;
+    margin-top: 10px;
+    color: var(--text-color);
+}
+
+#contact input[type="text"],
+#contact input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+/* Button Styling */
+.btn, .sign-up-button, .events-button, .submit-button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 0.5rem 1rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-transform: uppercase;
+}
+
+.btn:hover, .sign-up-button:hover, .events-button:hover, .submit-button:hover {
+    background-color: var(--primary-hover);
+}
+
+.join-now-button, .events-button, .submit-button {
+    font-size: 1.5em;
+    padding: 25px 50px;
+    margin: 10px auto;
+    display: block;
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.join-now-button:hover, .events-button:hover, .submit-button:hover {
+    background-color: var(--primary-hover);
+}
+
+.submit-button {
+    font-size: 1.2em;
+    padding: 15px 30px;
+    margin-top: 20px;
+}
+
+/* Bootstrap Button Overrides */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+.btn-danger {
+    background-color: var(--primary-hover); /* Use a shade of primary for "danger" */
+    border-color: var(--primary-hover);
+}
+
+.btn-danger:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+/* Account Page Styling */
+.user-info .card {
+    background-color: var(--background-color);
+    border: none;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.edit-profile, .change-password, .log-out {
+    margin-top: 2rem;
+}
+
+/* Footer Styling */
+footer {
+    margin-top: auto;
+    padding: 10px 0;
+    background-color: var(--secondary-color);
+    color: var(--white);
+    text-align: center;
+}
+
+.bottom-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.bottom-content p {
+    margin: 0 10px;
+    color: var(--white);
+}
+
+.bottom-content a {
+    margin: 0 10px;
+    text-decoration: none;
+    color: var(--white);
+}
+
+.social-icons a {
+    margin: 0 10px;
+    color: var(--white);
+}
+
+.social-icons a i {
+    font-size: 1.2em;
+}
+
+.social-icons a:hover {
+    color: var(--primary-color);
+}

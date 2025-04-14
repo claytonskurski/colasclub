@@ -1,0 +1,75 @@
+<div class="container">
+    <h1 class="my-4">Events Catalog</h1>
+    <% if (typeof error !== 'undefined' && error) { %>
+        <p style="color: #0e747c;"><%= error %></p>
+    <% } %>
+    <div id="upcoming-events-container" class="row"></div>
+    <button id="toggle-past-events" class="btn btn-secondary my-4">Show Past Events</button>
+    <div id="past-events-container" class="row past-events"></div>
+</div>
+
+<script id="events-data" type="application/json">
+    <%- JSON.stringify(events || []) %>
+</script>
+<script>
+    // Function to initialize events, called when jQuery is ready
+    function initEvents() {
+        try {
+            var events = JSON.parse($('#events-data').text());
+            console.log('Parsed events data:', events);
+            if (!Array.isArray(events)) {
+                console.error('Events data is not an array:', events);
+                events = [];
+            }
+
+            var upcomingEventsContainer = $('#upcoming-events-container');
+            var pastEventsContainer = $('#past-events-container');
+            var currentDate = new Date();
+
+            upcomingEventsContainer.empty();
+            pastEventsContainer.empty();
+
+            if (events.length === 0) {
+                upcomingEventsContainer.append('<p>No upcoming events found.</p>');
+            }
+
+            events.forEach(function(event) {
+                var eventCard = `
+                    <div class="col-md-4">
+                        <div class="card event-card">
+                            <div class="card-body">
+                                <h5 class="card-title">${event.summary || 'No Title'}</h5>
+                                <p class="card-text"><strong>Start:</strong> ${new Date(event.dtstart || '').toLocaleString()}</p>
+                                <p class="card-text"><strong>End:</strong> ${new Date(event.dtend || '').toLocaleString()}</p>
+                                <a href="/events/event/${event.eventId || ''}" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                if (new Date(event.dtstart || currentDate) >= currentDate) {
+                    upcomingEventsContainer.append(eventCard);
+                } else {
+                    pastEventsContainer.append(eventCard);
+                }
+            });
+
+            $('#toggle-past-events').click(function() {
+                pastEventsContainer.toggle();
+                var buttonText = pastEventsContainer.is(':visible') ? 'Hide Past Events' : 'Show Past Events';
+                $(this).text(buttonText);
+            });
+        } catch (error) {
+            console.error('Error processing events:', error);
+            $('#upcoming-events-container').html('<p>Error loading events. Check console for details.</p>');
+        }
+    }
+
+    // Wait for jQuery using a deferred approach
+    if (typeof jQuery === 'undefined') {
+        document.addEventListener('jQueryLoaded', initEvents);
+        // This event will be dispatched from layout.ejs
+    } else {
+        initEvents(); // Run immediately if jQuery is already loaded
+    }
+</script>

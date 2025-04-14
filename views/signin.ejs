@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Loosened CSP for testing; tighten later -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://* data:;">
+    <title>Sign In - Soda City Outdoors</title>
+    <link rel="preload" href="/static/images/Congaree NP-optimized.webp" as="image">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/static/images/Favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/Favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/Favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/Favicon/favicon-16x16.png">
+    <link rel="manifest" href="/static/images/Favicon/site.webmanifest">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <ul class="nav-left">
+            <li>
+                <a href="/">
+                    <img src="/static/images/SCO Logo.webp" alt="Logo" class="logo">
+                    <span class="brand-name">Soda City Outdoors</span>
+                </a>
+            </li>
+        </ul>
+        <ul class="nav-right">
+            <li class="sign-in"><a href="/signin">Sign In</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="container my-5">
+            <h1 class="text-center">Sign In</h1>
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <form id="signin-form">
+                        <input type="hidden" name="redirectUrl" value="<%= redirectUrl %>">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                    </form>
+                    <div id="error-message" class="alert alert-danger mt-3 d-none" role="alert"></div>
+                    <p class="mt-3 text-center">Don't have an account? <a href="/signup">Sign Up</a></p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('signin-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const redirectUrl = document.querySelector('input[name="redirectUrl"]').value;
+                const errorMessageDiv = document.getElementById('error-message');
+
+                console.log('Sign-in attempt from form:', { username, password, redirectUrl });
+                const requestBody = { username, password, redirectUrl };
+                console.log('Request body being sent:', JSON.stringify(requestBody));
+
+                try {
+                    const response = await fetch('/api/users/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'include', // Ensure cookies are sent
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', [...response.headers.entries()]);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.log('Error response text:', errorText);
+                        let errorData;
+                        try {
+                            errorData = JSON.parse(errorText);
+                        } catch (parseError) {
+                            console.error('Failed to parse error response as JSON:', parseError);
+                            throw new Error('Sign-in failed: Server returned an unexpected response');
+                        }
+                        console.log('Error response:', errorData);
+                        throw new Error(errorData.message || 'Sign-in failed');
+                    }
+
+                    const result = await response.json();
+                    console.log('Sign-in response:', result);
+
+                    // Redirect to the original URL or home page
+                    window.location.href = redirectUrl || '/';
+                } catch (error) {
+                    console.error('Error during sign-in:', error.message);
+                    errorMessageDiv.textContent = error.message || 'An error occurred during sign-in';
+                    errorMessageDiv.classList.remove('d-none');
+                }
+            });
+        </script>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/static/js/jquery-3.4.1.min.js"></script>
+    <script src="/static/js/moment.min.js"></script>
+    <script src="/static/js/fullcalendar.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof jQuery !== 'undefined') {
+                console.log('jQuery loaded:', true);
+                console.log('Moment.js loaded:', typeof moment !== 'undefined');
+                console.log('FullCalendar loaded:', typeof $.fn.fullCalendar !== 'undefined');
+                console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined');
+                document.dispatchEvent(new Event('jQueryLoaded'));
+            } else {
+                console.error('jQuery failed to load after DOMContentLoaded');
+            }
+        });
+    </script>
+</body>
+</html>

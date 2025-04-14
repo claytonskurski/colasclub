@@ -1,0 +1,87 @@
+<div class="container my-4">
+    <h1 class="mb-4">My Account</h1>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger" role="alert">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success" role="alert">
+            <%= success %>
+        </div>
+    <% } %>
+
+    <!-- User Information -->
+    <section class="user-info mb-4">
+        <h2>Profile Information</h2>
+        <div class="card">
+            <div class="card-body">
+                <p><strong>Username:</strong> <%= user.username %></p>
+                <p><strong>First Name:</strong> <%= user.firstName %></p>
+                <p><strong>Last Name:</strong> <%= user.lastName %></p>
+                <p><strong>Email:</strong> <%= user.email %></p>
+                <p><strong>Phone:</strong> <%= user.phone %></p>
+                <p><strong>Subscription Status:</strong> <%= user.subscriptionStatus %></p>
+                <p><strong>Account Created:</strong> <%= new Date(user.createdAt).toLocaleDateString() %></p>
+                <p><strong>Last Updated:</strong> <%= new Date(user.updatedAt).toLocaleDateString() %></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Edit Profile -->
+    <section class="edit-profile mb-4">
+        <h2>Edit Profile</h2>
+        <form action="/account/update-profile" method="POST">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" value="<%= user.username %>" required>
+            </div>
+            <div class="mb-3">
+                <label for="firstName" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="firstName" name="firstName" value="<%= user.firstName %>" required>
+            </div>
+            <div class="mb-3">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="lastName" name="lastName" value="<%= user.lastName %>" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
+            </div>
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="text" class="form-control" id="phone" name="phone" value="<%= user.phone %>" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+    </section>
+
+    <!-- Change Password -->
+    <section class="change-password mb-4">
+        <h2>Change Password</h2>
+        <form action="/account/change-password" method="POST">
+            <div class="mb-3">
+                <label for="currentPassword" class="form-label">Current Password</label>
+                <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+            </div>
+            <div class="mb-3">
+                <label for="newPassword" class="form-label">New Password</label>
+                <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+            </div>
+            <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Change Password</button>
+        </form>
+    </section>
+
+    <!-- Log Out -->
+    <section class="log-out">
+        <h2>Log Out</h2>
+        <p>Ready to sign out of your account?</p>
+        <a href="/logout" class="btn btn-danger">Log Out</a>
+    </section>
+</div>
