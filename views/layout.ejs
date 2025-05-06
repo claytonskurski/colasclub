@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Loosened CSP for testing; tighten later -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://* data:;">
     <title><%= typeof title !== 'undefined' ? title + ' - Soda City Outdoors' : 'Soda City Outdoors' %></title>
     <link rel="preload" href="/static/images/Congaree NP-optimized.webp" as="image">
@@ -16,16 +15,123 @@
     <link rel="manifest" href="/static/images/Favicon/site.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Colors */
+            --primary-color: #0e747c;
+            --accent-color: #80bec0;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+            
+            /* Typography */
+            --heading-font: 'Montserrat', sans-serif;
+            --body-font: 'Open Sans', sans-serif;
+            
+            /* Font Weights */
+            --font-regular: 400;
+            --font-medium: 500;
+            --font-semibold: 600;
+            --font-bold: 700;
+        }
+
+        /* Global Typography */
+        body {
+            font-family: var(--body-font);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--heading-font);
+            font-weight: var(--font-bold);
+        }
+
+        /* Button Styles */
+        .btn, button {
+            font-family: var(--heading-font);
+            font-weight: var(--font-medium);
+        }
+
+        /* Navigation */
+        .navbar {
+            font-family: var(--heading-font);
+            font-weight: var(--font-medium);
+        }
+
+        .navbar-brand {
+            font-weight: var(--font-bold);
+        }
+
+        /* Links */
+        a {
+            font-weight: var(--font-medium);
+        }
+
+        /* Form Elements */
+        input, textarea, select {
+            font-family: var(--body-font);
+        }
+
+        /* Custom Classes */
+        .feature-title {
+            font-family: var(--heading-font);
+            font-weight: var(--font-bold);
+        }
+
+        .section-title {
+            font-family: var(--heading-font);
+            font-weight: var(--font-bold);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-family: var(--heading-font);
+            font-weight: var(--font-semibold);
+        }
+
+        /* Emphasis Text */
+        .lead {
+            font-family: var(--heading-font);
+            font-weight: var(--font-medium);
+        }
+
+        /* Footer */
+        footer {
+            font-family: var(--body-font);
+        }
+    </style>
 </head>
 <body>
     <nav>
         <ul class="nav-left">
             <li>
-                <a href="/">
+                <a href="/" class="brand-link">
                     <img src="/static/images/SCO Logo.webp" alt="Logo" class="logo">
-                    <span class="brand-name">Soda City Outdoors</span>
+                    <span class="brand-name">Soda City Outdoors <i class="fas fa-chevron-down d-inline d-md-none"></i></span>
                 </a>
             </li>
+        </ul>
+        <ul class="nav-center d-none d-md-flex">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle nav-button" href="#" id="eventsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Our Events
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="eventsDropdown">
+                    <li><a class="dropdown-item" href="/events">Events List</a></li>
+                    <li><a class="dropdown-item" href="/calendar">Event Calendar</a></li>
+                </ul>
+            </li>
+            <li><a href="/forum" class="nav-button">Discussion Forum</a></li>
+            <li><a href="/resources" class="nav-button">Resources</a></li>
+            <li><a href="/gallery" class="nav-button">Gallery</a></li>
+            <li><a href="/about" class="nav-button">About Us</a></li>
+            <li><a href="/contact" class="nav-button">Contact Us</a></li>
+            <li><a href="<%= user ? '/account' : '/signup' %>" class="nav-button highlight">Join Now!</a></li>
         </ul>
         <ul class="nav-right">
             <% if (user && user.firstName) { %>
@@ -43,6 +149,20 @@
             <% } %>
         </ul>
     </nav>
+
+    <!-- Mobile Navigation Dropdown -->
+    <div class="mobile-nav d-md-none">
+        <div class="mobile-nav-items">
+            <a href="/events" class="mobile-nav-link">Events List</a>
+            <a href="/calendar" class="mobile-nav-link">Event Calendar</a>
+            <a href="/forum" class="mobile-nav-link">Discussion Forum</a>
+            <a href="/resources" class="mobile-nav-link">Resources</a>
+            <a href="/gallery" class="mobile-nav-link">Gallery</a>
+            <a href="/about" class="mobile-nav-link">About Us</a>
+            <a href="/contact" class="mobile-nav-link">Contact Us</a>
+            <a href="<%= user ? '/account' : '/signup' %>" class="mobile-nav-link highlight">Join Now!</a>
+        </div>
+    </div>
 
     <main>
         <%- body %>
@@ -64,6 +184,7 @@
     <script src="/static/js/moment.min.js"></script>
     <script src="/static/js/fullcalendar.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof jQuery !== 'undefined') {
@@ -75,6 +196,30 @@
             } else {
                 console.error('jQuery failed to load after DOMContentLoaded');
             }
+
+            const brandLink = document.querySelector('.brand-link');
+            const mobileNav = document.querySelector('.mobile-nav');
+            let isOpen = false;
+
+            brandLink.addEventListener('click', function(e) {
+                if (window.innerWidth < 768) { // Only for mobile devices
+                    e.preventDefault();
+                    isOpen = !isOpen;
+                    mobileNav.style.maxHeight = isOpen ? `${mobileNav.scrollHeight}px` : '0';
+                    mobileNav.style.opacity = isOpen ? '1' : '0';
+                    brandLink.querySelector('.fa-chevron-down').style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0)';
+                }
+            });
+
+            // Close mobile nav when window is resized to desktop view
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 768) {
+                    mobileNav.style.maxHeight = '0';
+                    mobileNav.style.opacity = '0';
+                    isOpen = false;
+                    brandLink.querySelector('.fa-chevron-down').style.transform = 'rotate(0)';
+                }
+            });
         });
     </script>
 </body>

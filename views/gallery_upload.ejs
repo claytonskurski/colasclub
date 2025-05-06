@@ -1,0 +1,50 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h1 class="text-center h3">Upload New Gallery Image</h1>
+                </div>
+                <div class="card-body">
+                    <form action="/gallery/upload" method="POST" enctype="multipart/form-data">
+                        
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Image Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required maxlength="100" placeholder="Enter a short title">
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" maxlength="500" placeholder="Enter a brief description"></textarea>
+                        </div>
+
+                        <!-- Image File Input -->
+                        <div class="mb-4">
+                            <label for="galleryImages" class="form-label">Select Images</label>
+                            <input class="form-control" type="file" id="galleryImages" name="galleryImages" required accept="image/jpeg, image/png, image/gif, image/webp" multiple>
+                            <div class="form-text">
+                                Accepted formats: JPG, PNG, GIF, WEBP. Max size: 10MB (Set on server). 
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/gallery" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Upload Images</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optional: Add styling if needed, though Bootstrap should cover basics -->
+<style>
+    .card-header {
+        background-color: var(--light-bg, #f8f9fa);
+    }
+</style> 

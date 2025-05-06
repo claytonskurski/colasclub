@@ -7,21 +7,436 @@
     <!-- Inherit styles from layout.ejs -->
 </head>
 <body>
-    <div class="container">
-        <h1 class="my-4" style="color: var(--primary-color);">Calendar</h1>
-        <div id="calendar"></div>
-        <% if (typeof error !== 'undefined' && error) { %>
-            <div class="alert alert-danger" role="alert">
-                <%= error %>
-            </div>
-        <% } %>
+    <!-- Event Header -->
+    <div class="events-header">
+        <h1>Event Calendar</h1>
     </div>
+
+    <div class="container-fluid calendar-page-container py-3 d-flex flex-column align-items-center">
+        <!-- Reduced mt-5 to py-3 to remove whitespace above calendar -->
+        <section class="calendar-top-section">
+            <div class="calendar-top-row d-flex align-items-stretch justify-content-between mb-5">
+                <div class="upcoming-events-horizontal" style="flex: 1;">
+                    <h3 class="mb-4">Upcoming Events</h3>
+                    <div class="upcoming-events-row">
+                        <% 
+                            const today = moment().startOf('day');
+                            const nextWeek = moment().add(7, 'days').endOf('day');
+                            const filteredEvents = events.filter(function(event) {
+                                const eventDate = moment(event.dtstart);
+                                return eventDate.isBetween(today, nextWeek, null, '[]');
+                            });
+                        %>
+                        <% filteredEvents.slice(0, 10).forEach(function(event) { %>
+                            <% 
+                                let type = (event.type || '').toLowerCase();
+                                let iconClass = 'fas fa-calendar';
+                                if (type === 'hike') {
+                                    iconClass = 'fas fa-hiking';
+                                } else if (type === 'water') {
+                                    iconClass = 'fas fa-water';
+                                } else if (type === 'social') {
+                                    iconClass = 'fas fa-users';
+                                } else if (type === 'sport') {
+                                    iconClass = 'fas fa-running';
+                                } else if (type === 'bike') {
+                                    iconClass = 'fas fa-biking';
+                                }
+                            %>
+                            <div class="upcoming-event-card">
+                                <div class="event-date-badge"><%= moment(event.dtstart).format('MMM D') %></div>
+                                <div class="event-info">
+                                    <div class="event-title"><a href="/events/event/<%= event.eventId %>"><%= event.summary %></a></div>
+                                    <div class="event-meta">
+                                        <span class="event-type <%= type %>"><i class="<%= iconClass %>"></i> <%= type.charAt(0).toUpperCase() + type.slice(1) %></span>
+                                        <span class="event-time"><%= moment(event.dtstart).format('h:mm A') %></span>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+                <div class="submit_event_container text-center ms-5" style="flex: 1; min-width: 260px;">
+                    <p class="submit-description mb-2">Have an idea for an adventure? Submit an event below.</p>
+                    <a href="/submit_event" class="submit_event_btn"><i class="fas fa-plus me-2"></i>Submit Event</a>
+                </div>
+            </div>
+        </section>
+        <section class="calendar-section">
+            <div class="calendar-container card" style="height: 1500px;">
+                <div id="calendar"></div>
+                <% if (user && user.subscriptionStatus === 'active') { %>
+                    <div class="calendar-download-section mt-4 p-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <button id="downloadCalendarBtn" class="btn btn-primary" style="background-color: #80bec0; border-color: #80bec0;">
+                                    <i class="fas fa-download me-2"></i>Download Calendar (ICS)
+                                </button>
+                                <p class="text-muted mt-2 mb-0 small">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <em>Note: The calendar is subject to change, so please be sure to reference this version if you have a previous download</em>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                <% } else if (!user) { %>
+                    <div class="calendar-download-section mt-4 p-3 border-top">
+                        <div class="alert alert-info">
+                            <i class="fas fa-lock me-2"></i>
+                            Calendar download is available for members only. 
+                            <a href="/signin" class="alert-link">Sign in</a> or <a href="/signup" class="alert-link">join now</a> to access this feature!
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="calendar-download-section mt-4 p-3 border-top">
+                        <div class="alert alert-info">
+                            <i class="fas fa-lock me-2"></i>
+                            Calendar download is available for active members only. 
+                            Please <a href="/account" class="alert-link">activate your membership</a> to access this feature!
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </section>
+    </div>
+
+    <style>
+    :root {
+        --primary-color: #0e747c;
+        --accent-color: #80bec0;
+        --text-color: #333;
+        --light-bg: #f8f9fa;
+        --hiking-color: #2e7d32; /* Green for hiking */
+        --water-color: #0288d1; /* Blue for all water activities */
+        --social-color: #f57c00; /* Orange for social events */
+        --sport-color: #d32f2f; /* Red for sports */
+        --bike-color: #ab47bc; /* Light purple for bike */
+    }
+
+    .container {
+        background: linear-gradient(135deg, rgba(248, 249, 250, 0.9), rgba(255, 255, 255, 0.9)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path fill="%23e0e0e0" fill-opacity="0.1" d="M50,150 Q100,50 150,150 T250,150" stroke="none"/></svg>') repeat;
+        border-radius: 12px;
+    }
+
+    .calendar-container {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-bottom: 20px;
+    }
+
+    .submit_event_container {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Vertically center content */
+        align-items: center; /* Horizontally center content */
+        background: white; /* Match background of upcoming events */
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Match shadow */
+    }
+
+    .submit-description {
+        font-size: 1rem;
+        color: var(--text-color);
+        font-weight: 500;
+    }
+
+    .submit_event_btn {
+        display: block;
+        width: 100%;
+        padding: 12px 24px;
+        background-color: var(--primary-color);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .submit_event_btn:hover {
+        background-color: var(--accent-color);
+        transform: translateY(-2px);
+    }
+
+    .upcoming-events {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .upcoming-events h3 {
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        font-size: 1.5em;
+        font-weight: 600;
+    }
+
+    .event-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+
+    .event-item:hover {
+        background-color: var(--light-bg);
+        transform: translateY(-2px);
+    }
+
+    .event-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .event-thumbnail {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
+    }
+
+    .event-info {
+        flex: 1;
+    }
+
+    .event-title {
+        color: var(--primary-color);
+        font-weight: 500;
+        margin-bottom: 5px;
+        font-size: 1.1em;
+        display: block;
+    }
+
+    .event-time {
+        color: var(--text-color);
+        font-size: 0.95em;
+        display: block;
+    }
+
+    .event-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        background-color: var(--light-bg);
+        border-radius: 12px;
+        font-size: 0.85em;
+        margin-right: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    .event-tag i {
+        margin-right: 5px;
+        font-size: 0.9em;
+    }
+
+    .event-tag.hike { background-color: var(--hiking-color); color: white; }
+    .event-tag.water { background-color: var(--water-color); color: white; }
+    .event-tag.social { background-color: var(--social-color); color: white; }
+    .event-tag.sport { background-color: var(--sport-color); color: white; }
+    .event-tag.bike { background-color: var(--bike-color); color: white; } /* Added bike color */
+
+    .event-tag:hover {
+        opacity: 0.9;
+    }
+
+    .view-all-link {
+        display: inline-block;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .view-all-link:hover {
+        color: var(--accent-color);
+    }
+
+    /* FullCalendar Styles */
+    .fc-header-toolbar {
+        margin-bottom: 2em !important;
+        font-family: 'Roboto', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-end; /* Moved buttons to right */
+    }
+
+    .fc-button-primary {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .fc-button-primary:hover {
+        background-color: var(--accent-color) !important;
+        border-color: var(--accent-color) !important;
+        transform: translateY(-2px);
+    }
+
+    .fc-button-primary:focus {
+        box-shadow: 0 0 0 0.2rem rgba(14, 116, 124, 0.25) !important;
+    }
+
+    .fc-day-grid .fc-row {
+        border-color: #e0e0e0 !important;
+    }
+
+    .fc-day-header {
+        padding: 10px !important;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .fc-day {
+        transition: background-color 0.3s ease;
+    }
+
+    .fc-day:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    .fc-day-top {
+        padding: 8px !important;
+    }
+
+    .fc-day-number {
+        font-size: 1.1em;
+        color: var(--text-color);
+    }
+
+    .fc-day-today {
+        background-color: rgba(14, 116, 124, 0.2) !important;
+        border: 2px solid var(--primary-color) !important;
+        border-radius: 8px;
+    }
+
+    .fc-day-today .fc-day-number {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .fc-event {
+        display: flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease, opacity 0.3s ease;
+        font-size: 0.9em;
+        position: relative;
+        border: none !important;
+        margin: 2px 0;
+    }
+
+    .fc-event:hover {
+        transform: translateY(-2px);
+        opacity: 0.9;
+    }
+
+    .fc-event.hike { background-color: var(--hiking-color); }
+    .fc-event.water { background-color: var(--water-color); }
+    .fc-event.social { background-color: var(--social-color); }
+    .fc-event.sport { background-color: var(--sport-color); }
+    .fc-event.bike { background-color: var(--bike-color); } /* Added bike color */
+
+    .fc-event .event-icon {
+        margin-right: 5px;
+        font-size: 0.9em;
+    }
+
+    .fc-event .tooltip {
+        visibility: hidden;
+        background-color: var(--text-color);
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px 12px;
+        position: absolute;
+        z-index: 1000;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.85em;
+        white-space: nowrap;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .fc-event:hover .tooltip {
+        visibility: visible;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 767.98px) {
+        .col-md-9,
+        .col-md-3 {
+            width: 100%;
+        }
+
+        .calendar-container {
+            display: block; /* Ensure calendar loads on mobile */
+        }
+
+        .upcoming-events {
+            margin-top: 20px;
+        }
+
+        #upcoming-events-list {
+            margin-bottom: 0;
+        }
+
+        .fc-header-toolbar {
+            flex-direction: column;
+            gap: 10px;
+            justify-content: center; /* Center buttons on mobile */
+        }
+
+        .fc-center {
+            order: -1;
+            margin-bottom: 10px;
+            text-align: center; /* Center title on mobile */
+        }
+
+        .submit_event_btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        .calendar-top-row {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .upcoming-events-horizontal, .submit_event_container {
+            flex: 100%;
+        }
+    }
+
+    /* Ensure upcoming events and submit sections match calendar width */
+    .calendar-top-row {
+        max-width: 1700px; /* Match calendar container max-width */
+        width: 100%;
+    }
+
+    .upcoming-events-horizontal, .submit_event_container {
+        flex: 1;
+        min-width: 0; /* Allow flex to adjust width */
+    }
+    </style>
 
     <script id="events-data" type="application/json">
         <%- JSON.stringify(events || []) %>
     </script>
     <script>
-        // Wait for jQueryLoaded event
         document.addEventListener('jQueryLoaded', function() {
             if (typeof jQuery === 'undefined' || typeof moment === 'undefined' || typeof $.fn.fullCalendar === 'undefined') {
                 console.error('Required libraries (jQuery, Moment.js, or FullCalendar) not loaded.');
@@ -34,49 +449,179 @@
                     var events = JSON.parse($('#events-data').text());
                     console.log('Calendar events data:', events);
 
+                    // Function to determine event type based on type field
+                    function getEventType(event) {
+                        const type = event.type || 'default';
+                        // Map water-related activities to 'water'
+                        if ([
+                            'kayaking', 'paddleboarding', 'swimming', 'fishing'
+                        ].includes(type.toLowerCase())) {
+                            return 'water';
+                        }
+                        // Map sports to 'sport'
+                        if ([
+                            'basketball', 'soccer', 'volleyball', 'tennis', 'running'
+                        ].includes(type.toLowerCase())) {
+                            return 'sport';
+                        }
+                        // Map bike-related activities to 'bike'
+                        if ([
+                            'cycling', 'bike', 'biking'
+                        ].includes(type.toLowerCase())) {
+                            return 'bike';
+                        }
+                        // Only 'hike' is green
+                        if (type.toLowerCase() === 'hike') {
+                            return 'hike';
+                        }
+                        return type.toLowerCase();
+                    }
+
+                    // Function to get icon class based on event type
+                    function getEventIcon(eventType) {
+                        switch(eventType.toLowerCase()) {
+                            case 'hike':
+                                return 'fas fa-hiking';
+                            case 'water':
+                                return 'fas fa-water';
+                            case 'social':
+                                return 'fas fa-users';
+                            case 'sport':
+                                return 'fas fa-running';
+                            case 'bike': // Added bike icon
+                                return 'fas fa-biking';
+                            default:
+                                return 'fas fa-calendar';
+                        }
+                    }
+
+                    // Initialize calendar
                     $('#calendar').fullCalendar({
                         header: {
                             left: 'prev,next today',
                             center: 'title',
                             right: 'month,agendaWeek,agendaDay'
                         },
-                        defaultDate: new Date(),
+                        views: {
+                            month: { buttonText: 'Month' },
+                            agendaWeek: { buttonText: 'Week' },
+                            agendaDay: { buttonText: 'Day' }
+                        },
+                        defaultView: 'month',
                         editable: false,
-                        eventLimit: true,
+                        eventLimit: false,
+                        dayMaxEventRows: false,
                         events: events.map(function(event) {
+                            var start = moment(event.dtstart).toISOString();
+                            var end = moment(event.dtend).toISOString();
+                            var eventType = getEventType(event);
                             return {
                                 title: event.summary || 'No Title',
-                                start: event.dtstart,
-                                end: event.dtend,
+                                start: start,
+                                end: end,
                                 location: event.location,
-                                id: event.eventId // Ensure eventId is mapped for identification
+                                id: event.eventId,
+                                allDay: true,
+                                url: '/events/event/' + event.eventId,
+                                eventType: eventType
                             };
                         }),
                         eventRender: function(event, element) {
-                            // Add a link to the event element
-                            element.attr('href', '/events/event/' + event.id);
-                            element.attr('target', '_blank'); // Opens in new tab (optional)
+                            element.attr('href', event.url);
+                            element.addClass(event.eventType);
+                            // Add icon to event
+                            var iconClass = getEventIcon(event.eventType);
+                            element.find('.fc-title').prepend(`<i class="${iconClass} event-icon"></i>`);
+                            // Add tooltip with event details
+                            var tooltipContent = `Time: ${moment(event.start).format('h:mm A')}<br>Location: ${event.location || 'Not specified'}`;
+                            element.append(`<span class="tooltip">${tooltipContent}</span>`);
                         },
                         eventClick: function(event) {
-                            // Navigate to the event detail page
-                            window.location.href = '/events/event/' + event.id;
-                            // Alternatively, use: window.open('/events/event/' + event.id, '_blank');
+                            window.location.href = event.url;
+                            return false;
                         }
                     });
+
+                    // Populate upcoming events with clickable links
+                    var today = moment();
+                    var nextWeek = moment().add(7, 'days');
+                    var upcomingEvents = events
+                        .filter(function(event) {
+                            var eventDate = moment(event.dtstart);
+                            return eventDate.isBetween(today, nextWeek, null, '[]');
+                        })
+                        .sort(function(a, b) {
+                            return moment(a.dtstart) - moment(b.dtstart);
+                        });
+
+                    var upcomingList = $('#upcoming-events-list');
+                    if (upcomingEvents.length === 0) {
+                        upcomingList.html('<p>No upcoming events in the next 7 days</p>');
+                    } else {
+                        upcomingEvents.forEach(function(event) {
+                            var date = moment(event.dtstart);
+                            var eventType = getEventType(event);
+                            var iconClass = getEventIcon(eventType);
+                            var eventItem = $('<div class="event-item">')
+                                .append(
+                                    $('<img class="event-thumbnail">')
+                                        .attr('src', event.image || 'https://via.placeholder.com/50') // Placeholder image
+                                        .attr('alt', 'Event Thumbnail')
+                                )
+                                .append(
+                                    $('<div class="event-info">')
+                                        .append(
+                                            $('<a class="event-title">')
+                                                .attr('href', '/events/event/' + event.eventId)
+                                                .text(event.summary || 'No Title')
+                                            )
+                                            .append(
+                                                $('<div class="event-time">')
+                                                    .text(date.format('MMM D, YYYY h:mm A'))
+                                            )
+                                            .append(
+                                                $('<span class="event-tag ' + eventType + '">')
+                                                    .html(`<i class="${iconClass}"></i>${eventType.charAt(0).toUpperCase() + eventType.slice(1)}`)
+                                            )
+                                    );
+                            eventItem.on('click', function() {
+                                window.location.href = '/events/event/' + event.eventId;
+                            });
+                            upcomingList.append(eventItem);
+                        });
+                    }
                 } catch (error) {
                     console.error('Error initializing calendar:', error);
-                    $('#calendar').html('<div class="alert alert-danger">Error loading calendar. Check console for details.</div>');
+                    $('#calendar').html('<div class="alert alert-danger">Failed to initialize calendar. Check console for details.</div>');
                 }
             });
         });
 
-        // Fallback if jQueryLoaded event fails
-        setTimeout(function() {
-            if (!document.querySelector('#calendar').innerHTML) {
-                console.warn('Calendar initialization timed out, retrying with available libraries.');
-                document.dispatchEvent(new Event('jQueryLoaded'));
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add calendar download functionality
+            const downloadBtn = document.getElementById('downloadCalendarBtn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', async function() {
+                    try {
+                        const response = await fetch('/events/calendar/download');
+                        if (!response.ok) {
+                            const data = await response.json();
+                            throw new Error(data.error || 'Failed to download calendar');
+                        }
+                        const blob = await response.blob();
+                        const link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = 'soda-city-events.ics';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } catch (error) {
+                        console.error('Error downloading calendar:', error);
+                        alert(error.message || 'Sorry, there was an error downloading the calendar. Please try again later.');
+                    }
+                });
             }
-        }, 2000);
+        });
     </script>
 </body>
 </html>

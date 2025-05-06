@@ -1,6 +1,6 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, 'routes', '.env') });
-console.log('STRIPE_API_KEY from server.js:', process.env.STRIPE_API_KEY);
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+console.log('Environment loaded successfully');
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -9,52 +9,70 @@ const MongoStore = require('connect-mongo');
 const userRoutes = require('./routes/userRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const eventRoutes = require('./routes/eventRoutes');
-const authMiddleware = require('./middleware/authMiddleware');
+const submitEvent = require('./routes/submitEvent');
+const forumRoutes = require('./routes/forumRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+const galleryRoutes = require('./routes/gallery');
+const { ensureAuthenticated } = require('./middleware/authMiddleware');
 const cron = require('node-cron');
 const User = require('./models/user');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 const expressLayouts = require('express-ejs-layouts');
 const fs = require('fs');
-
-// Load cors with error handling
-let cors;
-try {
-    cors = require('cors');
-    console.log('CORS module loaded successfully');
-} catch (error) {
-    console.error('Failed to load CORS module:', error.message);
-    console.error('Please ensure "cors" is installed by running: npm install cors');
-    process.exit(1);
-}
+const moment = require('moment-timezone');
+const PendingUser = require('./models/pendingUser');
+const GalleryItem = require('./models/GalleryItem');
 
 const app = express();
 
-// Ensure Express recognizes HTTPS behind a proxy
-app.use((req, res, next) => {
-    if (req.get('X-Forwarded-Proto') === 'https') {
-        req.secure = true;
-    }
-    next();
-});
+// Set moment as a global variable for all templates
+app.locals.moment = moment;
 
+// Ensure Express recognizes HTTPS behind a proxy
 app.set('trust proxy', 1);
 
-// CORS middleware
-app.use(cors({
-    origin: 'https://sodacityoutdoors.com',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Accept']
-}));
+// CORS headers middleware
+app.use((req, res, next) => {
+    const allowedOrigins = ['https://sodacityoutdoors.com', 'http://localhost:3000'];
+    const origin = req.headers.origin;
+    
+    if (allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
+    }
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    
+    next();
+});
 
 // Middleware to parse request bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Validate MONGODB_URI
+// Validate environment variables
 if (!process.env.MONGODB_URI) {
-    console.error('MONGODB_URI is not defined in the environment variables. Please check your .env file.');
+    console.error('MONGODB_URI is not defined in the environment variables');
+    process.exit(1);
+}
+
+if (!process.env.SESSION_SECRET) {
+    console.warn('SESSION_SECRET not defined, using fallback secret');
+}
+
+if (!process.env.STRIPE_API_KEY) {
+    console.error('STRIPE_API_KEY is not defined in the environment variables');
+    process.exit(1);
+}
+
+if (!process.env.STRIPE_PUBLISHABLE_KEY) {
+    console.error('STRIPE_PUBLISHABLE_KEY is not defined in the environment variables');
     process.exit(1);
 }
 
@@ -147,17 +165,49 @@ if (!fs.existsSync(destMomentPath)) {
 mongoose.set('strictQuery', true);
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
-        console.log('Connected to MongoDB Atlas');
+        console.log('Connected to MongoDB successfully');
     })
-    .catch((error) => {
-        console.error('Error connecting to MongoDB Atlas:', error);
-        process.exit(1);
+    .catch((err) => {
+        console.error('MongoDB connection error:', err);
     });
 
 // Routes
+app.use((req, res, next) => {
+    console.log('Incoming request:', {
+        method: req.method,
+        url: req.url,
+        path: req.path,
+        query: req.query,
+        body: req.body
+    });
+    next();
+});
+
+app.get('/', async (req, res) => {
+    try {
+        const galleryItems = await GalleryItem.find().sort({ uploadDate: -1 }).limit(10);
+        res.render('index', { 
+            title: 'Soda City Outdoors',
+            user: req.session.user,
+            galleryItems: galleryItems
+        });
+    } catch (err) {
+        console.error('Error fetching gallery items:', err);
+        res.render('index', { 
+            title: 'Soda City Outdoors',
+            user: req.session.user,
+            galleryItems: []
+        });
+    }
+});
+
 app.use('/api/users', userRoutes);
 app.use('/', paymentRoutes);
 app.use('/events', eventRoutes);
+app.use('/submit_event', submitEvent);
+app.use('/forum', forumRoutes);
+app.use('/contact', contactRoutes);
+app.use('/gallery', galleryRoutes);
 
 // Redirect /calendar to /events/calendar
 app.get('/calendar', (req, res) => {
@@ -176,7 +226,7 @@ app.get('/test-events', async (req, res) => {
 });
 
 // Protected route
-app.use('/api/protected-route', authMiddleware, (req, res) => {
+app.use('/api/protected-route', ensureAuthenticated, (req, res) => {
     res.send('This is a protected route.');
 });
 
@@ -190,24 +240,98 @@ app.get('/signup', (req, res) => {
     res.render('signup', { title: 'Sign Up', user: req.session.user });
 });
 
+app.get('/register', (req, res) => {
+    res.render('register', { title: 'Create Account', user: req.session.user });
+});
+
+app.get('/waiver', (req, res) => {
+    const pendingUserId = req.query.pendingUserId;
+    if (!pendingUserId) {
+        return res.redirect('/register');
+    }
+    res.render('waiver', { 
+        title: 'Liability Waiver', 
+        user: req.session.user,
+        pendingUserId: pendingUserId 
+    });
+});
+
+app.post('/waiver/accept', async (req, res) => {
+    try {
+        const { pendingUserId, waiverAccepted } = req.body;
+        console.log('Waiver acceptance request:', {
+            pendingUserId,
+            waiverAccepted,
+            body: req.body
+        });
+
+        if (!pendingUserId) {
+            return res.status(400).json({ message: 'Pending user ID is required' });
+        }
+
+        // Get the current pending user first
+        const currentUser = await PendingUser.findById(pendingUserId);
+        console.log('Current pending user before update:', currentUser);
+
+        // Update the pending user to indicate waiver acceptance
+        const updateData = {
+            waiverAccepted: true,
+            waiverAcceptedDate: new Date(),
+            waiverIpAddress: req.ip,
+            waiverUserAgent: req.headers['user-agent']
+        };
+
+        console.log('Updating pending user with:', updateData);
+
+        const pendingUser = await PendingUser.findByIdAndUpdate(
+            pendingUserId,
+            updateData,
+            { new: true }
+        );
+
+        if (!pendingUser) {
+            console.error('Pending user not found after update attempt');
+            return res.status(404).json({ message: 'Pending user not found' });
+        }
+
+        console.log('Updated pending user:', pendingUser);
+
+        // Redirect to payment page with pendingUserId
+        res.redirect(`/payment?pendingUserId=${pendingUserId}`);
+    } catch (error) {
+        console.error('Error accepting waiver:', error);
+        res.status(500).json({ message: 'Error processing waiver acceptance' });
+    }
+});
+
 app.get('/payment', (req, res) => {
     res.render('payment', { title: 'Payment', user: req.session.user, stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
 });
 
-// Root route
-app.get('/', async (req, res) => {
-    const Event = require('./models/events');
+// Resources page route
+app.get('/resources', (req, res) => {
+    res.render('resources', { title: 'Resources', user: req.session.user });
+});
+
+app.get('/about', (req, res) => {
+    res.render('about', { title: 'About Us', user: req.session.user });
+});
+
+// Contact form submission
+app.post('/contact/submit', async (req, res) => {
     try {
-        const events = await Event.find().limit(5);
-        res.render('index', { title: 'Home', events, user: req.session.user });
+        const { name, email, subject, message } = req.body;
+        // TODO: Add email sending functionality
+        // For now, just return success
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error fetching events:', error);
-        res.render('index', { title: 'Home', events: [], error: 'Failed to load events', user: req.session.user });
+        console.error('Error processing contact form:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
     }
 });
 
 // Account Page
-app.get('/account', authMiddleware, async (req, res) => {
+app.get('/account', ensureAuthenticated, async (req, res) => {
     console.log('Reached /account route');
     console.log('req.session.user in /account:', req.session.user);
     try {
@@ -232,7 +356,7 @@ app.get('/account', authMiddleware, async (req, res) => {
 });
 
 // Update Profile
-app.post('/account/update-profile', authMiddleware, async (req, res) => {
+app.post('/account/update-profile', ensureAuthenticated, async (req, res) => {
     try {
         if (!req.session.user) {
             console.log('No user in session, redirecting to signin');
@@ -295,7 +419,7 @@ app.post('/account/update-profile', authMiddleware, async (req, res) => {
 });
 
 // Change Password
-app.post('/account/change-password', authMiddleware, async (req, res) => {
+app.post('/account/change-password', ensureAuthenticated, async (req, res) => {
     try {
         if (!req.session.user) {
             console.log('No user in session, redirecting to signin');
@@ -384,6 +508,24 @@ cron.schedule('0 0 1 * *', async () => {
             }
         }
     }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(500).render('error', {
+        title: 'Error',
+        message: 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err : {}
+    });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).render('error', {
+        title: '404 Not Found',
+        message: 'The page you are looking for does not exist.'
+    });
 });
 
 // Start the server

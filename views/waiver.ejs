@@ -1,0 +1,130 @@
+<h1 class="text-center mb-4">Soda City Outdoors Liability Waiver and Release</h1>
+
+<div class="container mt-5">
+    <form action="/waiver/accept" method="POST" id="waiverForm">
+        <input type="hidden" name="pendingUserId" value="<%= pendingUserId %>">
+        
+        <p><strong>Effective Date:</strong> April 17, 2025</p>
+        <p><strong>Organization:</strong> Soda City Outdoors</p>
+        <p><strong>Location:</strong> Activities may take place in various outdoor locations, including but not limited to trails, rivers, and event venues in South Carolina and surrounding areas.</p>
+
+        <h2 class="card-title">Assumption of Risk</h2>
+        <p>I understand that participating in outdoor activities organized by Soda City Outdoors, including but not limited to hikes, kayaking, river trips, socials, and events coordinated with third-party outdoor providers, involves inherent risks. These risks include, but are not limited to, physical injury, illness, death, property damage, or loss due to factors such as uneven terrain, weather conditions, water hazards, wildlife, equipment failure, or actions of other participants or third parties. I acknowledge that I am voluntarily participating in these activities with full knowledge of these risks, both known and unknown, and I assume all responsibility for any resulting harm, injury, or damage.</p>
+
+        <h2 class="card-title">Release of Liability</h2>
+        <p>In consideration for being allowed to participate in Soda City Outdoors activities, I hereby release, waive, and discharge Soda City Outdoors, its officers, employees, volunteers, affiliates, and third-party providers (collectively, "Released Parties") from any and all liability, claims, demands, actions, or causes of action arising out of or related to any loss, damage, injury, or death that may be sustained by me while participating in these activities, whether caused by the negligence of the Released Parties or otherwise, to the fullest extent permitted by law.</p>
+
+        <h2 class="card-title">Indemnification</h2>
+        <p>I agree to indemnify and hold harmless the Released Parties from any and all liabilities or claims made as a result of my participation in these activities, including but not limited to attorney fees, damages, or settlements, whether caused by my actions, inactions, or otherwise.</p>
+
+        <h2 class="card-title">Third-Party Providers</h2>
+        <p>I acknowledge that Soda City Outdoors may partner with third-party outdoor providers for certain activities or events. I understand that Soda City Outdoors is not responsible for the actions, negligence, or services provided by these third-party providers, and I release Soda City Outdoors from any liability arising from activities or events coordinated with third-party providers.</p>
+
+        <h2 class="card-title">Agreement to Terms via Payment</h2>
+        <p>By clicking "Accept" and proceeding to payment, I confirm that I have read, understood, and agree to the terms of this waiver. I acknowledge that this agreement is a legally binding contract, and I am waiving my right to hold Soda City Outdoors liable for any injuries, damages, or losses sustained during the activities, except in cases of gross negligence or intentional misconduct.</p>
+
+        <h2 class="card-title">Governing Law</h2>
+        <p>This waiver and release shall be governed by and construed in accordance with the laws of the State of South Carolina, without regard to its conflict of law principles. Any disputes arising under this agreement shall be resolved in the state or federal courts located in South Carolina.</p>
+
+        <h2 class="card-title">Acknowledgment</h2>
+        <p>I certify that I am of legal age (18 years or older) and have the legal capacity to enter into this agreement. If signing on behalf of a minor, I certify that I am the parent or legal guardian of the minor and have the authority to bind them to this agreement. I understand that this waiver is a standalone document and is not combined with other registration materials to ensure its clarity and enforceability.</p>
+
+        <div class="waiver-acceptance mt-5">
+            <div class="d-flex justify-content-center mb-4">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="waiverAccepted" id="acceptWaiver" value="true" required>
+                    <label class="form-check-label" for="acceptWaiver">I Accept</label>
+                </div>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Proceed to Payment</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.card-title {
+    color: var(--primary-color, #0e747c);
+    border-bottom: 2px solid var(--primary-color, #0e747c);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+p {
+    color: var(--text-color, #333);
+    font-size: 1.1em;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.btn-primary {
+    padding: 12px 24px;
+    background-color: var(--primary-color, #0e747c);
+    color: white;
+    border-radius: 8px;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color, #da3545);
+    transform: translateY(-2px);
+}
+
+.form-check-input {
+    width: 1.5em;
+    height: 1.5em;
+    margin-top: 0.25em;
+    margin-right: 0.5em;
+    vertical-align: top;
+    background-color: #fff;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    appearance: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color, #0e747c);
+    border-color: var(--primary-color, #0e747c);
+}
+
+.form-check-label {
+    color: var(--text-color, #333);
+    font-weight: 500;
+    font-size: 1.2em;
+    margin-left: 0.5em;
+}
+
+.waiver-acceptance {
+    background-color: rgba(14, 116, 124, 0.05);
+    padding: 2rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+}
+</style>
+
+<script>
+document.getElementById('waiverForm').addEventListener('submit', function(e) {
+    const checkbox = document.getElementById('acceptWaiver');
+    if (!checkbox.checked) {
+        e.preventDefault();
+        alert('You must accept the waiver to proceed.');
+        return;
+    }
+    console.log('Submitting waiver form with data:', {
+        pendingUserId: this.elements.pendingUserId.value,
+        waiverAccepted: checkbox.checked
+    });
+});
+</script>

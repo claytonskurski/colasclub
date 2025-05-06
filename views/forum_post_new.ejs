@@ -1,0 +1,93 @@
+<div class="container-fluid px-5 mt-5">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="text-center mb-5">
+                <h1>Create a New Post</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <form action="/forum/post/new" method="POST">
+                        <div class="mb-4">
+                            <label for="title" class="form-label">Post Title</label>
+                            <input 
+                                type="text" 
+                                id="title" 
+                                name="title" 
+                                class="form-control form-control-lg"
+                                required
+                                placeholder="Enter your post title"
+                            >
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="content" class="form-label">Post Description</label>
+                            <textarea 
+                                id="content" 
+                                name="content" 
+                                class="form-control form-control-lg"
+                                rows="15"
+                                required
+                                placeholder="Write your post content here..."
+                            ></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3">
+                            <a href="/forum" class="btn btn-secondary btn-lg">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Create Post
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.form-control-lg {
+    min-height: calc(1.5em + 1rem + 2px);
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(14, 116, 124, 0.25);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+</style> 

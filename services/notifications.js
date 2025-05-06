@@ -7,12 +7,29 @@ const twilioClient = twilio(
     process.env.TWILIO_AUTH_TOKEN
 );
 
-// Initialize nodemailer transporter
+// Initialize nodemailer transporter with Hostinger SMTP
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.hostinger.com',
+    port: 465,
+    secure: true, // use SSL
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    }
+});
+
+// Verify transporter
+transporter.verify(function (error, success) {
+    if (error) {
+        console.error('Error verifying email configuration:', error);
+        console.error('Email config used:', {
+            host: 'smtp.hostinger.com',
+            port: 465,
+            user: process.env.EMAIL_USER,
+            auth_provided: !!process.env.EMAIL_PASS
+        });
+    } else {
+        console.log('Notification email server is ready');
     }
 });
 

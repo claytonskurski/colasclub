@@ -1,75 +1,490 @@
-<div class="container">
-    <h1 class="my-4">Events Catalog</h1>
-    <% if (typeof error !== 'undefined' && error) { %>
-        <p style="color: #0e747c;"><%= error %></p>
-    <% } %>
-    <div id="upcoming-events-container" class="row"></div>
-    <button id="toggle-past-events" class="btn btn-secondary my-4">Show Past Events</button>
-    <div id="past-events-container" class="row past-events"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - Soda City Outdoors</title>
+    <!-- Required libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+</head>
+<body>
+<!-- Event Header -->
+<div class="events-header">
+    <div class="header-left">
+        <h1>Upcoming Events</h1>
+        <button class="search-button" id="searchButton"><i class="fas fa-search"></i></button>
+    </div>
+    <div class="events-controls">
+        <button class="view-toggle" data-view="grid"><i class="fas fa-th-large"></i></button>
+        <button class="view-toggle" data-view="list"><i class="fas fa-list"></i></button>
+        <a href="/submit_event" class="submit_event_btn">+ Submit Event</a>
+    </div>
 </div>
 
-<script id="events-data" type="application/json">
-    <%- JSON.stringify(events || []) %>
-</script>
-<script>
-    // Function to initialize events, called when jQuery is ready
-    function initEvents() {
-        try {
-            var events = JSON.parse($('#events-data').text());
-            console.log('Parsed events data:', events);
-            if (!Array.isArray(events)) {
-                console.error('Events data is not an array:', events);
-                events = [];
-            }
+<!-- Search Bar (Hidden by default) -->
+<div class="search-bar" id="searchBar" style="display: none;">
+    <input type="text" id="eventSearch" placeholder="Search events...">
+</div>
 
-            var upcomingEventsContainer = $('#upcoming-events-container');
-            var pastEventsContainer = $('#past-events-container');
-            var currentDate = new Date();
+<!-- Event Tags -->
+<div class="event-tags">
+    <a href="/events" class="event-tag <%= !selectedTag ? 'active' : '' %>">#All</a>
+    <% Object.entries(tagCounts).forEach(([tag, count]) => { %>
+        <a href="/events?tag=<%= tag %>" class="event-tag <%= selectedTag === tag ? 'active' : '' %>">#<%= tag %> <span><%= count %></span></a>
+    <% }); %>
+</div>
 
-            upcomingEventsContainer.empty();
-            pastEventsContainer.empty();
-
-            if (events.length === 0) {
-                upcomingEventsContainer.append('<p>No upcoming events found.</p>');
-            }
-
-            events.forEach(function(event) {
-                var eventCard = `
-                    <div class="col-md-4">
-                        <div class="card event-card">
-                            <div class="card-body">
-                                <h5 class="card-title">${event.summary || 'No Title'}</h5>
-                                <p class="card-text"><strong>Start:</strong> ${new Date(event.dtstart || '').toLocaleString()}</p>
-                                <p class="card-text"><strong>End:</strong> ${new Date(event.dtend || '').toLocaleString()}</p>
-                                <a href="/events/event/${event.eventId || ''}" class="btn btn-primary">View Details</a>
-                            </div>
-                        </div>
+<!-- Events Grid -->
+<div class="events-grid">
+    <% events.forEach(function(event) { 
+        const timeZone = event.timezone || 'America/New_York';
+        const startDate = moment.tz(event.dtstart, timeZone);
+        const endDate = moment.tz(event.dtend, timeZone);
+    %>
+        <% if (isAuthenticated) { %>
+            <a href="/events/event/<%= event.eventId %>" class="event-card">
+                <div class="event-image-container">
+                    <% if (event.image) { %>
+                        <img src="<%= event.image %>" alt="<%= event.summary %>" class="event-image">
+                    <% } %>
+                </div>
+                <div class="event-content">
+                    <h3 class="event-title"><%= event.summary %></h3>
+                    <div class="event-date"><%= startDate.format('ddd, MMM D, YYYY') %></div>
+                    <div class="event-time">
+                        <%= startDate.format('h:mm A') %> - <%= endDate.format('h:mm A') %> 
+                        <span class="timezone">(<%= startDate.format('z') %>)</span>
                     </div>
-                `;
+                    <div class="event-organizer">
+                        <% if (event.organizer) { %>
+                            By <%= event.organizer %>
+                        <% } %>
+                    </div>
+                    <div class="event-location">
+                        <i class="fas fa-map-marker-alt"></i> <%= event.location || 'Location TBD' %>
+                    </div>
+                </div>
+            </a>
+        <% } else { %>
+            <div class="event-card">
+                <div class="event-image-container">
+                    <% if (event.image) { %>
+                        <img src="<%= event.image %>" alt="<%= event.summary %>" class="event-image">
+                    <% } %>
+                </div>
+                <div class="event-content">
+                    <h3 class="event-title"><%= event.summary %></h3>
+                    <div class="event-paywall">
+                        <p>Sign in to view event details and RSVP</p>
+                        <a href="/signin?redirect=/events/event/<%= event.eventId %>" class="btn btn-primary">Sign In to View Details</a>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    <% }); %>
+</div>
 
-                if (new Date(event.dtstart || currentDate) >= currentDate) {
-                    upcomingEventsContainer.append(eventCard);
-                } else {
-                    pastEventsContainer.append(eventCard);
-                }
-            });
+<style>
+.events-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px;
+    margin-top: 80px;
+}
 
-            $('#toggle-past-events').click(function() {
-                pastEventsContainer.toggle();
-                var buttonText = pastEventsContainer.is(':visible') ? 'Hide Past Events' : 'Show Past Events';
-                $(this).text(buttonText);
-            });
-        } catch (error) {
-            console.error('Error processing events:', error);
-            $('#upcoming-events-container').html('<p>Error loading events. Check console for details.</p>');
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.events-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.view-toggle {
+    background: none;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 1.2em;
+    transition: all 0.3s ease;
+}
+
+.view-toggle:hover {
+    color: var(--primary-color);
+}
+
+.view-toggle.active {
+    color: var(--primary-color);
+}
+
+.search-button {
+    background: none;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 1.2em;
+    transition: all 0.3s ease;
+}
+
+.search-button:hover {
+    color: var(--primary-color);
+}
+
+.search-bar {
+    margin: 0 20px 20px 20px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+.submit_event_btn {
+    padding: 12px 24px;
+    background-color: var(--accent-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+}
+
+.submit_event_btn:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.event-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px;
+}
+
+.event-tag {
+    text-decoration: none;
+    color: var(--text-color);
+    background-color: #f0f0f0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+}
+
+.event-tag span {
+    color: var(--accent-color);
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Add list view styles */
+.events-grid.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.events-grid.list-view .event-card {
+    display: flex;
+    flex-direction: row;
+    height: 200px;
+    width: 100%;
+}
+
+.events-grid.list-view .event-image-container {
+    width: 300px;
+    height: 100%;
+    flex-shrink: 0;
+}
+
+.events-grid.list-view .event-content {
+    flex-grow: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.events-grid.list-view .event-title {
+    font-size: 1.6em;
+    margin-bottom: 15px;
+    max-height: none;
+}
+
+.events-grid.list-view .event-datetime {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.events-grid.list-view .event-date,
+.events-grid.list-view .event-time {
+    margin-bottom: 0;
+    display: inline-block;
+}
+
+.events-grid.list-view .event-time::before {
+    content: '•';
+    margin-right: 10px;
+    color: var(--text-color);
+}
+
+.event-card {
+    display: flex;
+    flex-direction: column;
+    height: 450px; /* Fixed height for consistency */
+    border: 1px solid #eee;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.event-image-container {
+    width: 100%;
+    height: 200px; /* Fixed height for images */
+    overflow: hidden;
+}
+
+.event-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.event-content {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-title {
+    margin: 0 0 12px 0;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: var(--primary-color);
+    /* Limit title to 2 lines with cross-browser compatibility */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    -moz-box-orient: vertical;
+    box-orient: vertical;
+    overflow: hidden;
+    max-height: 3.6em; /* Fallback for non-WebKit browsers: 1.4em line-height × 2 lines + some space */
+}
+
+.event-date {
+    font-size: 1em;
+    color: var(--text-color);
+    margin-bottom: 4px;
+}
+
+.event-time {
+    font-size: 1.1em;
+    color: var(--accent-color);
+    margin-bottom: 8px;
+}
+
+.event-organizer {
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.event-location {
+    color: var(--text-color);
+    margin-bottom: 12px;
+}
+
+.event-location i {
+    color: var(--accent-color);
+    margin-right: 4px;
+}
+
+.event-tag.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.event-tag.active span {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.event-time .timezone {
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+/* Add media query for mobile responsiveness */
+@media (max-width: 767.98px) {
+    .events-header {
+        flex-direction: column; /* Stack elements vertically */
+        align-items: flex-start; /* Align items to the start */
+        margin: 15px;
+        margin-top: 70px;
+    }
+
+    .header-left {
+        margin-bottom: 15px; /* Add space below title/search */
+        width: 100%; /* Ensure it takes full width */
+        justify-content: space-between; /* Keep title and search apart */
+    }
+
+    .events-controls {
+        width: 100%; /* Make controls take full width */
+        justify-content: center; /* Center the buttons */
+        margin-bottom: 15px;
+    }
+
+    .submit_event_btn {
+        width: 100%; /* Full width button on mobile */
+        text-align: center; /* Center text in button */
+        margin-top: 10px; /* Add space above button if controls wrap */
+    }
+
+    .events-grid.list-view .event-card {
+        flex-direction: column; /* Stack image and content vertically */
+        height: auto; /* Adjust height automatically */
+    }
+
+    .events-grid.list-view .event-image-container {
+        width: 100%; /* Full width image */
+        height: 200px; /* Fixed height for image */
+    }
+}
+
+.event-paywall {
+    text-align: center;
+    margin-top: auto;
+    padding: 20px;
+}
+
+.btn.btn-primary {
+    background-color: #0e747c;
+    border-color: #0e747c;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.btn.btn-primary:hover {
+    background-color: #0a5a61;
+    border-color: #0a5a61;
+}
+
+.event-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View toggle functionality
+    const viewToggles = document.querySelectorAll('.view-toggle');
+    const eventsGrid = document.querySelector('.events-grid');
+    
+    viewToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const view = this.getAttribute('data-view');
+            
+            // Remove active class from all toggles
+            viewToggles.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked toggle
+            this.classList.add('active');
+            
+            // Toggle grid/list view
+            if (view === 'list') {
+                eventsGrid.classList.add('list-view');
+                // Wrap date and time in a container
+                document.querySelectorAll('.event-card').forEach(card => {
+                    const content = card.querySelector('.event-content');
+                    const date = content.querySelector('.event-date');
+                    const time = content.querySelector('.event-time');
+                    
+                    if (!content.querySelector('.event-datetime')) {
+                        const dateTimeContainer = document.createElement('div');
+                        dateTimeContainer.className = 'event-datetime';
+                        date.parentNode.insertBefore(dateTimeContainer, date);
+                        dateTimeContainer.appendChild(date);
+                        dateTimeContainer.appendChild(time);
+                    }
+                });
+            } else {
+                eventsGrid.classList.remove('list-view');
+                // Unwrap date and time
+                document.querySelectorAll('.event-datetime').forEach(container => {
+                    const parent = container.parentNode;
+                    while (container.firstChild) {
+                        parent.insertBefore(container.firstChild, container);
+                    }
+                    container.remove();
+                });
+            }
+        });
+    });
+
+    // Search functionality
+    const searchButton = document.getElementById('searchButton');
+    const searchBar = document.getElementById('searchBar');
+    const searchInput = document.getElementById('eventSearch');
+    const eventCards = document.querySelectorAll('.event-card');
+
+    searchButton.addEventListener('click', function() {
+        searchBar.style.display = searchBar.style.display === 'none' ? 'block' : 'none';
+        if (searchBar.style.display === 'block') {
+            searchInput.focus();
         }
-    }
+    });
 
-    // Wait for jQuery using a deferred approach
-    if (typeof jQuery === 'undefined') {
-        document.addEventListener('jQueryLoaded', initEvents);
-        // This event will be dispatched from layout.ejs
-    } else {
-        initEvents(); // Run immediately if jQuery is already loaded
-    }
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        eventCards.forEach(card => {
+            const title = card.querySelector('.event-title').textContent.toLowerCase();
+            const location = card.querySelector('.event-location').textContent.toLowerCase();
+            const date = card.querySelector('.event-date').textContent.toLowerCase();
+            
+            if (title.includes(searchTerm) || location.includes(searchTerm) || date.includes(searchTerm)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
 </script>
+</body>
+</html>

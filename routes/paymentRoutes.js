@@ -6,7 +6,11 @@ const fetch = require('node-fetch');
 const User = require('../models/user');
 const PendingUser = require('../models/pendingUser');
 
-console.log('Stripe API Key in paymentRoutes.js:', process.env.STRIPE_API_KEY);
+// Ensure Stripe is properly configured
+if (!process.env.STRIPE_API_KEY) {
+    console.error('STRIPE_API_KEY is not configured');
+    process.exit(1);
+}
 
 // Create Stripe Checkout session
 router.post('/create-checkout-session', async (req, res) => {
@@ -52,12 +56,13 @@ router.post('/create-checkout-session', async (req, res) => {
         cancel_url: 'https://sodacityoutdoors.com/payment-cancel',
     };
 
-    if (membership === 'lifetime') {
-        priceId = 'price_1QvKFaKH1jTdrtwdMZxGnhVk';
-        sessionConfig.line_items[0].price = priceId;
-        sessionConfig.mode = 'payment';
-    } else if (membership === 'monthly') {
+    if (membership === 'monthly') {
         priceId = 'price_1QvKLzKH1jTdrtwdtqvA70aH';
+        sessionConfig.line_items[0].price = priceId;
+        sessionConfig.mode = 'subscription';
+        sessionConfig.allow_promotion_codes = true;
+    } else if (membership === 'annual') {
+        priceId = 'price_1REyTsKH1jTdrtwd55iBuX7y';
         sessionConfig.line_items[0].price = priceId;
         sessionConfig.mode = 'subscription';
         sessionConfig.allow_promotion_codes = true;
@@ -72,7 +77,7 @@ router.post('/create-checkout-session', async (req, res) => {
         console.log('Stripe session created:', session.url);
         console.log('Session config:', sessionConfig);
         console.log('Created session details:', session);
-        res.json({ url: session.url });
+        res.json({ sessionId: session.id });
     } catch (error) {
         console.error('Error creating Stripe session:', error.message);
         res.status(500).json({ message: 'Error creating checkout session', error: error.message });
@@ -87,7 +92,12 @@ router.get('/payment-success', async (req, res) => {
 
     if (!sessionId) {
         console.error('No session ID provided in /payment-success');
-        return res.render('success', { paymentIntentId: null, userData: {}, error: 'No session ID provided', user: req.session.user });
+        return res.render('payment_success', { 
+            paymentIntentId: null, 
+            userData: {}, 
+            error: 'No session ID provided. Please try signing up again.', 
+            user: req.session.user 
+        });
     }
 
     try {
@@ -97,65 +107,18 @@ router.get('/payment-success', async (req, res) => {
         });
         console.log('Retrieved Stripe session:', JSON.stringify(session, null, 2));
 
-        // Determine payment confirmation based on session mode
-        let subscriptionStatus = 'inactive';
-        let paidForCurrentMonth = false;
-
-        if (session.mode === 'payment') {
-            // For lifetime payments, check the payment intent
-            const paymentIntentId = session.payment_intent?.id || null;
-            console.log('Payment mode - Payment Intent ID:', paymentIntentId);
-
-            if (!paymentIntentId) {
-                console.error('Payment intent not found in session');
-                return res.render('success', {
-                    paymentIntentId: null,
-                    userData: {},
-                    error: 'Payment intent not found in session',
-                    user: req.session.user
-                });
-            }
-
-            const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-            if (paymentIntent.status !== 'succeeded') {
-                console.error('Payment not confirmed for paymentIntentId:', paymentIntentId);
-                return res.render('success', {
-                    paymentIntentId,
-                    userData: {},
-                    error: 'Payment not confirmed',
-                    user: req.session.user
-                });
-            }
-
-            subscriptionStatus = 'active'; // Lifetime membership is always active
-            paidForCurrentMonth = true; // Lifetime payment covers all months
-        } else if (session.mode === 'subscription') {
-            // For subscriptions, check the subscription status
-            if (session.subscription) {
-                const subscription = session.subscription;
-                console.log('Retrieved subscription:', JSON.stringify(subscription, null, 2));
-                subscriptionStatus = subscription.status === 'active' ? 'active' : 'inactive';
-                paidForCurrentMonth = subscription.status === 'active'; // Active subscription means paid for the current month
-            } else {
-                console.error('No subscription found in session');
-                return res.render('success', {
-                    paymentIntentId: null,
-                    userData: {},
-                    error: 'Subscription not found in session',
-                    user: req.session.user
-                });
-            }
-        } else {
-            console.error('Unknown session mode:', session.mode);
-            return res.render('success', {
+        // Validate session
+        if (!session || !session.client_reference_id) {
+            console.error('Invalid session or missing client reference ID');
+            return res.render('payment_success', {
                 paymentIntentId: null,
                 userData: {},
-                error: 'Unknown session mode',
+                error: 'Invalid payment session. Please try signing up again.',
                 user: req.session.user
             });
         }
 
-        // Retrieve user data from PendingUser collection
+        // Retrieve user data from PendingUser collection first
         const pendingUserId = session.client_reference_id;
         console.log('Pending User ID from session.client_reference_id:', pendingUserId);
 
@@ -165,17 +128,17 @@ router.get('/payment-success', async (req, res) => {
             console.log('Retrieved pending user:', pendingUser);
         } catch (error) {
             console.error('Error retrieving pending user in /payment-success:', error);
-            return res.render('success', {
+            return res.render('payment_success', {
                 paymentIntentId: null,
                 userData: {},
-                error: 'Error retrieving user data: ' + error.message,
+                error: 'Error retrieving user data. Please contact support.',
                 user: req.session.user
             });
         }
 
         if (!pendingUser) {
             console.error('Pending user not found:', pendingUserId);
-            return res.render('success', {
+            return res.render('payment_success', {
                 paymentIntentId: null,
                 userData: {},
                 error: 'User data not found. Please sign up again.',
@@ -183,17 +146,64 @@ router.get('/payment-success', async (req, res) => {
             });
         }
 
+        // Initialize subscription details
+        let subscriptionStatus = 'inactive';
+        let paidForCurrentMonth = false;
+        let subscriptionStart = new Date();
+        let subscriptionEnd = null;
+        let trialEnd = null;
+
+        if (session.mode === 'subscription') {
+            if (session.subscription) {
+                const subscription = await stripe.subscriptions.retrieve(session.subscription.id);
+                console.log('Retrieved subscription:', JSON.stringify(subscription, null, 2));
+
+                if (subscription.status === 'active' || subscription.status === 'trialing') {
+                    subscriptionStatus = subscription.status === 'trialing' ? 'trial' : 'active';
+                    paidForCurrentMonth = true;
+                    subscriptionStart = new Date(subscription.current_period_start * 1000);
+                    
+                    // Set subscription end based on membership type
+                    if (pendingUser.membership === 'annual') {
+                        // For annual, set to 1 year from start
+                        subscriptionEnd = new Date(subscriptionStart);
+                        subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
+                    } else {
+                        // For monthly, use current period end
+                        subscriptionEnd = new Date(subscription.current_period_end * 1000);
+                    }
+                    
+                    if (subscription.trial_end) {
+                        trialEnd = new Date(subscription.trial_end * 1000);
+                    }
+                }
+            } else {
+                console.error('No subscription found in session');
+                return res.render('payment_success', {
+                    paymentIntentId: null,
+                    userData: {},
+                    error: 'Subscription not found. Please contact support.',
+                    user: req.session.user
+                });
+            }
+        }
+
         const stripeCustomerId = pendingUser.stripeCustomerId;
-        const { username, email, firstName, lastName } = pendingUser;
+        const { username, email, firstName, lastName, membership } = pendingUser;
         console.log('Retrieved stripeCustomerId:', stripeCustomerId);
 
-        // Call the /register endpoint programmatically
+        // Call the /register endpoint with updated subscription details
         console.log('Calling /api/users/register with body:', {
             stripeCustomerId,
             subscriptionStatus,
             paidForCurrentMonth,
+            subscriptionStart,
+            subscriptionEnd,
+            trialEnd,
+            membership,
             pendingUserId
         });
+
         const response = await fetch('https://sodacityoutdoors.com/api/users/register', {
             method: 'POST',
             headers: {
@@ -203,26 +213,24 @@ router.get('/payment-success', async (req, res) => {
                 stripeCustomerId,
                 subscriptionStatus,
                 paidForCurrentMonth,
+                subscriptionStart,
+                subscriptionEnd,
+                trialEnd,
+                membership,
                 pendingUserId
             }),
         });
 
-        if (!response.ok) {
-            // Since /register redirects to /signin, a 302 status is expected
-            if (response.status !== 302) {
-                const errorData = await response.text(); // Use text() since it might not be JSON
-                console.error('Error registering user after payment:', errorData);
-                return res.render('success', {
-                    paymentIntentId: null,
-                    userData: { username, email, firstName, lastName },
-                    error: 'Error registering user: ' + errorData,
-                    user: req.session.user
-                });
-            }
+        if (!response.ok && response.status !== 302) {
+            const errorData = await response.text();
+            console.error('Error registering user after payment:', errorData);
+            return res.render('payment_success', {
+                paymentIntentId: null,
+                userData: { username, email, firstName, lastName },
+                error: 'Error completing registration. Please contact support.',
+                user: req.session.user
+            });
         }
-
-        // No need to parse the response as JSON since it's a redirect
-        console.log('User registration initiated, redirecting to /signin');
 
         // Delete the pending user record
         await PendingUser.findByIdAndDelete(pendingUserId);
@@ -232,10 +240,10 @@ router.get('/payment-success', async (req, res) => {
         res.redirect('/signin');
     } catch (error) {
         console.error('Error in /payment-success:', error.message);
-        res.render('success', {
+        res.render('payment_success', {
             paymentIntentId: null,
             userData: {},
-            error: 'Error verifying payment: ' + error.message,
+            error: 'An unexpected error occurred. Please contact support.',
             user: req.session.user
         });
     }
@@ -252,7 +260,7 @@ router.get('/payment-cancel', async (req, res) => {
             console.log('Deleted pending user on cancel:', pendingUserId);
         }
     }
-    res.render('cancel', { user: req.session.user });
+    res.render('payment_failure', { user: req.session.user });
 });
 
 // Update subscription status

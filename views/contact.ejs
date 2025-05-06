@@ -1,69 +1,69 @@
-<%- include('layout', { title: 'Contact Us' }); %>
-
-<div class="container contact-page">
+<div class="container mt-5">
     <div class="row">
+        <!-- Contact Form Section -->
         <div class="col-md-6">
-            <h2>Contact Us</h2>
-            <p>Have questions or suggestions? We'd love to hear from you!</p>
-            
-            <form id="contactForm" action="/contact/submit" method="POST">
-                <div class="mb-3">
-                    <label for="name" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="name" name="name" required>
-                </div>
+            <div class="contact-section">
+                <h2>Contact Us!</h2>
+                <p class="lead mb-4">Hey there! Ready to join the adventure? We're here to help you connect with nature and amazing people!</p>
+                <p class="text-muted mb-4">Submit the form below and we'll be in touch via email during our office hours.</p>
                 
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="subject" class="form-label">Subject</label>
-                    <select class="form-control" id="subject" name="subject" required>
-                        <option value="">Select a subject</option>
-                        <option value="general">General Inquiry</option>
-                        <option value="membership">Membership Questions</option>
-                        <option value="events">Event Information</option>
-                        <option value="suggestions">Suggestions</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="message" class="form-label">Message</label>
-                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Send Message</button>
-            </form>
+                <form id="contactForm" action="/contact/submit" method="POST">
+                    <div class="form-group mb-3">
+                        <input type="text" class="form-control" id="name" name="name" 
+                            placeholder="Your name" required
+                            minlength="2" maxlength="100"
+                            pattern="[A-Za-z\s\-'.]+" 
+                            title="Please enter a valid name (letters, spaces, hyphens and apostrophes only)">
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <input type="email" class="form-control" id="email" name="email" 
+                            placeholder="Your email" required
+                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                            title="Please enter a valid email address">
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <textarea class="form-control" id="message" name="message" 
+                            rows="5" placeholder="Your message" required
+                            minlength="10" maxlength="5000"></textarea>
+                    </div>
+                    
+                    <!-- Honeypot field - hidden from real users -->
+                    <div style="display:none">
+                        <input type="text" name="honeypot" id="honeypot" tabindex="-1" autocomplete="off">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Send</button>
+                </form>
+            </div>
         </div>
-        
+
+        <!-- Info Section -->
         <div class="col-md-6">
-            <div class="contact-info mt-5">
-                <h3>Other Ways to Reach Us</h3>
-                
-                <div class="contact-method">
-                    <i class="fas fa-envelope"></i>
-                    <div>
-                        <h4>Email</h4>
-                        <p><a href="mailto:info@sodacityoutdoors.com">info@sodacityoutdoors.com</a></p>
-                    </div>
+            <div class="info-section">
+                <div class="mb-5">
+                    <h3>Questions about a specific event?</h3>
+                    <p>For event-specific questions, please use the contact form on the left. Be sure to mention the event name in your message.</p>
+                    <p>Note: You'll need to be logged into your member account to view event details, unless it's a public event.</p>
                 </div>
-                
-                <div class="contact-method">
-                    <i class="fab fa-facebook"></i>
-                    <div>
-                        <h4>Facebook</h4>
-                        <p><a href="https://www.facebook.com/SodaCityOutdoor" target="_blank">@SodaCityOutdoor</a></p>
-                    </div>
+
+                <div class="mb-5">
+                    <h3>Office Hours:</h3>
+                    <ul class="list-unstyled">
+                        <li>Monday - Thursday: 8am - Noon</li>
+                        <li>Friday - Sunday: Closed</li>
+                    </ul>
                 </div>
-                
-                <div class="contact-method">
-                    <i class="fab fa-reddit"></i>
-                    <div>
-                        <h4>Reddit</h4>
-                        <p><a href="https://www.reddit.com/r/SodaCityOutdoor/" target="_blank">r/SodaCityOutdoor</a></p>
-                    </div>
+
+                <div class="mb-4">
+                    <p>We are often out leading events or scouting for new events.<br>
+                    Therefore, we have limited office hours. We will respond to your email as soon as we're back in the office.</p>
+                </div>
+
+                <div>
+                    <h3>Available via email:</h3>
+                    <a href="mailto:scoadmin@sodacityoutdoors.com" class="email-link">scoadmin@sodacityoutdoors.com</a>
                 </div>
             </div>
         </div>
@@ -71,40 +71,74 @@
 </div>
 
 <style>
-.contact-page {
-    padding: 40px 0;
+.contact-section h2 {
+    color: #0e747c;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
 }
 
-.contact-method {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 30px;
+.info-section h3 {
+    color: #0e747c;
+    margin-bottom: 1rem;
+    font-weight: 600;
 }
 
-.contact-method i {
-    font-size: 24px;
-    margin-right: 20px;
-    color: var(--primary-color);
+.form-control {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    width: 100%;
 }
 
-.contact-method h4 {
-    margin: 0 0 5px 0;
+.form-control:focus {
+    border-color: #0e747c;
+    box-shadow: 0 0 0 0.2rem rgba(14, 116, 124, 0.25);
 }
 
-.contact-method p {
-    margin: 0;
+.btn-primary {
+    background-color: #0e747c;
+    border-color: #0e747c;
+    padding: 0.75rem 2rem;
+    font-weight: 500;
 }
 
-.contact-info {
+.btn-primary:hover {
+    background-color: #0a5961;
+    border-color: #0a5961;
+}
+
+.email-link {
+    color: #0e747c;
+    text-decoration: none;
+    font-size: 1.1rem;
+}
+
+.email-link:hover {
+    text-decoration: underline;
+}
+
+.info-section {
     background-color: #f8f9fa;
-    padding: 30px;
-    border-radius: 10px;
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+/* Anti-spam measure: Hide honeypot field */
+#honeypot {
+    position: absolute;
+    left: -9999px;
 }
 </style>
 
 <script>
 document.getElementById('contactForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // Disable submit button to prevent double submission
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Sending...';
     
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
@@ -124,11 +158,28 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
             alert('Thank you for your message! We will get back to you soon.');
             e.target.reset();
         } else {
-            alert('There was an error sending your message. Please try again.');
+            alert(result.message || 'There was an error sending your message. Please try again.');
         }
     } catch (error) {
         console.error('Error:', error);
         alert('There was an error sending your message. Please try again.');
+    } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Send';
     }
+});
+
+// Additional anti-spam measures
+document.addEventListener('DOMContentLoaded', () => {
+    // Add a small delay before enabling the form (catches some automated submissions)
+    const form = document.getElementById('contactForm');
+    form.style.opacity = '0.5';
+    form.style.pointerEvents = 'none';
+    
+    setTimeout(() => {
+        form.style.opacity = '1';
+        form.style.pointerEvents = 'auto';
+    }, 1000);
 });
 </script> 

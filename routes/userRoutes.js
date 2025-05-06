@@ -3,26 +3,97 @@ const router = express.Router();
 const User = require('../models/user');
 const PendingUser = require('../models/pendingUser');
 const bcrypt = require('bcryptjs');
-const authMiddleware = require('../middleware/authMiddleware');
+const { ensureAuthenticated, ensureAdmin } = require('../middleware/authMiddleware');
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
+const nodemailer = require('nodemailer');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const Event = require('../models/events');
+const RSVP = require('../models/rsvp');
+const Host = require('../models/host');
 
-console.log('STRIPE_API_KEY from userRoutes.js (initial):', process.env.STRIPE_API_KEY);
+// Configure nodemailer for Hostinger
+const transporter = nodemailer.createTransport({
+    host: 'smtp.hostinger.com',
+    port: 465,
+    secure: true,
+    auth: {
+        user: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// Configure multer for handling file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = 'public_html/uploads/profile-photos';
+        // Create the uploads directory if it doesn't exist
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        // Generate unique filename using timestamp and original extension
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    },
+    fileFilter: function (req, file, cb) {
+        // Accept only image files
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+            return cb(new Error('Only image files are allowed!'), false);
+        }
+        cb(null, true);
+    }
+});
+
+// Helper function to send email notifications
+async function sendAdminNotification(subject, text) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.warn('Email configuration not found - skipping email notification');
+        return;
+    }
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
+        to: 'scoadmin@sodacityoutdoors.com',
+        subject: subject,
+        text: text
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (emailError) {
+        console.error('Error sending email notification:', emailError);
+    }
+}
 
 // Middleware to initialize Stripe dynamically
 router.use((req, res, next) => {
     if (!req.stripe) {
-        if (process.env.STRIPE_API_KEY) {
-            req.stripe = require('stripe')(process.env.STRIPE_API_KEY);
-            console.log('Stripe initialized successfully in middleware');
-        } else {
+        if (!process.env.STRIPE_API_KEY) {
             console.error('STRIPE_API_KEY is undefined, Stripe initialization failed');
-            req.stripe = null;
+            return res.status(500).json({ message: 'Stripe configuration error' });
         }
+        req.stripe = require('stripe')(process.env.STRIPE_API_KEY);
     }
     next();
 });
 
-// Handle sign-up form submission and redirect to payment
+// Registration page route
+router.get('/register', (req, res) => {
+    res.render('register', { title: 'Create Account', user: req.session.user });
+});
+
+// Handle sign-up form submission and redirect to waiver
 router.post('/submit-sign-up', async (req, res) => {
     const { username, password, firstName, lastName, email, phone, membership } = req.body;
 
@@ -38,9 +109,6 @@ router.post('/submit-sign-up', async (req, res) => {
             console.error('Password too short in /submit-sign-up:', password);
             return res.status(400).json({ message: 'Password must be at least 6 characters long' });
         }
-
-        // Log the password being saved to PendingUser
-        console.log('Password in /submit-sign-up:', password);
 
         // Check for existing user
         const existingUser = await User.findOne({ $or: [{ username }, { email }] });
@@ -69,14 +137,15 @@ router.post('/submit-sign-up', async (req, res) => {
             email,
             firstName,
             lastName,
-            phone
+            phone,
+            waiverAccepted: false
         });
+
         await pendingUser.save();
         console.log('Pending user saved to MongoDB:', pendingUser);
-        console.log('Pending user ID for redirect:', pendingUser._id.toString());
 
-        // Redirect to payment with pendingUserId
-        res.redirect(`/payment?pendingUserId=${pendingUser._id}`);
+        // Redirect to waiver page with pendingUserId
+        res.redirect(`/waiver?pendingUserId=${pendingUser._id}`);
     } catch (error) {
         console.error('Error in /submit-sign-up:', error);
         res.status(500).json({ message: 'Error processing signup', error: error.message });
@@ -103,6 +172,15 @@ router.post('/register', async (req, res) => {
             return res.status(404).json({ message: 'User data not found' });
         }
         console.log('Retrieved pending user in /register:', pendingUser);
+
+        // Log waiver information from pending user
+        console.log('Waiver information from pending user:', {
+            waiverAccepted: pendingUser.waiverAccepted,
+            waiverAcceptedDate: pendingUser.waiverAcceptedDate,
+            waiverIpAddress: pendingUser.waiverIpAddress,
+            waiverUserAgent: pendingUser.waiverUserAgent
+        });
+
     } catch (error) {
         console.error('Error retrieving pending user in /register:', error);
         return res.status(500).json({ message: 'Error retrieving user data', error: error.message });
@@ -110,19 +188,10 @@ router.post('/register', async (req, res) => {
 
     const { username, password, email, firstName, lastName, phone, membership } = pendingUser;
 
-    // Log the password retrieved from PendingUser
-    console.log('Password retrieved from PendingUser in /register:', password);
-
     // Check for missing fields
     if (!username || !password || !email || !firstName || !lastName || !phone || !stripeCustomerId || !subscriptionStatus || paidForCurrentMonth === undefined) {
         console.error('Missing fields in register request:', { username, password, email, firstName, lastName, phone, stripeCustomerId, subscriptionStatus, paidForCurrentMonth });
         return res.status(400).json({ message: 'All fields are required' });
-    }
-
-    // Additional validation for password
-    if (password.length < 6) {
-        console.error('Password too short in /register:', password);
-        return res.status(400).json({ message: 'Password must be at least 6 characters long' });
     }
 
     try {
@@ -132,10 +201,13 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Username or email already exists' });
         }
 
-        // Create new user (password will be hashed by the pre('save') middleware)
+        // Set account type - founder for claytonskurski, member for everyone else
+        const accountType = username.toLowerCase() === 'claytonskurski' ? 'founder' : 'member';
+
+        // Create new user with waiver information
         const newUser = new User({
             username,
-            password, // Do NOT hash here; let the pre('save') middleware handle it
+            password,
             email,
             firstName,
             lastName,
@@ -143,12 +215,39 @@ router.post('/register', async (req, res) => {
             stripeCustomerId,
             subscriptionStatus,
             paidForCurrentMonth,
-            membership
+            membership,
+            accountType, // Add the determined account type
+            waiver: {
+                accepted: pendingUser.waiverAccepted || false,
+                acceptedDate: pendingUser.waiverAcceptedDate,
+                version: '2025-04-17',
+                ipAddress: pendingUser.waiverIpAddress,
+                userAgent: pendingUser.waiverUserAgent
+            }
+        });
+
+        // Log the new user object before saving
+        console.log('New user object before saving:', {
+            username: newUser.username,
+            accountType: newUser.accountType,
+            waiver: newUser.waiver
         });
 
         // Save user to database
         await newUser.save();
         console.log('User saved to MongoDB:', newUser);
+
+        // Send email notification for new account
+        await sendAdminNotification(
+            'New User Account Created',
+            `A new user account has been created:
+            Username: ${newUser.username}
+            Name: ${newUser.firstName} ${newUser.lastName}
+            Email: ${newUser.email}
+            Phone: ${newUser.phone}
+            Membership: ${newUser.membership}
+            Account Type: ${newUser.accountType}`
+        );
 
         // Store user data in session
         req.session.user = {
@@ -160,7 +259,7 @@ router.post('/register', async (req, res) => {
             phone: newUser.phone,
             subscriptionStatus: newUser.subscriptionStatus,
             paidForCurrentMonth: newUser.paidForCurrentMonth,
-            membership: newUser.membership // Include membership for authMiddleware
+            membership: newUser.membership
         };
 
         // Explicitly save the session
@@ -268,8 +367,161 @@ router.post('/login', async (req, res) => {
 });
 
 // Protected route
-router.get('/protected', authMiddleware, (req, res) => {
+router.get('/protected', ensureAuthenticated, (req, res) => {
     res.json({ message: 'This is a protected route' });
+});
+
+// Delete account route
+router.post('/account/delete', ensureAuthenticated, async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.redirect('/signin');
+        }
+
+        const userId = req.session.user._id;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Store user info for email notification before deletion
+        const userInfo = {
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            membership: user.membership
+        };
+
+        // Cancel Stripe subscription if it exists
+        if (user.stripeCustomerId) {
+            try {
+                const subscriptions = await stripe.subscriptions.list({
+                    customer: user.stripeCustomerId
+                });
+
+                // Cancel all active subscriptions
+                for (const subscription of subscriptions.data) {
+                    if (subscription.status === 'active' || subscription.status === 'trialing') {
+                        await stripe.subscriptions.del(subscription.id);
+                    }
+                }
+
+                // Delete the customer in Stripe
+                await stripe.customers.del(user.stripeCustomerId);
+            } catch (stripeError) {
+                console.error('Error cleaning up Stripe data:', stripeError);
+            }
+        }
+
+        // Delete the user account
+        await User.findByIdAndDelete(userId);
+
+        // Send email notification for account deletion
+        await sendAdminNotification(
+            'User Account Deleted',
+            `A user account has been deleted:
+            Username: ${userInfo.username}
+            Name: ${userInfo.firstName} ${userInfo.lastName}
+            Email: ${userInfo.email}
+            Membership: ${userInfo.membership}`
+        );
+
+        // Clear the session
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+            }
+            res.redirect('/');
+        });
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        res.status(500).json({ message: 'Error deleting account', error: error.message });
+    }
+});
+
+// Route for handling photo uploads
+router.post('/upload-photo', ensureAuthenticated, upload.single('photo'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        // Update user's profile photo in database
+        const photoUrl = `/uploads/profile-photos/${req.file.filename}`;
+        
+        // If user had a previous photo, delete it
+        const user = await User.findById(req.user._id);
+        if (user.profilePhoto) {
+            const oldPhotoPath = path.join(__dirname, '..', 'public_html', user.profilePhoto);
+            if (fs.existsSync(oldPhotoPath)) {
+                fs.unlinkSync(oldPhotoPath);
+            }
+        }
+
+        await User.findByIdAndUpdate(req.user._id, { profilePhoto: photoUrl });
+
+        res.json({ 
+            success: true, 
+            photoUrl: photoUrl,
+            message: 'Photo uploaded successfully' 
+        });
+    } catch (error) {
+        console.error('Error uploading photo:', error);
+        res.status(500).json({ 
+            error: 'Error uploading photo',
+            details: error.message 
+        });
+    }
+});
+
+router.get('/account', ensureAuthenticated, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const now = new Date();
+
+        // Count past events attended by the user (RSVPs with eventDate in the past)
+        const trimmedUsername = user.username.trim();
+        const pastEventsCount = await RSVP.countDocuments({
+            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
+            eventDate: { $lt: now }
+        });
+
+        // Count events hosted by the user (Host records with status 'approved'), case-insensitive and trimmed
+        const eventsHostedCount = await Host.countDocuments({
+            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
+            status: 'approved'
+        });
+
+        // Debug logs
+        const hostedDocs = await Host.find({
+            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
+            status: 'approved'
+        });
+        const attendedDocs = await RSVP.find({
+            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
+            eventDate: { $lt: now }
+        });
+        console.log('RSVP count query:', { username: trimmedUsername });
+        console.log('RSVP count result:', pastEventsCount);
+        console.log('Attended docs:', attendedDocs);
+        console.log('Host count query:', { username: trimmedUsername, status: 'approved' });
+        console.log('Host count result:', eventsHostedCount);
+        console.log('Hosted docs:', hostedDocs);
+
+        res.render('account', {
+            user: user,
+            pastEventsCount,
+            eventsHostedCount,
+            error: req.flash('error'),
+            success: req.flash('success')
+        });
+    } catch (error) {
+        console.error('Error loading account page:', error);
+        req.flash('error', 'Error loading account information');
+        res.redirect('/');
+    }
 });
 
 module.exports = router;

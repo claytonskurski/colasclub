@@ -1,0 +1,95 @@
+<%- contentFor('title') %><%= title %>
+
+<div class="error-container">
+    <div class="error-content">
+        <h1><%= title %></h1>
+        <p><%= message %></p>
+        
+        <% if (title === 'Authentication Required' || message.includes('sign in')) { %>
+            <div class="auth-actions">
+                <p>Please sign in to access this content.</p>
+                <div class="button-group">
+                    <a href="/signin" class="btn btn-primary">Sign In</a>
+                    <span class="or-divider">or</span>
+                    <a href="/signup" class="btn btn-secondary">Sign Up</a>
+                </div>
+            </div>
+        <% } else { %>
+            <% if (typeof error !== 'undefined' && process.env.NODE_ENV === 'development') { %>
+                <pre class="error-details"><%= JSON.stringify(error, null, 2) %></pre>
+            <% } %>
+            <a href="/" class="btn btn-primary">Return to Home</a>
+        <% } %>
+    </div>
+</div>
+
+<style>
+.error-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.error-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.error-content h1 {
+    color: #dc3545;
+    margin-bottom: 1rem;
+}
+
+.error-details {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    text-align: left;
+    overflow-x: auto;
+}
+
+.auth-actions {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.or-divider {
+    color: #666;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background-color: #0e747c;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+</style> 

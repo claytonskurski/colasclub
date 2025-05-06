@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success - Soda City Outdoors</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container text-center my-5">
+        <% if (error) { %>
+            <div class="alert alert-danger" role="alert">
+                <%= error %>
+            </div>
+        <% } else { %>
+            <h1>Payment Successful!</h1>
+            <p>Your payment has been processed successfully.</p>
+            <% if (userData.username) { %>
+                <p>Welcome, <%= userData.firstName %> <%= userData.lastName %>!</p>
+                <p>Username: <%= userData.username %></p>
+                <p>Email: <%= userData.email %></p>
+                <p>Subscription Status: <%= userData.subscriptionStatus %></p>
+                <p>Paid for Current Month: <%= userData.paidForCurrentMonth ? 'Yes' : 'No' %></p>
+                <a href="/signin" class="btn btn-primary">Sign In to Continue</a>
+            <% } else { %>
+                <p>An error occurred while retrieving your user data.</p>
+                <a href="/signup" class="btn btn-primary">Try Again</a>
+            <% } %>
+        <% } %>
+    </div>
+</body>
+</html>

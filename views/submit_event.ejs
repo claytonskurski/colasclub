@@ -1,0 +1,550 @@
+<!-- Event Header -->
+<div class="events-header py-5 text-center">
+    <h1 class="display-4 fw-bold text-primary">Submit Your Event Idea</h1>
+    <h2 class="subheading fs-4 mt-2">Share your adventure ideas with our community!</h2>
+    <p class="lead mt-3 mx-auto" style="max-width: 700px;">
+        Have an idea for a hike, kayaking trip, or weekend getaway? Let's make it happen! Share your vision, and our Soda City Outdoors community will bring it to life.
+    </p>
+</div>
+
+<!-- Main Content -->
+<div class="container-fluid px-5 py-5">
+    <div class="row">
+        <!-- Form Section -->
+        <div class="col-lg-8">
+            <!-- Progress Indicator -->
+            <div class="progress mb-5" style="height: 30px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: 25%;" id="progressBar">Step 1 of 4</div>
+            </div>
+
+            <form id="submitEventForm" class="needs-validation" novalidate>
+                <!-- Step 1: Event Details -->
+                <div class="card mb-5 section-card" id="section-1">
+                    <div class="card-body p-4" style="background-color: #f8f9fa;">
+                        <h3 class="section-title"><i class="fas fa-mountain me-2"></i> Step 1: Event Details</h3>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="summary" class="form-label fw-bold">Event Title</label>
+                                    <input type="text" class="form-control form-control-lg" id="summary" name="summary" placeholder="E.g., Sunset Kayak on Lake Murray" required>
+                                    <div class="invalid-feedback">Please provide a title for your event.</div>
+                                    <small class="form-text text-muted">A catchy name helps attract participants (e.g., "Hike to Raven Cliff Falls").</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="description" class="form-label fw-bold">Description</label>
+                                    <textarea class="form-control form-control-lg" id="description" name="description" rows="4" placeholder="E.g., We'll paddle at sunset and enjoy a picnic by the lake..." required></textarea>
+                                    <div class="invalid-feedback">Please provide a description of your event.</div>
+                                    <small class="form-text text-muted">What will participants do? Why is this event special?</small>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-4">
+                                    <label for="tags" class="form-label fw-bold">Tags (select or add your own)</label>
+                                    <input type="text" class="form-control form-control-lg" id="tags" name="tags" placeholder="E.g., hiking, kayaking, nature">
+                                    <div class="invalid-feedback">Please add at least one tag to help others find your event.</div>
+                                    <small class="form-text text-muted">Use commas to separate tags (e.g., hiking, kayaking, social).</small>
+                                    <div class="mt-2">
+                                        <span class="badge bg-light text-dark border me-2 mb-2 p-2 clickable-tag" data-tag="hiking">Hiking</span>
+                                        <span class="badge bg-light text-dark border me-2 mb-2 p-2 clickable-tag" data-tag="kayaking">Kayaking</span>
+                                        <span class="badge bg-light text-dark border me-2 mb-2 p-2 clickable-tag" data-tag="camping">Camping</span>
+                                        <span class="badge bg-light text-dark border me-2 mb-2 p-2 clickable-tag" data-tag="social">Social</span>
+                                        <span class="badge bg-light text-dark border me-2 mb-2 p-2 clickable-tag" data-tag="nature">Nature</span>
+                                        <span class="badge bg-light text-dark border me-2 mb-2 p-2 clickable-tag" data-tag="adventure">Adventure</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-primary btn-lg px-4" onclick="showSection(2)">Next <i class="fas fa-arrow-right ms-2"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Location & Schedule -->
+                <div class="card mb-5 section-card d-none" id="section-2">
+                    <div class="card-body p-4" style="background-color: #f9fafb;">
+                        <h3 class="section-title"><i class="fas fa-map-pin me-2"></i> Step 2: Location & Schedule</h3>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="location" class="form-label fw-bold">Location</label>
+                                    <input type="text" class="form-control form-control-lg" id="location" name="location" placeholder="E.g., Congaree National Park, SC" required>
+                                    <div class="invalid-feedback">Please specify the location of your event.</div>
+                                    <small class="form-text text-muted">Include the city or specific place (e.g., "Lake Murray, SC").</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row g-3">
+                                    <div class="col-md-6 mb-4">
+                                        <label for="date" class="form-label fw-bold">Date</label>
+                                        <input type="date" class="form-control form-control-lg" id="date" name="date" required>
+                                        <div class="invalid-feedback">Please select a date for your event.</div>
+                                        <small class="form-text text-muted">Choose a future date for your event.</small>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <label for="time" class="form-label fw-bold">Time</label>
+                                        <input type="time" class="form-control form-control-lg" id="time" name="time" required>
+                                        <div class="invalid-feedback">Please select a start time for your event.</div>
+                                        <small class="form-text text-muted">When will the event start?</small>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="duration" class="form-label fw-bold">Duration (hours)</label>
+                                    <input type="number" class="form-control form-control-lg" id="duration" name="duration" min="0.5" step="0.5" placeholder="E.g., 2.5" required>
+                                    <div class="invalid-feedback">Please specify the duration (minimum 0.5 hours).</div>
+                                    <small class="form-text text-muted">How long will the event last? (e.g., 2.5 for 2 hours and 30 minutes).</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-primary btn-lg px-4" onclick="showSection(1)"><i class="fas fa-arrow-left me-2"></i> Previous</button>
+                            <button type="button" class="btn btn-primary btn-lg px-4" onclick="showSection(3)">Next <i class="fas fa-arrow-right ms-2"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Event Settings -->
+                <div class="card mb-5 section-card d-none" id="section-3">
+                    <div class="card-body p-4" style="background-color: #fafbfc;">
+                        <h3 class="section-title"><i class="fas fa-cog me-2"></i> Step 3: Event Settings</h3>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="difficulty" class="form-label fw-bold">Difficulty Level</label>
+                                    <select class="form-control form-control-lg" id="difficulty" name="difficulty" required>
+                                        <option value="" disabled selected>Select difficulty...</option>
+                                        <option value="easy">Easy</option>
+                                        <option value="moderate">Moderate</option>
+                                        <option value="challenging">Challenging</option>
+                                        <option value="difficult">Difficult</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a difficulty level for your event.</div>
+                                    <small class="form-text text-muted">Match the physical or skill demands (e.g., "Easy" for a casual walk).</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="maxParticipants" class="form-label fw-bold">Maximum Participants</label>
+                                    <input type="number" class="form-control form-control-lg" id="maxParticipants" name="maxParticipants" min="1" placeholder="E.g., 15" required>
+                                    <div class="invalid-feedback">Please specify the maximum number of participants (minimum 1).</div>
+                                    <small class="form-text text-muted">How many people can join? (e.g., 15 for a small group).</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-primary btn-lg px-4" onclick="showSection(2)"><i class="fas fa-arrow-left me-2"></i> Previous</button>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 me-2" id="saveDraftButton">Save Draft</button>
+                                <button type="button" class="btn btn-primary btn-lg px-4" onclick="showSection(4)">Next <i class="fas fa-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Contact Information -->
+                <div class="card mb-5 section-card d-none" id="section-4">
+                    <div class="card-body p-4" style="background-color: #fcfcfd;">
+                        <h3 class="section-title"><i class="fas fa-address-card me-2"></i> Step 4: Contact Information</h3>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="contactName" class="form-label fw-bold">Full Name</label>
+                                    <input type="text" class="form-control form-control-lg" id="contactName" name="contactName" placeholder="Your full name" required>
+                                    <div class="invalid-feedback">Please provide your full name.</div>
+                                    <small class="form-text text-muted">This will be the main point of contact for the event.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="contactPhone" class="form-label fw-bold">Phone Number</label>
+                                    <input type="tel" class="form-control form-control-lg" id="contactPhone" name="contactPhone" placeholder="(803) XXX-XXXX" required>
+                                    <div class="invalid-feedback">Please provide a valid phone number.</div>
+                                    <small class="form-text text-muted">For emergency contact and coordination purposes.</small>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-4">
+                                    <label for="contactEmail" class="form-label fw-bold">Email Address</label>
+                                    <input type="email" class="form-control form-control-lg" id="contactEmail" name="contactEmail" placeholder="your@email.com" required>
+                                    <div class="invalid-feedback">Please provide a valid email address.</div>
+                                    <small class="form-text text-muted">For event updates and participant communication.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-primary btn-lg px-4" onclick="showSection(3)"><i class="fas fa-arrow-left me-2"></i> Previous</button>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 me-2" id="saveDraftButton">Save Draft</button>
+                                <button type="submit" class="btn btn-primary btn-lg px-5" id="submitButton">
+                                    <span class="button-text">Submit Your Event</span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="col-lg-4">
+            <div class="card sticky-top preview-card">
+                <div class="card-body p-4">
+                    <h4 class="preview-title"><i class="fas fa-eye me-2"></i> Event Preview</h4>
+                    <hr>
+                    <div id="previewContent">
+                        <p><strong>Title:</strong> <span id="previewTitle">Not set</span></p>
+                        <p><strong>Description:</strong> <span id="previewDescription">Not set</span></p>
+                        <p><strong>Tags:</strong> <span id="previewTags">Not set</span></p>
+                        <p><strong>Location:</strong> <span id="previewLocation">Not set</span></p>
+                        <p><strong>Date & Time:</strong> <span id="previewDateTime">Not set</span></p>
+                        <p><strong>Duration:</strong> <span id="previewDuration">Not set</span></p>
+                        <p><strong>Difficulty:</strong> <span id="previewDifficulty">Not set</span></p>
+                        <p><strong>Max Participants:</strong> <span id="previewMaxParticipants">Not set</span></p>
+                        <p><strong>Contact Name:</strong> <span id="previewContactName">Not set</span></p>
+                        <p><strong>Contact Phone:</strong> <span id="previewContactPhone">Not set</span></p>
+                        <p><strong>Contact Email:</strong> <span id="previewContactEmail">Not set</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-color: #0e747c;
+    --accent-color: #80bec0;
+    --text-color: #333;
+    --light-bg: #f8f9fa;
+}
+
+/* Override Bootstrap's default blue with the primary color */
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    font-weight: 500;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(14, 116, 124, 0.25);
+}
+
+.events-header {
+    background-color: var(--light-bg);
+}
+
+.subheading {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.section-card {
+    transition: transform 0.3s ease;
+}
+
+.section-card:hover {
+    transform: translateY(-5px);
+}
+
+.section-title {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title i {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 1rem 1.25rem;
+    font-size: 1.1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control-lg {
+    min-height: calc(1.5em + 1.5rem + 2px);
+}
+
+.form-control:hover:not(:focus) {
+    border-color: var(--accent-color);
+}
+
+.invalid-feedback {
+    font-size: 0.9rem;
+}
+
+.form-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.badge.clickable-tag {
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.badge.clickable-tag:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.progress-bar {
+    font-weight: 500;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-primary:disabled, .btn-outline-primary:disabled, .btn-outline-secondary:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.preview-card {
+    top: 20px;
+}
+
+.preview-title {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+#previewContent p {
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+#previewContent strong {
+    color: var(--primary-color);
+}
+
+.row.g-4 {
+    --bs-gutter-x: 2rem;
+    --bs-gutter-y: 1.5rem;
+}
+</style>
+
+<script>
+let currentSection = 1;
+const totalSections = 4;
+
+function updateProgress() {
+    const progressBar = document.getElementById('progressBar');
+    const percentage = (currentSection / totalSections) * 100;
+    progressBar.style.width = `${percentage}%`;
+    progressBar.textContent = `Step ${currentSection} of ${totalSections}`;
+}
+
+function showSection(sectionNumber) {
+    // Hide all sections
+    document.querySelectorAll('.section-card').forEach(section => {
+        section.classList.add('d-none');
+    });
+    
+    // Show the selected section
+    document.getElementById('section-' + sectionNumber).classList.remove('d-none');
+    
+    // Update progress bar
+    const progress = (sectionNumber / 4) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('progressBar').textContent = 'Step ' + sectionNumber + ' of 4';
+    
+    // Scroll to top of the form
+    document.getElementById('submitEventForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function updatePreview() {
+    const fields = ['summary', 'description', 'tags', 'location', 'date', 'time', 'duration', 'difficulty', 'maxParticipants'];
+    fields.forEach(field => {
+        const input = document.getElementById(field);
+        const previewElement = document.getElementById(`preview${field.charAt(0).toUpperCase() + field.slice(1)}`);
+        if (input && previewElement) {
+            let value = input.value || 'Not set';
+            if (field === 'date' && input.value) {
+                const timeValue = document.getElementById('time').value || 'Not set';
+                previewElement.textContent = `${value} at ${timeValue}`;
+                document.getElementById('previewDateTime').textContent = `${value} at ${timeValue}`;
+            } else {
+                previewElement.textContent = value;
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('submitEventForm');
+    const submitButton = document.getElementById('submitButton');
+    const saveDraftButton = document.getElementById('saveDraftButton');
+    const buttonText = submitButton.querySelector('.button-text');
+    const spinner = submitButton.querySelector('.spinner-border');
+
+    // Initialize progress
+    updateProgress();
+
+    // Handle tag selection
+    const tagsInput = document.getElementById('tags');
+    document.querySelectorAll('.clickable-tag').forEach(tag => {
+        tag.addEventListener('click', () => {
+            const tagValue = tag.getAttribute('data-tag');
+            const currentTags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
+            if (!currentTags.includes(tagValue)) {
+                currentTags.push(tagValue);
+                tagsInput.value = currentTags.join(', ');
+            }
+            updatePreview();
+        });
+    });
+
+    // Update preview on input change
+    form.querySelectorAll('input, textarea, select').forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+    });
+
+    // Save Draft button (placeholder functionality)
+    saveDraftButton.addEventListener('click', () => {
+        alert('Draft saved! (This is a placeholder - implement server-side saving as needed.)');
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!form.checkValidity()) {
+            e.stopPropagation();
+            form.classList.add('was-validated');
+            return;
+        }
+
+        // Show loading state
+        submitButton.disabled = true;
+        buttonText.textContent = 'Submitting...';
+        spinner.classList.remove('d-none');
+
+        const formData = new FormData(form);
+        const data = {
+            summary: formData.get('summary'),
+            description: formData.get('description'),
+            location: formData.get('location'),
+            date: formData.get('date'),
+            time: formData.get('time'),
+            duration: parseFloat(formData.get('duration')),
+            difficulty: formData.get('difficulty'),
+            maxParticipants: parseInt(formData.get('maxParticipants')),
+            tags: formData.get('tags'),
+            contactName: formData.get('contactName'),
+            contactPhone: formData.get('contactPhone'),
+            contactEmail: formData.get('contactEmail')
+        };
+        
+        try {
+            const response = await fetch('/submit_event', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.href = '/submit_event/success';
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error submitting event');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message || 'Error submitting event. Please try again.');
+        } finally {
+            // Reset button state
+            submitButton.disabled = false;
+            buttonText.textContent = 'Submit Your Event';
+            spinner.classList.add('d-none');
+        }
+    });
+
+    // Update preview panel with contact information
+    document.getElementById('contactName').addEventListener('input', function() {
+        document.getElementById('previewContactName').textContent = this.value || 'Not set';
+    });
+
+    document.getElementById('contactPhone').addEventListener('input', function() {
+        document.getElementById('previewContactPhone').textContent = this.value || 'Not set';
+    });
+
+    document.getElementById('contactEmail').addEventListener('input', function() {
+        document.getElementById('previewContactEmail').textContent = this.value || 'Not set';
+    });
+});
+</script>

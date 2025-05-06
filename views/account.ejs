@@ -1,6 +1,31 @@
-<div class="container my-4">
-    <h1 class="mb-4">My Account</h1>
+<!-- Welcome Banner -->
+<div class="welcome-banner py-4 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="avatar-container">
+                    <div class="avatar-placeholder" id="avatarPreview">
+                        <% if (user.profilePhoto) { %>
+                            <img src="<%= user.profilePhoto %>" alt="Profile Photo" class="avatar-image">
+                        <% } else { %>
+                            <i class="fas fa-user"></i>
+                        <% } %>
+                    </div>
+                    <label for="photoUpload" class="btn btn-sm btn-upload" title="Upload Photo">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="photoUpload" name="profilePhoto" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            <div class="col">
+                <h1 class="welcome-text mb-0">Welcome back, <%= user.firstName %>!</h1>
+                <p class="text-muted mb-0">Manage your account settings and preferences</p>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="container mb-5">
     <% if (typeof error !== 'undefined' && error) { %>
         <div class="alert alert-danger" role="alert">
             <%= error %>
@@ -13,75 +38,488 @@
         </div>
     <% } %>
 
-    <!-- User Information -->
-    <section class="user-info mb-4">
-        <h2>Profile Information</h2>
-        <div class="card">
-            <div class="card-body">
-                <p><strong>Username:</strong> <%= user.username %></p>
-                <p><strong>First Name:</strong> <%= user.firstName %></p>
-                <p><strong>Last Name:</strong> <%= user.lastName %></p>
-                <p><strong>Email:</strong> <%= user.email %></p>
-                <p><strong>Phone:</strong> <%= user.phone %></p>
-                <p><strong>Subscription Status:</strong> <%= user.subscriptionStatus %></p>
-                <p><strong>Account Created:</strong> <%= new Date(user.createdAt).toLocaleDateString() %></p>
-                <p><strong>Last Updated:</strong> <%= new Date(user.updatedAt).toLocaleDateString() %></p>
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-lg-4">
+            <!-- Quick Stats Card -->
+            <div class="card account-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-chart-bar me-2"></i>Quick Stats</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                                <div class="stat-value"><%= typeof pastEventsCount !== 'undefined' ? pastEventsCount : 0 %></div>
+                                <div class="stat-label">Events Attended</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                                <div class="stat-value"><%= typeof eventsHostedCount !== 'undefined' ? eventsHostedCount : 0 %></div>
+                                <div class="stat-label">Events Hosted</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Information Card -->
+            <div class="card account-card mt-4">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-user-circle me-2"></i>Profile Information</h2>
+                </div>
+                <div class="card-body">
+                    <div class="profile-info">
+                        <div class="info-item">
+                            <span class="info-label">Username</span>
+                            <span class="info-value"><%= user.username %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Name</span>
+                            <span class="info-value"><%= user.firstName %> <%= user.lastName %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value"><%= user.email %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value"><%= user.phone %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Membership</span>
+                            <span class="info-value badge bg-primary"><%= user.subscriptionStatus %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Account Type</span>
+                            <span class="info-value badge bg-info"><%= user.accountType.charAt(0).toUpperCase() + user.accountType.slice(1) %></span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
 
-    <!-- Edit Profile -->
-    <section class="edit-profile mb-4">
-        <h2>Edit Profile</h2>
-        <form action="/account/update-profile" method="POST">
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" value="<%= user.username %>" required>
+        <!-- Right Column -->
+        <div class="col-lg-8">
+            <!-- Edit Profile Card -->
+            <div class="card account-card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-edit me-2"></i>Edit Profile</h2>
+                </div>
+                <div class="card-body">
+                    <form action="/account/update-profile" method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="username">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" value="<%= user.username %>" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" name="firstName" value="<%= user.firstName %>" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" name="lastName" value="<%= user.lastName %>" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phone">Phone</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" value="<%= user.phone %>" required>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="firstName" class="form-label">First Name</label>
-                <input type="text" class="form-control" id="firstName" name="firstName" value="<%= user.firstName %>" required>
-            </div>
-            <div class="mb-3">
-                <label for="lastName" class="form-label">Last Name</label>
-                <input type="text" class="form-control" id="lastName" name="lastName" value="<%= user.lastName %>" required>
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
-            </div>
-            <div class="mb-3">
-                <label for="phone" class="form-label">Phone</label>
-                <input type="text" class="form-control" id="phone" name="phone" value="<%= user.phone %>" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Update Profile</button>
-        </form>
-    </section>
 
-    <!-- Change Password -->
-    <section class="change-password mb-4">
-        <h2>Change Password</h2>
-        <form action="/account/change-password" method="POST">
-            <div class="mb-3">
-                <label for="currentPassword" class="form-label">Current Password</label>
-                <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+            <!-- Change Password Card -->
+            <div class="card account-card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-lock me-2"></i>Change Password</h2>
+                </div>
+                <div class="card-body">
+                    <form action="/account/change-password" method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="currentPassword">Current Password</label>
+                                    <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="newPassword">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="confirmPassword">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Change Password</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="newPassword" class="form-label">New Password</label>
-                <input type="password" class="form-control" id="newPassword" name="newPassword" required>
-            </div>
-            <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Change Password</button>
-        </form>
-    </section>
 
-    <!-- Log Out -->
-    <section class="log-out">
-        <h2>Log Out</h2>
-        <p>Ready to sign out of your account?</p>
-        <a href="/logout" class="btn btn-danger">Log Out</a>
-    </section>
+            <!-- Account Actions Card -->
+            <div class="card account-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-cog me-2"></i>Account Actions</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="/logout" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fas fa-sign-out-alt me-2"></i>Log Out
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-danger btn-lg w-100" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                <i class="fas fa-trash-alt me-2"></i>Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAccountModalLabel">Confirm Account Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                <p>Are you sure you want to delete your account? This will:</p>
+                <ul>
+                    <li>Cancel your subscription</li>
+                    <li>Remove all your personal data</li>
+                    <li>Delete your event history</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="/account/delete" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>Delete Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-color: #0e747c;
+    --accent-color: #80bec0;
+    --text-color: #333;
+    --border-color: #e0e0e0;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    --hover-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.welcome-banner {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+}
+
+.welcome-text {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.avatar-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    overflow: hidden;
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-info {
+    height: auto;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.btn-upload {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--card-shadow);
+}
+
+.account-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+}
+
+.account-card:hover {
+    box-shadow: var(--hover-shadow);
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.info-item {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-label {
+    display: block;
+    color: #666;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(14, 116, 124, 0.25);
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.stat-card {
+    text-align: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.modal-content {
+    border-radius: 12px;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+.badge {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.bg-info {
+    background-color: var(--accent-color) !important;
+}
+
+@media (max-width: 768px) {
+    .welcome-text {
+        font-size: 1.5rem;
+    }
+
+    .avatar-container {
+        width: 60px;
+        height: 60px;
+    }
+
+    .btn-upload {
+        width: 24px;
+        height: 24px;
+        font-size: 0.75rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Photo upload handling
+    const photoInput = document.getElementById('photoUpload');
+    const avatarPreview = document.getElementById('avatarPreview');
+
+    photoInput.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Create FormData
+            const formData = new FormData();
+            formData.append('profilePhoto', file);
+
+            try {
+                const response = await fetch('/account/upload-photo', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Update avatar preview
+                    avatarPreview.innerHTML = `<img src="${data.photoUrl}" alt="Profile Photo" class="avatar-image">`;
+                } else {
+                    throw new Error('Failed to upload photo');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to upload photo. Please try again.');
+            }
+        }
+    });
+
+    // Password validation
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const passwordForm = confirmPasswordInput.closest('form');
+
+    passwordForm.addEventListener('submit', function(e) {
+        if (newPasswordInput.value !== confirmPasswordInput.value) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+        }
+    });
+
+    // Phone number formatting
+    const phoneInput = document.getElementById('phone');
+    phoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 0) {
+            if (value.length <= 3) {
+                value = `(${value}`;
+            } else if (value.length <= 6) {
+                value = `(${value.slice(0,3)}) ${value.slice(3)}`;
+            } else {
+                value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
+            }
+        }
+        e.target.value = value;
+    });
+});
+</script>

@@ -1,4 +1,4 @@
-const authMiddleware = (req, res, next) => {
+const ensureAuthenticated = (req, res, next) => {
     if (!req.session.user) {
         console.log('authMiddleware: No user in session');
         const accepts = req.get('Accept') || '';
@@ -29,4 +29,19 @@ const authMiddleware = (req, res, next) => {
     next();
 };
 
-module.exports = authMiddleware;
+const ensureAdmin = (req, res, next) => {
+    if (!req.session.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (req.session.user.accountType !== 'founder' && req.session.user.accountType !== 'moderator') {
+        return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
+    }
+
+    next();
+};
+
+module.exports = {
+    ensureAuthenticated,
+    ensureAdmin
+};

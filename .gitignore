@@ -43,4 +43,7 @@ Thumbs.db
 
 # Application specific
 public_html/uploads/
-tmp/ 
+tmp/
+
+# Google Calendar API credentials
+calendar-generator-455413-59aabdc152d5.json 

@@ -1,0 +1,139 @@
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1>Photo Gallery</h1>
+        <p class="lead text-muted">Share your adventures with us! Upload your favorite moments and inspire others to explore.</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center mb-4">
+        <a href="/gallery" class="btn btn-secondary me-2">Back to Gallery</a>
+        <a href="/gallery/upload" class="btn btn-primary">Upload Images</a>
+    </div>
+
+    <% if (galleryItems && galleryItems.length > 0) { %>
+        <div class="gallery-grid">
+            <% galleryItems.forEach(item => { %>
+                <div class="gallery-card">
+                    <div id="carousel<%= item._id %>" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <% item.imageUrls.forEach((url, index) => { %>
+                                <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                                    <a href="<%= url %>" data-lightbox="gallery-<%= item._id %>" data-title="<%= item.title %>">
+                                        <img src="<%= url %>" class="d-block w-100" alt="<%= item.title %>">
+                                    </a>
+                                </div>
+                            <% }); %>
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel<%= item._id %>" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carousel<%= item._id %>" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                    <div class="gallery-info">
+                        <h5 class="gallery-title text-center"><%= item.title %></h5>
+                        <% if (item.description) { %>
+                            <p class="gallery-description"><%= item.description %></p>
+                        <% } %>
+                        <p class="gallery-date text-muted">
+                            <small>Uploaded: <%= new Date(item.uploadDate).toLocaleDateString() %></small>
+                        </p>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    <% } else { %>
+        <div class="text-center">
+            <p>No gallery items have been added yet.</p>
+            <!-- Optional: Add a link to upload page for admins later -->
+            <% /* if (user && user.isAdmin) { %>
+                <a href="/admin/gallery/upload" class="btn btn-primary">Upload First Image</a>
+            <% } */ %>
+        </div>
+    <% } %>
+</div>
+
+<!-- Basic Styling for the Gallery -->
+<style>
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid */
+    gap: 2rem;
+    padding-bottom: 3rem;
+}
+
+.gallery-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.gallery-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.gallery-card a { /* Lightbox link */
+    display: block; /* Make link cover the image area */
+}
+
+.gallery-image {
+    width: 100%;
+    height: 220px; /* Fixed height for images */
+    object-fit: cover; /* Crop images nicely */
+    display: block;
+}
+
+.gallery-info {
+    padding: 1rem;
+    flex-grow: 1; /* Allows description area to grow if needed */
+}
+
+.gallery-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color, #0e747c); 
+    text-align: center; /* Center the title */
+}
+
+.gallery-description {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.gallery-date {
+    font-size: 0.8rem;
+    margin-top: auto; /* Pushes date to the bottom */
+}
+
+/* Basic Lightbox styles (if you add one) */
+/* You would typically use a library like Lightbox2 or FancyBox */
+/* These are just placeholders if you don't add a library immediately */
+body.lightbox-open { overflow: hidden; }
+.lightbox-backdrop { /* Example */
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1040; }
+.lightbox-image-container { /* Example */
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050; }
+
+</style>
+
+<!-- Consider adding a Lightbox library for better image viewing -->
+<!-- Example using Lightbox2 (requires adding CSS/JS) -->
+<!-- <link href="/path/to/lightbox.min.css" rel="stylesheet" /> -->
+<!-- <script src="/path/to/lightbox.min.js"></script> -->
+
+<!-- Back to Gallery Button (if needed) -->
+<div class="text-center mt-4">
+    <a href="/gallery" class="btn btn-secondary">Back to Gallery</a>
+</div> 
