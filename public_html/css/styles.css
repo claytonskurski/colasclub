@@ -1485,3 +1485,12 @@ p {
     margin: 0 auto;
     display: block;
 }
+
+.fc-event-hike { background: #e0f7fa !important; color: #2e7d32 !important; }
+.fc-event-water { background: #e3f2fd !important; color: #0288d1 !important; }
+.fc-event-social { background: #fff3e0 !important; color: #f57c00 !important; }
+.fc-event-sport { background: #ffebee !important; color: #d32f2f !important; }
+.fc-event-bike { background: #f3e5f5 !important; color: #ab47bc !important; }
+.fc-event-default { background: #e0e0e0 !important; color: #333 !important; }
+.fc-event .event-type { font-weight: bold; }
+.fc-event .event-title { display: block; font-size: 1em; }

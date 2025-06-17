@@ -5,24 +5,13 @@ const PendingUser = require('../models/pendingUser');
 const bcrypt = require('bcryptjs');
 const { ensureAuthenticated, ensureAdmin } = require('../middleware/authMiddleware');
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
-const nodemailer = require('nodemailer');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const Event = require('../models/events');
 const RSVP = require('../models/rsvp');
 const Host = require('../models/host');
-
-// Configure nodemailer for Hostinger
-const transporter = nodemailer.createTransport({
-    host: 'smtp.hostinger.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
-        pass: process.env.EMAIL_PASS
-    }
-});
+const { sendNewUserNotification } = require('../services/notifications');
 
 // Configure multer for handling file uploads
 const storage = multer.diskStorage({
@@ -54,27 +43,6 @@ const upload = multer({
         cb(null, true);
     }
 });
-
-// Helper function to send email notifications
-async function sendAdminNotification(subject, text) {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.warn('Email configuration not found - skipping email notification');
-        return;
-    }
-
-    const mailOptions = {
-        from: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
-        to: 'scoadmin@sodacityoutdoors.com',
-        subject: subject,
-        text: text
-    };
-
-    try {
-        await transporter.sendMail(mailOptions);
-    } catch (emailError) {
-        console.error('Error sending email notification:', emailError);
-    }
-}
 
 // Middleware to initialize Stripe dynamically
 router.use((req, res, next) => {
@@ -144,7 +112,7 @@ router.post('/submit-sign-up', async (req, res) => {
         await pendingUser.save();
         console.log('Pending user saved to MongoDB:', pendingUser);
 
-        // Redirect to waiver page with pendingUserId
+        // Restore backup behavior: do NOT set anything in the session, just redirect
         res.redirect(`/waiver?pendingUserId=${pendingUser._id}`);
     } catch (error) {
         console.error('Error in /submit-sign-up:', error);
@@ -154,7 +122,10 @@ router.post('/submit-sign-up', async (req, res) => {
 
 // Register user (called programmatically after payment)
 router.post('/register', async (req, res) => {
+    console.log('==== /api/users/register called ====');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
     if (!req.stripe) {
+        console.error('Stripe initialization failed');
         return res.status(500).json({ message: 'Stripe initialization failed' });
     }
 
@@ -171,7 +142,7 @@ router.post('/register', async (req, res) => {
             console.error('Pending user not found in /register:', pendingUserId);
             return res.status(404).json({ message: 'User data not found' });
         }
-        console.log('Retrieved pending user in /register:', pendingUser);
+        console.log('Retrieved pending user in /register:', JSON.stringify(pendingUser, null, 2));
 
         // Log waiver information from pending user
         console.log('Waiver information from pending user:', {
@@ -198,6 +169,7 @@ router.post('/register', async (req, res) => {
         // Check for existing user
         const existingUser = await User.findOne({ $or: [{ username }, { email }] });
         if (existingUser) {
+            console.error('User already exists:', { username, email });
             return res.status(400).json({ message: 'Username or email already exists' });
         }
 
@@ -227,27 +199,19 @@ router.post('/register', async (req, res) => {
         });
 
         // Log the new user object before saving
-        console.log('New user object before saving:', {
-            username: newUser.username,
-            accountType: newUser.accountType,
-            waiver: newUser.waiver
-        });
+        console.log('New user object before saving:', JSON.stringify(newUser, null, 2));
 
         // Save user to database
         await newUser.save();
-        console.log('User saved to MongoDB:', newUser);
+        console.log('User saved to MongoDB:', JSON.stringify(newUser, null, 2));
 
         // Send email notification for new account
-        await sendAdminNotification(
-            'New User Account Created',
-            `A new user account has been created:
-            Username: ${newUser.username}
-            Name: ${newUser.firstName} ${newUser.lastName}
-            Email: ${newUser.email}
-            Phone: ${newUser.phone}
-            Membership: ${newUser.membership}
-            Account Type: ${newUser.accountType}`
-        );
+        try {
+            await sendNewUserNotification(newUser);
+            console.log('New user notification sent');
+        } catch (notifyErr) {
+            console.error('Error sending new user notification:', notifyErr);
+        }
 
         // Store user data in session
         req.session.user = {
@@ -307,7 +271,8 @@ router.post('/login', async (req, res) => {
     username = username.trim().toLowerCase();
 
     try {
-        const user = await User.findOne({ username });
+        // Case-insensitive username search
+        const user = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
         if (!user) {
             console.log('User not found:', username);
             return res.status(400).json({ message: 'Invalid username or password' });
@@ -419,14 +384,7 @@ router.post('/account/delete', ensureAuthenticated, async (req, res) => {
         await User.findByIdAndDelete(userId);
 
         // Send email notification for account deletion
-        await sendAdminNotification(
-            'User Account Deleted',
-            `A user account has been deleted:
-            Username: ${userInfo.username}
-            Name: ${userInfo.firstName} ${userInfo.lastName}
-            Email: ${userInfo.email}
-            Membership: ${userInfo.membership}`
-        );
+        await sendNewUserNotification(user, 'User Account Deleted');
 
         // Clear the session
         req.session.destroy((err) => {

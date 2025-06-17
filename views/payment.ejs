@@ -30,6 +30,9 @@
                         </div>
                         <p class="mt-3">Please wait while we redirect you to the payment page.</p>
                         <div class="alert alert-danger error-message" role="alert"></div>
+                        <div class="alert alert-warning" role="alert">
+                            <strong>IMPORTANT:</strong> Please use the same email address at checkout as you used to sign up. This is required to complete your registration.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -39,7 +42,7 @@
     <script src="https://js.stripe.com/v3/"></script>
     <script>
         const stripe = Stripe('<%= stripePublishableKey %>');
-        const pendingUserId = new URLSearchParams(window.location.search).get('pendingUserId');
+        const pendingUserId = "<%= pendingUserId %>";
         const loadingSpinner = document.querySelector('.loading-spinner');
         const errorMessage = document.querySelector('.error-message');
 
@@ -60,7 +63,7 @@
 
         async function redirectToCheckout() {
             try {
-                const response = await fetch('/create-checkout-session', {
+                const response = await fetch('/api/payments/create-checkout-session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -70,6 +73,10 @@
 
                 const result = await response.json();
                 
+                if (result.paymentLink) {
+                    window.location.href = result.paymentLink;
+                    return;
+                }
                 if (!response.ok) {
                     throw new Error(result.message || 'Could not redirect to payment page');
                 }

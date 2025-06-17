@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title><%= title %> - Soda City Outdoors</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(120deg, var(--secondary-color, #80bec0) 0%, var(--primary-color, #0e747c) 100%);
+        }
+        .main-calendar-wrapper {
+            width: 1700px;
+            margin: 40px auto 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #calendar {
+            width: 1700px;
+            max-width: 1700px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 0;
+        }
+        .calendar-title {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            margin-top: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        /* Remove blue underline from calendar links and text */
+        .fc a,
+        .fc-event-title {
+            text-decoration: none !important;
+            color: inherit !important;
+        }
+        .fc-day-unavailable {
+            background: #444 !important;
+            color: #fff !important;
+            pointer-events: none;
+            opacity: 1 !important;
+        }
+        .calendar-legend {
+            display: flex;
+            gap: 2rem;
+            margin: 1.5rem 0 0.5rem 0;
+            align-items: center;
+        }
+        .legend-box {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
+        .legend-available {
+            background: #e0f7fa;
+            border: 1px solid #1e7e6d;
+        }
+        .legend-unavailable {
+            background: #444;
+            border: 1px solid #222;
+        }
+        /* Responsive styles for mobile */
+        @media (max-width: 900px) {
+            .main-calendar-wrapper {
+                width: 100vw;
+                max-width: 100vw;
+                padding: 0 2vw;
+            }
+            .calendar-scroll-container {
+                width: 100vw;
+                max-width: 100vw;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            #calendar {
+                width: 350px;
+                min-width: 350px;
+                max-width: 100vw;
+            }
+            .fc {
+                font-size: 12px;
+            }
+            .fc .fc-daygrid-day-frame {
+                padding: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-calendar-wrapper">
+        <div class="calendar-title">Select a Date for <%= rentalItem.name %> at <%= location.name %></div>
+        <div class="calendar-scroll-container">
+            <div id="calendar"></div>
+        </div>
+        <div class="calendar-legend">
+            <span><span class="legend-box legend-available"></span>Available</span>
+            <span><span class="legend-box legend-unavailable"></span>Not Available</span>
+        </div>
+        <div id="calendarError" class="text-danger mt-3"></div>
+    </div>
+    <form id="calendarForm" method="POST" action="/rentals/review" style="display:none;">
+        <input type="hidden" name="location" value="<%= location._id %>">
+        <input type="hidden" name="equipment" value="<%= rentalItem._id %>">
+        <input type="hidden" name="quantity" value="<%= quantity %>">
+        <input type="hidden" name="interval" value="<%= interval %>">
+        <input type="hidden" name="name" value="<%= name %>">
+        <input type="hidden" name="email" value="<%= email %>">
+        <input type="hidden" name="phone" value="<%= phone %>">
+        <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>">
+        <input type="hidden" name="date" id="selectedDate" value="">
+        <% if (bookingInfo.timeBlock) { %>
+          <input type="hidden" name="timeBlock" value="<%= bookingInfo.timeBlock %>">
+        <% } %>
+    </form>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script type="application/json" id="bookingInfoData"><%- JSON.stringify(bookingInfo) %></script>
+    <script>
+    function formatDateLocal(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const bookingInfo = JSON.parse(document.getElementById('bookingInfoData').textContent);
+        const locationId = bookingInfo.location;
+        const equipment = bookingInfo.equipment;
+        const quantity = bookingInfo.quantity;
+        const interval = bookingInfo.interval;
+        const name = bookingInfo.name;
+        const email = bookingInfo.email;
+        const phone = bookingInfo.phone;
+        const paymentMethod = bookingInfo.paymentMethod;
+        let unavailableDates = [];
+
+        // Fetch unavailable dates from backend
+        fetch(`/rentals/unavailable-dates?equipment=${equipment}&quantity=${quantity}`)
+            .then(res => res.json())
+            .then(data => {
+                unavailableDates = data;
+                if (window.bookingCalendar) {
+                    window.bookingCalendar.destroy();
+                }
+                window.bookingCalendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    height: 900,
+                    selectable: true,
+                    selectAllow: function(selectInfo) {
+                        const dateStr = selectInfo.startStr;
+                        if (unavailableDates.includes(dateStr)) {
+                            document.getElementById('calendarError').textContent = 'This date is fully booked. Please select another date.';
+                            return false;
+                        }
+                        document.getElementById('calendarError').textContent = '';
+                        return true;
+                    },
+                    dayCellClassNames: function(arg) {
+                        const cellDate = formatDateLocal(arg.date);
+                        if (unavailableDates.includes(cellDate)) {
+                            return ['fc-day-unavailable'];
+                        }
+                        return [];
+                    },
+                    dateClick: function(info) {
+                        const selectedDate = formatDateLocal(info.date);
+                        if (unavailableDates.includes(selectedDate)) {
+                            document.getElementById('calendarError').textContent = 'This date is fully booked. Please select another date.';
+                            return;
+                        }
+                        document.getElementById('calendarError').textContent = '';
+                        document.getElementById('selectedDate').value = selectedDate;
+                        document.getElementById('calendarForm').submit();
+                    }
+                });
+                window.bookingCalendar.render();
+            })
+            .catch(err => {
+                document.getElementById('calendarError').textContent = 'Error loading unavailable dates.';
+            });
+    });
+    </script>
+</body>
+</html> 

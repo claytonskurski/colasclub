@@ -12,6 +12,8 @@ if (!process.env.STRIPE_API_KEY) {
     process.exit(1);
 }
 
+// Stripe webhook secret is loaded from process.env.STRIPE_WEBHOOK_SECRET
+
 // Create Stripe Checkout session
 router.post('/create-checkout-session', async (req, res) => {
     const { pendingUserId } = req.body;
@@ -52,15 +54,13 @@ router.post('/create-checkout-session', async (req, res) => {
         ],
         mode: '',
         client_reference_id: pendingUserId,
-        success_url: 'https://sodacityoutdoors.com/payment-success?session_id={CHECKOUT_SESSION_ID}',
-        cancel_url: 'https://sodacityoutdoors.com/payment-cancel',
+        success_url: 'https://sodacityoutdoors.com/api/payments/payment-success?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url: 'https://sodacityoutdoors.com/api/payments/payment-cancel',
     };
 
     if (membership === 'monthly') {
-        priceId = 'price_1QvKLzKH1jTdrtwdtqvA70aH';
-        sessionConfig.line_items[0].price = priceId;
-        sessionConfig.mode = 'subscription';
-        sessionConfig.allow_promotion_codes = true;
+        // Respond with the payment link for monthly subscription with trial
+        return res.json({ paymentLink: 'https://buy.stripe.com/aEU4iL5xibUf6U8145' });
     } else if (membership === 'annual') {
         priceId = 'price_1REyTsKH1jTdrtwd55iBuX7y';
         sessionConfig.line_items[0].price = priceId;
@@ -86,8 +86,8 @@ router.post('/create-checkout-session', async (req, res) => {
 
 // Payment success route
 router.get('/payment-success', async (req, res) => {
+    console.log('==== /payment-success route called ====');
     const sessionId = req.query.session_id;
-
     console.log('Query session_id in /payment-success:', sessionId);
 
     if (!sessionId) {
@@ -101,13 +101,12 @@ router.get('/payment-success', async (req, res) => {
     }
 
     try {
-        // Retrieve the Stripe session with expanded fields
+        console.log('Retrieving Stripe session for sessionId:', sessionId);
         const session = await stripe.checkout.sessions.retrieve(sessionId, {
             expand: ['payment_intent', 'subscription']
         });
         console.log('Retrieved Stripe session:', JSON.stringify(session, null, 2));
 
-        // Validate session
         if (!session || !session.client_reference_id) {
             console.error('Invalid session or missing client reference ID');
             return res.render('payment_success', {
@@ -118,12 +117,12 @@ router.get('/payment-success', async (req, res) => {
             });
         }
 
-        // Retrieve user data from PendingUser collection first
         const pendingUserId = session.client_reference_id;
         console.log('Pending User ID from session.client_reference_id:', pendingUserId);
 
         let pendingUser;
         try {
+            console.log('Attempting to retrieve PendingUser with ID:', pendingUserId);
             pendingUser = await PendingUser.findById(pendingUserId);
             console.log('Retrieved pending user:', pendingUser);
         } catch (error) {
@@ -152,9 +151,10 @@ router.get('/payment-success', async (req, res) => {
         let subscriptionStart = new Date();
         let subscriptionEnd = null;
         let trialEnd = null;
-
+        console.log('Session mode:', session.mode);
         if (session.mode === 'subscription') {
             if (session.subscription) {
+                console.log('Retrieving Stripe subscription for ID:', session.subscription.id);
                 const subscription = await stripe.subscriptions.retrieve(session.subscription.id);
                 console.log('Retrieved subscription:', JSON.stringify(subscription, null, 2));
 
@@ -162,20 +162,17 @@ router.get('/payment-success', async (req, res) => {
                     subscriptionStatus = subscription.status === 'trialing' ? 'trial' : 'active';
                     paidForCurrentMonth = true;
                     subscriptionStart = new Date(subscription.current_period_start * 1000);
-                    
-                    // Set subscription end based on membership type
                     if (pendingUser.membership === 'annual') {
-                        // For annual, set to 1 year from start
                         subscriptionEnd = new Date(subscriptionStart);
                         subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
                     } else {
-                        // For monthly, use current period end
                         subscriptionEnd = new Date(subscription.current_period_end * 1000);
                     }
-                    
                     if (subscription.trial_end) {
                         trialEnd = new Date(subscription.trial_end * 1000);
                     }
+                } else {
+                    console.log('Subscription is not active or trialing:', subscription.status);
                 }
             } else {
                 console.error('No subscription found in session');
@@ -191,9 +188,8 @@ router.get('/payment-success', async (req, res) => {
         const stripeCustomerId = pendingUser.stripeCustomerId;
         const { username, email, firstName, lastName, membership } = pendingUser;
         console.log('Retrieved stripeCustomerId:', stripeCustomerId);
-
-        // Call the /register endpoint with updated subscription details
-        console.log('Calling /api/users/register with body:', {
+        console.log('Preparing to POST to /api/users/register on localhost:3001');
+        console.log('POST body:', {
             stripeCustomerId,
             subscriptionStatus,
             paidForCurrentMonth,
@@ -203,43 +199,58 @@ router.get('/payment-success', async (req, res) => {
             membership,
             pendingUserId
         });
-
-        const response = await fetch('https://sodacityoutdoors.com/api/users/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                stripeCustomerId,
-                subscriptionStatus,
-                paidForCurrentMonth,
-                subscriptionStart,
-                subscriptionEnd,
-                trialEnd,
-                membership,
-                pendingUserId
-            }),
-        });
-
-        if (!response.ok && response.status !== 302) {
-            const errorData = await response.text();
-            console.error('Error registering user after payment:', errorData);
+        try {
+            const response = await fetch('http://localhost:3001/api/users/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    stripeCustomerId,
+                    subscriptionStatus,
+                    paidForCurrentMonth,
+                    subscriptionStart,
+                    subscriptionEnd,
+                    trialEnd,
+                    membership,
+                    pendingUserId
+                }),
+            });
+            console.log('Fetch call made, response status:', response.status);
+            const responseText = await response.text();
+            console.log('Response text from /api/users/register:', responseText);
+            if (!response.ok && response.status !== 302) {
+                console.error('Error registering user after payment:', responseText);
+                return res.render('payment_success', {
+                    paymentIntentId: null,
+                    userData: { username, email, firstName, lastName },
+                    error: 'Error completing registration. Please contact support.',
+                    user: req.session.user
+                });
+            }
+        } catch (fetchError) {
+            console.error('Fetch to /api/users/register failed:', fetchError);
             return res.render('payment_success', {
                 paymentIntentId: null,
                 userData: { username, email, firstName, lastName },
-                error: 'Error completing registration. Please contact support.',
+                error: 'Internal error during registration. Please contact support.',
                 user: req.session.user
             });
         }
 
-        // Delete the pending user record
-        await PendingUser.findByIdAndDelete(pendingUserId);
-        console.log('Deleted pending user after successful registration:', pendingUserId);
+        try {
+            console.log('Attempting to delete PendingUser with ID:', pendingUserId);
+            await PendingUser.findByIdAndDelete(pendingUserId);
+            console.log('Deleted pending user after successful registration:', pendingUserId);
+        } catch (deleteError) {
+            console.error('Error deleting pending user:', deleteError);
+        }
 
         // Redirect to sign-in page
+        console.log('Redirecting to /signin after payment success.');
         res.redirect('/signin');
     } catch (error) {
-        console.error('Error in /payment-success:', error.message);
+        console.error('Error in /payment-success:', error);
         res.render('payment_success', {
             paymentIntentId: null,
             userData: {},
@@ -280,6 +291,61 @@ router.post('/update-status', async (req, res) => {
     } catch (error) {
         console.error('Error updating subscription status:', error);
         res.status(500).json({ message: 'Error updating subscription status', error: error.message });
+    }
+});
+
+// Stripe webhook endpoint
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    } catch (err) {
+        console.error('Webhook signature verification failed:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const customerEmail = session.customer_email || (session.customer_details && session.customer_details.email);
+        console.log('Webhook received for checkout.session.completed, email:', customerEmail);
+        if (!customerEmail) {
+            console.error('No customer email found in session');
+            return res.status(400).send('No customer email');
+        }
+        try {
+            const pendingUser = await PendingUser.findOne({ email: customerEmail });
+            if (!pendingUser) {
+                console.error('No PendingUser found for email:', customerEmail);
+                return res.status(404).send('PendingUser not found');
+            }
+            // Promote to User (copy your existing logic here)
+            const user = new User({
+                username: pendingUser.username,
+                password: pendingUser.password,
+                email: pendingUser.email,
+                firstName: pendingUser.firstName,
+                lastName: pendingUser.lastName,
+                phone: pendingUser.phone,
+                stripeCustomerId: pendingUser.stripeCustomerId,
+                membership: pendingUser.membership,
+                subscriptionStatus: 'active',
+                paidForCurrentMonth: true,
+                waiverAccepted: pendingUser.waiverAccepted,
+                waiverAcceptedDate: pendingUser.waiverAcceptedDate,
+                waiverIpAddress: pendingUser.waiverIpAddress,
+                waiverUserAgent: pendingUser.waiverUserAgent
+            });
+            await user.save();
+            await PendingUser.findByIdAndDelete(pendingUser._id);
+            console.log('User promoted and PendingUser deleted for email:', customerEmail);
+            res.status(200).send('User registration completed');
+        } catch (err) {
+            console.error('Error in webhook user promotion:', err);
+            res.status(500).send('Internal server error');
+        }
+    } else {
+        res.status(200).send('Event ignored');
     }
 });
 

@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const userRoutes = require('./routes/userRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
+const paymentWebhook = require('./routes/paymentWebhook');
 const eventRoutes = require('./routes/eventRoutes');
 const submitEvent = require('./routes/submitEvent');
 const forumRoutes = require('./routes/forumRoutes');
@@ -23,6 +23,10 @@ const fs = require('fs');
 const moment = require('moment-timezone');
 const PendingUser = require('./models/pendingUser');
 const GalleryItem = require('./models/GalleryItem');
+const rentalLocationsRoutes = require('./routes/rentalLocations');
+const rentalItemsRoutes = require('./routes/rentalItems');
+const rentalRoutes = require('./routes/rentalRoutes');
+const { sendAdminNotification } = require('./services/notifications');
 
 const app = express();
 
@@ -34,7 +38,7 @@ app.set('trust proxy', 1);
 
 // CORS headers middleware
 app.use((req, res, next) => {
-    const allowedOrigins = ['https://sodacityoutdoors.com', 'http://localhost:3000'];
+    const allowedOrigins = ['https://sodacityoutdoors.com'];
     const origin = req.headers.origin;
     
     if (allowedOrigins.includes(origin)) {
@@ -52,9 +56,14 @@ app.use((req, res, next) => {
     next();
 });
 
-// Middleware to parse request bodies
+// Mount webhook route first for raw body
+app.use('/api/payments/webhook', paymentWebhook);
+// Then add body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// Mount the rest of the payment routes
+const paymentRoutes = require('./routes/paymentRoutes');
+app.use('/api/payments', paymentRoutes);
 
 // Validate environment variables
 if (!process.env.MONGODB_URI) {
@@ -96,7 +105,7 @@ app.use(session({
     store: sessionStore,
     cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 1 day
-        secure: 'auto',
+        secure: false,
         httpOnly: true,
         sameSite: 'lax'
     }
@@ -111,6 +120,8 @@ app.use((req, res, next) => {
     console.log('Session ID:', req.sessionID);
     console.log('Session data:', req.session);
     console.log('Cookies:', req.headers.cookie || 'No cookies');
+    console.log('Session cookie:', req.session.cookie);
+    console.log('Session store:', sessionStore ? 'Initialized' : 'Not initialized');
     res.locals.user = req.session.user || null;
     console.log('Middleware - req.session.user:', req.session.user);
     console.log('Middleware - req.session.userData:', req.session.userData);
@@ -202,12 +213,14 @@ app.get('/', async (req, res) => {
 });
 
 app.use('/api/users', userRoutes);
-app.use('/', paymentRoutes);
 app.use('/events', eventRoutes);
 app.use('/submit_event', submitEvent);
 app.use('/forum', forumRoutes);
 app.use('/contact', contactRoutes);
 app.use('/gallery', galleryRoutes);
+app.use('/rentals', rentalRoutes);
+app.use('/api/rental-locations', rentalLocationsRoutes);
+app.use('/api/rental-items', rentalItemsRoutes);
 
 // Redirect /calendar to /events/calendar
 app.get('/calendar', (req, res) => {
@@ -244,16 +257,48 @@ app.get('/register', (req, res) => {
     res.render('register', { title: 'Create Account', user: req.session.user });
 });
 
-app.get('/waiver', (req, res) => {
+app.get('/waiver', async (req, res) => {
     const pendingUserId = req.query.pendingUserId;
     if (!pendingUserId) {
+        console.error('No pendingUserId found in query');
         return res.redirect('/register');
     }
-    res.render('waiver', { 
-        title: 'Liability Waiver', 
-        user: req.session.user,
-        pendingUserId: pendingUserId 
-    });
+
+    try {
+        // Get pending user data
+        const pendingUser = await PendingUser.findById(pendingUserId);
+        if (!pendingUser) {
+            console.error('Pending user not found:', pendingUserId);
+            return res.redirect('/register');
+        }
+
+        // Store pending user data in session
+        req.session.pendingUser = {
+            _id: pendingUser._id,
+            username: pendingUser.username,
+            email: pendingUser.email,
+            firstName: pendingUser.firstName,
+            lastName: pendingUser.lastName
+        };
+
+        // Save session before rendering
+        req.session.save((err) => {
+            if (err) {
+                console.error('Error saving session during waiver page load:', err);
+                return res.redirect('/register');
+            }
+            console.log('Session saved successfully during waiver page load:', req.session);
+            res.render('waiver', { 
+                title: 'Liability Waiver', 
+                user: req.session.user,
+                pendingUserId: pendingUserId,
+                pendingUser: req.session.pendingUser
+            });
+        });
+    } catch (error) {
+        console.error('Error loading waiver page:', error);
+        res.redirect('/register');
+    }
 });
 
 app.post('/waiver/accept', async (req, res) => {
@@ -305,7 +350,12 @@ app.post('/waiver/accept', async (req, res) => {
 });
 
 app.get('/payment', (req, res) => {
-    res.render('payment', { title: 'Payment', user: req.session.user, stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
+    res.render('payment', {
+        title: 'Payment',
+        user: req.session.user,
+        stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+        pendingUserId: req.query.pendingUserId
+    });
 });
 
 // Resources page route
@@ -507,6 +557,131 @@ cron.schedule('0 0 1 * *', async () => {
                 console.error(`Error checking subscription for ${user.email}:`, error.message);
             }
         }
+    }
+});
+
+// === AdminJS (AdminBro) Setup ===
+/*
+const AdminJS = require('adminjs');
+const AdminJSExpress = require('@adminjs/express');
+const AdminJSMongoose = require('@adminjs/mongoose');
+const RentalItem = require('./models/rentalItem');
+const Reservation = require('./models/reservation');
+
+AdminJS.registerAdapter(AdminJSMongoose);
+
+const adminJs = new AdminJS({
+    resources: [
+        { resource: require('./models/user'), options: { properties: { password: { isVisible: false } } } },
+        { resource: RentalItem },
+        { resource: Reservation }
+    ],
+    rootPath: '/admin',
+    branding: {
+        companyName: 'Soda City Outdoors',
+        logo: false,
+        softwareBrothers: false
+    }
+});
+
+const ADMIN = {
+    email: process.env.ADMIN_EMAIL || 'admin@sodacityoutdoors.com',
+    password: process.env.ADMIN_PASSWORD || 'admin1234',
+};
+
+const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJs, {
+    authenticate: async (email, password) => {
+        if (email === ADMIN.email && password === ADMIN.password) {
+            return ADMIN;
+        }
+        return null;
+    },
+    cookieName: 'adminjs',
+    cookiePassword: process.env.ADMIN_COOKIE_SECRET || 'supersecret',
+});
+
+app.use(adminJs.options.rootPath, adminRouter);
+*/
+
+// Mount account deletion route
+app.post('/account/delete', ensureAuthenticated, async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.redirect('/signin');
+        }
+
+        const userId = req.session.user._id;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).render('error', { 
+                title: 'Not Found', 
+                message: 'User not found',
+                user: null 
+            });
+        }
+
+        // Store user info for email notification before deletion
+        const userInfo = {
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            membership: user.membership,
+            stripeCustomerId: user.stripeCustomerId
+        };
+
+        // Cancel Stripe subscription if it exists
+        if (user.stripeCustomerId) {
+            try {
+                const subscriptions = await stripe.subscriptions.list({
+                    customer: user.stripeCustomerId
+                });
+
+                // Cancel all active subscriptions
+                for (const subscription of subscriptions.data) {
+                    if (subscription.status === 'active' || subscription.status === 'trialing') {
+                        await stripe.subscriptions.del(subscription.id);
+                    }
+                }
+
+                // Delete the customer in Stripe
+                await stripe.customers.del(user.stripeCustomerId);
+            } catch (stripeError) {
+                console.error('Error cleaning up Stripe data:', stripeError);
+            }
+        }
+
+        // Delete the user account
+        await User.findByIdAndDelete(userId);
+
+        // Send email notification for account deletion
+        await sendAdminNotification(
+            'Account Deletion Notification',
+            `User Account Deleted:
+            Username: ${userInfo.username}
+            Email: ${userInfo.email}
+            Name: ${userInfo.firstName} ${userInfo.lastName}
+            Membership: ${userInfo.membership}
+            Stripe Customer ID: ${userInfo.stripeCustomerId}
+            
+            Please ensure their Stripe subscription and customer data are properly cleaned up.`
+        );
+
+        // Clear the session
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+            }
+            res.redirect('/');
+        });
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        res.status(500).render('error', { 
+            title: 'Error', 
+            message: 'Failed to delete account. Please try again or contact support.',
+            user: req.session.user 
+        });
     }
 });
 

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rental Waiver - Soda City Outdoors</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8fafc;
+        }
+        .waiver-section {
+            max-width: 900px;
+            margin: 3.5rem auto 0 auto;
+            padding: 2.5rem 1.5rem 2.5rem 1.5rem;
+            border-top: 4px solid var(--primary-color, #0e747c);
+            background: linear-gradient(120deg, #f8fafc 80%, #e0f7fa 100%);
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 24px rgba(30,126,109,0.08);
+        }
+        .waiver-accent {
+            display: inline-block;
+            background: var(--primary-color, #0e747c);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 2rem;
+            padding: 0.4rem 1.5rem;
+            margin-bottom: 2rem;
+            letter-spacing: 0.5px;
+        }
+        .waiver-flex {
+            display: flex;
+            gap: 2.5rem;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .waiver-image {
+            width: 320px;
+            min-width: 220px;
+            max-width: 100%;
+            border-radius: 1.25rem;
+            box-shadow: 0 2px 12px rgba(30,126,109,0.10);
+            object-fit: cover;
+        }
+        .waiver-details {
+            flex: 1;
+        }
+        .waiver-location-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color, #0e747c);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+        .waiver-date-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-color, #0a5961);
+            margin-bottom: 1.2rem;
+        }
+        .waiver-text {
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            background: #f8f9fa;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .waiver-text h2 {
+            font-size: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        .waiver-text h3 {
+            font-size: 1.2rem;
+            margin-top: 1.2rem;
+            margin-bottom: 0.8rem;
+            color: #34495e;
+        }
+        .waiver-text p {
+            margin-bottom: 1rem;
+        }
+        .waiver-text ul {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        .waiver-text li {
+            margin-bottom: 0.5rem;
+        }
+        .form-check {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .btn-primary {
+            background: var(--primary-color, #0e747c);
+            border-color: var(--primary-color, #0e747c);
+            font-weight: 700;
+            border-radius: 0.75rem;
+            font-size: 1.15rem;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover {
+            background: var(--accent-color, #0a5961);
+            border-color: var(--accent-color, #0a5961);
+        }
+        @media (max-width: 991.98px) {
+            .waiver-flex {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1.5rem;
+            }
+            .waiver-image {
+                width: 100%;
+                min-width: 0;
+                max-width: 100%;
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="waiver-section">
+        <div class="waiver-accent">Rental Waiver</div>
+        <div class="waiver-flex">
+            <% let imageFile = '';
+                switch (location.name) {
+                    case 'Lake Murray Public Park':
+                        imageFile = '/static/images/lake-murray.jpg';
+                        break;
+                    case 'Saluda Shoals Park':
+                        imageFile = '/static/images/saluda-shoals.jpg';
+                        break;
+                    case 'Saluda Riverwalk':
+                        imageFile = '/static/images/saluda-riverwalk.jpg';
+                        break;
+                    case 'Dreher Island State Park':
+                        imageFile = '/static/images/dreher-island.jpg';
+                        break;
+                    case 'South Cedar Creek at Congaree National Park':
+                        imageFile = '/static/images/congaree-creek.jpg';
+                        break;
+                    default:
+                        imageFile = '';
+                }
+            %>
+            <% if (imageFile) { %>
+                <img src="<%= imageFile %>" alt="<%= location.name %>" class="waiver-image mb-3 mb-lg-0" />
+            <% } %>
+            <div class="waiver-details">
+                <div class="waiver-location-title"><i class="fas fa-map-marker-alt me-2"></i><%= location.name %></div>
+                <div class="waiver-date-title"><i class="fas fa-calendar-alt me-2"></i><%= date %></div>
+                <h1 class="mb-4" style="font-size:1.3rem;">SODA CITY OUTDOORS RENTAL AGREEMENT WAIVER AND RELEASE OF LIABILITY</h1>
+                <div class="waiver-text">
+                    <p>This Rental Agreement, Waiver and Release of Liability ("Agreement") is made between Soda City Outdoors ("Company," "we," "us," or "our"), with a principal place of business at 309 Montclaire Ln, West Columbia, SC 29170, and the undersigned renter ("Renter," "you," or "your"), collectively referred to as the "Parties," for the rental of kayaks, tubes, and/or other water sports equipment ("Equipment"). By signing this Agreement, you acknowledge and agree to the following terms and conditions.</p>
+
+                    <h2>ASSUMPTION OF RISKS</h2>
+                    <p>You acknowledge that participation in water sports activities, including but not limited to kayaking and tubing, involves inherent risks, dangers, and hazards, including but not limited to drowning, capsizing, collisions, equipment failure, adverse weather conditions, currents, underwater hazards, wildlife, and personal injury or death. You understand that all bodies of water pose considerable risks, and it is your sole responsibility to assess the safety of the chosen location and conditions before and during the rental period. You voluntarily assume all risks associated with the use of the Equipment and participation in water sports activities, whether known or unknown, and agree that the Company is not responsible for any injuries, damages, or losses resulting from these risks.</p>
+
+                    <h2>RENTER'S RESPONSIBILITY FOR SAFETY</h2>
+                    <p>You certify that you are physically capable of participating in water sports activities and have no medical conditions that would prevent safe participation. You agree to consult a physician if you are unsure about your fitness for these activities. The Company provides life vests with the Equipment, and you agree to wear a properly fitted life vest at all times while using the Equipment on the water. Upon delivery of the Equipment to you at the designated location, you assume full responsibility for your safety and the safety of any minors or other individuals using the Equipment under your rental agreement. You agree to follow all applicable local, state, and federal laws, regulations, and safety guidelines, including but not limited to obtaining any required permits or permissions for the use of the Equipment at your chosen location.</p>
+
+                    <h2>EQUIPMENT USE AND RETURN</h2>
+                    <p>You agree to inspect the Equipment upon delivery and notify the Company immediately of any defects or damage. By accepting the Equipment, you acknowledge that it is in good working condition. You agree to use the Equipment responsibly and only for its intended purpose, following all provided instructions and safety guidelines. You are responsible for returning the Equipment to the Company at the designated pick-up time and location in the same condition as received, normal wear and tear excepted. Any damage, loss, or theft of the Equipment during the rental period is your responsibility, and you agree to pay the full repair or replacement cost at retail value, as determined by the Company. Late returns will incur a fee of 1.5 times the daily rental rate per day, plus any additional costs incurred by the Company due to the delay, such as lost rental opportunities.</p>
+
+                    <h2>DRIVER'S LICENSE AS COLLATERAL</h2>
+                    <p>As collateral for the rental, you agree to provide a valid driver's license to the Company, which will be held until the Equipment is returned in satisfactory condition. The Company will return the driver's license upon verification that the Equipment is undamaged and returned on time. If the Equipment is damaged, lost, or not returned, you authorize the Company to retain the driver's license until all associated costs are paid in full. You acknowledge that the Company may report any theft or non-return of Equipment to law enforcement.</p>
+
+                    <h2>RELEASE AND WAIVER OF LIABILITY</h2>
+                    <p>In consideration of being permitted to rent the Equipment, you, on behalf of yourself, your heirs, representatives, successors, executors, and administrators, hereby release, waive, discharge, and hold harmless Soda City Outdoors, its officers, agents, employees, and affiliates from any and all claims, demands, damages, or causes of action, including but not limited to claims of negligence, arising out of or related to any loss, damage, injury, or death that may result from the use of the Equipment or participation in water sports activities. You agree that this release applies regardless of the cause of the injury or damage, except in cases of gross negligence or intentional misconduct by the Company, as determined by a court of competent jurisdiction.</p>
+
+                    <h2>INDEMNIFICATION</h2>
+                    <p>You agree to indemnify, defend, and hold harmless Soda City Outdoors, its officers, agents, employees, and affiliates from any and all claims, liabilities, damages, costs, or expenses (including reasonable attorney's fees) arising from your use of the Equipment, your breach of this Agreement, or any actions or omissions by you or any individuals using the Equipment under your rental agreement.</p>
+
+                    <h2>ARBITRATION AND DISPUTE RESOLUTION</h2>
+                    <p>Any dispute, claim, or controversy arising out of or relating to this Agreement or the use of the Equipment shall be resolved through binding arbitration, conducted in Columbia, South Carolina, in accordance with the rules of the American Arbitration Association. The arbitration shall be conducted by a single arbitrator, and the decision of the arbitrator shall be final and binding. Each party shall bear its own costs and attorney's fees, and the Company shall not be liable for any costs incurred by you in connection with the arbitration. You agree to waive your right to pursue any claims in a court of law, including the right to a jury trial, except as required by law. This arbitration clause does not apply to claims involving gross negligence or intentional misconduct by the Company.</p>
+
+                    <h2>DELIVERY AND PICK-UP</h2>
+                    <p>The Company will deliver the Equipment to the location specified by you at the time of booking and pick it up at the agreed-upon time and location. If you request delivery or pick-up at a different location, additional fees may apply, subject to the Company's discretion and availability. You agree to ensure that the delivery and pick-up locations are accessible and safe for the Company's staff. The Company is not responsible for any delays or issues caused by inaccessible or unsafe locations.</p>
+
+                    <h2>DAMAGE WAIVER (OPTIONAL)</h2>
+                    <p>The Company offers an optional Damage Waiver for an additional fee, payable before the rental period begins. If purchased, the Damage Waiver covers the cost of repairs or replacement of the Equipment due to accidental damage, provided the damage was not caused by intentional abuse, misuse, or violation of local, state, or federal laws. The Damage Waiver does not cover loss, theft, or any other liabilities, such as personal injury, property damage, or death resulting from the use, storage, or transportation of the Equipment. If you decline the Damage Waiver, you are fully responsible for all repair or replacement costs.</p>
+
+                    <h2>MINORS</h2>
+                    <p>If the Equipment will be used by a minor (under 18 years of age), the parent or legal guardian signing this Agreement acknowledges that they are responsible for the minor's safety and compliance with all terms of this Agreement. The parent or guardian agrees to supervise the minor at all times during the use of the Equipment and assumes all risks associated with the minor's participation. This Agreement releases the Company from any liability for injuries or damages sustained by the minor, except in cases of gross negligence or intentional misconduct.</p>
+
+                    <h2>GOVERNING LAW</h2>
+                    <p>This Agreement shall be governed by and construed in accordance with the laws of the State of South Carolina, without regard to its conflict of laws principles. Any legal action not subject to arbitration shall be brought exclusively in the state or federal courts located in Richland County, South Carolina.</p>
+
+                    <h2>ENTIRE AGREEMENT</h2>
+                    <p>This Agreement constitutes the entire understanding between the Parties and supersedes all prior agreements, whether written or oral. Any modifications to this Agreement must be in writing and signed by both Parties.</p>
+
+                    <h2>SEVERABILITY</h2>
+                    <p>If any provision of this Agreement is found to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
+
+                    <h2>ACKNOWLEDGMENT</h2>
+                    <p>You certify that you have read and understood this Agreement, including the risks involved in water sports activities, and that you are signing it voluntarily and of your own free will. You acknowledge that you have had the opportunity to ask questions about the Agreement and the Equipment.</p>
+                </div>
+
+                <form id="waiverForm" action="/rentals/payment" method="POST">
+                    <input type="hidden" name="location" value="<%= location._id %>">
+                    <input type="hidden" name="equipment" value="<%= equipment %>">
+                    <input type="hidden" name="quantity" value="<%= quantity %>">
+                    <input type="hidden" name="interval" value="<%= interval %>">
+                    <input type="hidden" name="name" value="<%= name %>">
+                    <input type="hidden" name="email" value="<%= email %>">
+                    <input type="hidden" name="phone" value="<%= phone %>">
+                    <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>">
+                    <input type="hidden" name="date" value="<%= date %>">
+                    <input type="hidden" name="timeBlock" value="<%= timeBlock %>">
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="waiverAgreement" required>
+                        <label class="form-check-label" for="waiverAgreement">
+                            I have read and agree to the terms of this waiver
+                        </label>
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold py-3">Accept & Continue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.getElementById('waiverForm').addEventListener('submit', function(e) {
+        var paymentMethod = document.querySelector('input[name="paymentMethod"]').value;
+        if (paymentMethod === 'cash') {
+            this.action = '/rentals/confirm';
+        } else {
+            this.action = '/rentals/payment';
+        }
+    });
+    </script>
+</body>
+</html> 

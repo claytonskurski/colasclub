@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title><%= typeof title !== 'undefined' ? title + ' - Soda City Outdoors' : 'Calendar - Soda City Outdoors' %></title>
     <!-- Inherit styles from layout.ejs -->
 </head>
@@ -63,7 +63,7 @@
             </div>
         </section>
         <section class="calendar-section">
-            <div class="calendar-container card" style="height: 1500px;">
+            <div class="calendar-container card">
                 <div id="calendar"></div>
                 <% if (user && user.subscriptionStatus === 'active') { %>
                     <div class="calendar-download-section mt-4 p-3 border-top">
@@ -431,197 +431,123 @@
         flex: 1;
         min-width: 0; /* Allow flex to adjust width */
     }
+
+    #calendar {
+        max-width: 1700px;
+        width: 100%;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 0;
+    }
+    .calendar-container.card {
+        max-width: 1700px;
+        width: 100%;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 18px 8px 8px 8px;
+    }
+    /* Remove fixed height if present */
+    .calendar-container.card[style] {
+        height: auto !important;
+    }
+
+    /* Remove blue underline from calendar links and event titles */
+    .fc a,
+    .fc-event-title,
+    .fc-event .event-title,
+    .fc-event .event-type {
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+
+    .fc-event-hike { background: #168f3e !important; color: #fff !important; }
+    .fc-event-water { background: #1976d2 !important; color: #fff !important; }
+    .fc-event-social { background: #f57c00 !important; color: #fff !important; }
+    .fc-event-sport { background: #c62828 !important; color: #fff !important; }
+    .fc-event-bike { background: #7b1fa2 !important; color: #fff !important; }
+    .fc-event-default { background: #757575 !important; color: #fff !important; }
+
+    /* Mobile Responsiveness: shrink calendar and font on mobile */
+    @media (max-width: 900px) {
+        .calendar-container.card {
+            width: 100vw;
+            max-width: 100vw;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0;
+            margin: 0;
+            border-radius: 0;
+        }
+        #calendar {
+            width: 350px;
+            min-width: 350px;
+            max-width: 100vw;
+        }
+        .fc {
+            font-size: 12px;
+        }
+        .fc .fc-daygrid-day-frame {
+            padding: 2px;
+        }
+    }
     </style>
 
     <script id="events-data" type="application/json">
         <%- JSON.stringify(events || []) %>
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script>
-        document.addEventListener('jQueryLoaded', function() {
-            if (typeof jQuery === 'undefined' || typeof moment === 'undefined' || typeof $.fn.fullCalendar === 'undefined') {
-                console.error('Required libraries (jQuery, Moment.js, or FullCalendar) not loaded.');
-                $('#calendar').html('<div class="alert alert-warning">Calendar failed to load. Check console for details.</div>');
-                return;
-            }
-
-            $(document).ready(function() {
-                try {
-                    var events = JSON.parse($('#events-data').text());
-                    console.log('Calendar events data:', events);
-
-                    // Function to determine event type based on type field
-                    function getEventType(event) {
-                        const type = event.type || 'default';
-                        // Map water-related activities to 'water'
-                        if ([
-                            'kayaking', 'paddleboarding', 'swimming', 'fishing'
-                        ].includes(type.toLowerCase())) {
-                            return 'water';
-                        }
-                        // Map sports to 'sport'
-                        if ([
-                            'basketball', 'soccer', 'volleyball', 'tennis', 'running'
-                        ].includes(type.toLowerCase())) {
-                            return 'sport';
-                        }
-                        // Map bike-related activities to 'bike'
-                        if ([
-                            'cycling', 'bike', 'biking'
-                        ].includes(type.toLowerCase())) {
-                            return 'bike';
-                        }
-                        // Only 'hike' is green
-                        if (type.toLowerCase() === 'hike') {
-                            return 'hike';
-                        }
-                        return type.toLowerCase();
-                    }
-
-                    // Function to get icon class based on event type
-                    function getEventIcon(eventType) {
-                        switch(eventType.toLowerCase()) {
-                            case 'hike':
-                                return 'fas fa-hiking';
-                            case 'water':
-                                return 'fas fa-water';
-                            case 'social':
-                                return 'fas fa-users';
-                            case 'sport':
-                                return 'fas fa-running';
-                            case 'bike': // Added bike icon
-                                return 'fas fa-biking';
-                            default:
-                                return 'fas fa-calendar';
-                        }
-                    }
-
-                    // Initialize calendar
-                    $('#calendar').fullCalendar({
-                        header: {
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'month,agendaWeek,agendaDay'
-                        },
-                        views: {
-                            month: { buttonText: 'Month' },
-                            agendaWeek: { buttonText: 'Week' },
-                            agendaDay: { buttonText: 'Day' }
-                        },
-                        defaultView: 'month',
-                        editable: false,
-                        eventLimit: false,
-                        dayMaxEventRows: false,
-                        events: events.map(function(event) {
-                            var start = moment(event.dtstart).toISOString();
-                            var end = moment(event.dtend).toISOString();
-                            var eventType = getEventType(event);
-                            return {
-                                title: event.summary || 'No Title',
-                                start: start,
-                                end: end,
-                                location: event.location,
-                                id: event.eventId,
-                                allDay: true,
-                                url: '/events/event/' + event.eventId,
-                                eventType: eventType
-                            };
-                        }),
-                        eventRender: function(event, element) {
-                            element.attr('href', event.url);
-                            element.addClass(event.eventType);
-                            // Add icon to event
-                            var iconClass = getEventIcon(event.eventType);
-                            element.find('.fc-title').prepend(`<i class="${iconClass} event-icon"></i>`);
-                            // Add tooltip with event details
-                            var tooltipContent = `Time: ${moment(event.start).format('h:mm A')}<br>Location: ${event.location || 'Not specified'}`;
-                            element.append(`<span class="tooltip">${tooltipContent}</span>`);
-                        },
-                        eventClick: function(event) {
-                            window.location.href = event.url;
-                            return false;
-                        }
-                    });
-
-                    // Populate upcoming events with clickable links
-                    var today = moment();
-                    var nextWeek = moment().add(7, 'days');
-                    var upcomingEvents = events
-                        .filter(function(event) {
-                            var eventDate = moment(event.dtstart);
-                            return eventDate.isBetween(today, nextWeek, null, '[]');
-                        })
-                        .sort(function(a, b) {
-                            return moment(a.dtstart) - moment(b.dtstart);
-                        });
-
-                    var upcomingList = $('#upcoming-events-list');
-                    if (upcomingEvents.length === 0) {
-                        upcomingList.html('<p>No upcoming events in the next 7 days</p>');
-                    } else {
-                        upcomingEvents.forEach(function(event) {
-                            var date = moment(event.dtstart);
-                            var eventType = getEventType(event);
-                            var iconClass = getEventIcon(eventType);
-                            var eventItem = $('<div class="event-item">')
-                                .append(
-                                    $('<img class="event-thumbnail">')
-                                        .attr('src', event.image || 'https://via.placeholder.com/50') // Placeholder image
-                                        .attr('alt', 'Event Thumbnail')
-                                )
-                                .append(
-                                    $('<div class="event-info">')
-                                        .append(
-                                            $('<a class="event-title">')
-                                                .attr('href', '/events/event/' + event.eventId)
-                                                .text(event.summary || 'No Title')
-                                            )
-                                            .append(
-                                                $('<div class="event-time">')
-                                                    .text(date.format('MMM D, YYYY h:mm A'))
-                                            )
-                                            .append(
-                                                $('<span class="event-tag ' + eventType + '">')
-                                                    .html(`<i class="${iconClass}"></i>${eventType.charAt(0).toUpperCase() + eventType.slice(1)}`)
-                                            )
-                                    );
-                            eventItem.on('click', function() {
-                                window.location.href = '/events/event/' + event.eventId;
-                            });
-                            upcomingList.append(eventItem);
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error initializing calendar:', error);
-                    $('#calendar').html('<div class="alert alert-danger">Failed to initialize calendar. Check console for details.</div>');
+    const eventTypeIcons = {
+        hike: 'fas fa-hiking',
+        water: 'fas fa-water',
+        social: 'fas fa-users',
+        sport: 'fas fa-running',
+        bike: 'fas fa-biking',
+        default: 'fas fa-calendar'
+    };
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const events = JSON.parse(document.getElementById('events-data').textContent || '[]');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: 900,
+            events: events.map(event => {
+                const type = (event.type || 'default').toLowerCase();
+                return {
+                    title: event.summary || 'No Title',
+                    start: event.dtstart,
+                    end: event.dtend,
+                    url: '/events/event/' + event.eventId,
+                    allDay: true,
+                    eventType: type
+                };
+            }),
+            eventClassNames: function(arg) {
+                return ['fc-event-' + (arg.event.extendedProps.eventType || 'default')];
+            },
+            eventContent: function(arg) {
+                const type = arg.event.extendedProps.eventType || 'default';
+                const iconClass = eventTypeIcons[type] || eventTypeIcons.default;
+                return {
+                    html: `
+                        <span class="event-type"><i class="${iconClass}"></i> ${type.charAt(0).toUpperCase() + type.slice(1)}</span><br>
+                        <span class="event-title" style="white-space: normal;">${arg.event.title}</span>
+                    `
+                };
+            },
+            eventClick: function(info) {
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                    info.jsEvent.preventDefault();
                 }
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add calendar download functionality
-            const downloadBtn = document.getElementById('downloadCalendarBtn');
-            if (downloadBtn) {
-                downloadBtn.addEventListener('click', async function() {
-                    try {
-                        const response = await fetch('/events/calendar/download');
-                        if (!response.ok) {
-                            const data = await response.json();
-                            throw new Error(data.error || 'Failed to download calendar');
-                        }
-                        const blob = await response.blob();
-                        const link = document.createElement('a');
-                        link.href = window.URL.createObjectURL(blob);
-                        link.download = 'soda-city-events.ics';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    } catch (error) {
-                        console.error('Error downloading calendar:', error);
-                        alert(error.message || 'Sorry, there was an error downloading the calendar. Please try again later.');
-                    }
-                });
             }
         });
+        calendar.render();
+    });
     </script>
 </body>
 </html>

@@ -7,6 +7,7 @@ const { ensureAuthenticated, ensureAdmin } = require('../middleware/authMiddlewa
 const ICalGenerator = require('ical-generator').default;
 const moment = require('moment-timezone');
 const nodemailer = require('nodemailer');
+const { sendRSVPNotification } = require('../services/notifications');
 
 // Configure nodemailer for Hostinger
 const transporter = nodemailer.createTransport({
@@ -300,20 +301,10 @@ router.post('/rsvp/:eventId', ensureAuthenticated, async (req, res) => {
             console.log('Successfully updated event:', updatedEvent);
         }
 
-        // Send admin notification
+        // Send admin notification using centralized service
         console.log('Preparing to send RSVP notification email');
         try {
-            await sendAdminNotification(
-                'New Event RSVP',
-                `A new RSVP has been submitted:
-                Event: ${event.summary}
-                Date: ${new Date(event.dtstart).toLocaleDateString()}
-                Attendee: ${rsvp.username}
-                Email: ${req.session.user.email}
-                Phone Number: ${rsvp.phoneNumber}
-                Current RSVP Count: ${event.rsvps.length}`
-            );
-            console.log('RSVP notification email sent successfully');
+            await sendRSVPNotification(event, rsvp, req.session.user);
         } catch (emailError) {
             console.error('Failed to send RSVP notification:', emailError);
         }
@@ -377,7 +368,7 @@ router.get('/bytag/:tag', async (req, res) => {
 // Helper function to create ICS for a single event
 function createEventICS(event, req) {
     const calendar = ICalGenerator();
-    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+    const baseUrl = process.env.SITE_URL || `${req.protocol}://${req.get('host')}`;
     calendar.createEvent({
         start: moment(event.dtstart),
         end: moment(event.dtend),
@@ -404,7 +395,7 @@ router.get('/calendar/download', ensureAuthenticated, async (req, res) => {
         const calendar = ICalGenerator();
         calendar.name('Soda City Outdoors Events');
         calendar.timezone('America/New_York');
-        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+        const baseUrl = process.env.SITE_URL || `${req.protocol}://${req.get('host')}`;
 
         events.forEach(event => {
             calendar.createEvent({

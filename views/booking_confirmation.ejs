@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation - Soda City Outdoors</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8fafc;
+        }
+        .confirmation-section {
+            max-width: 900px;
+            margin: 3.5rem auto 0 auto;
+            padding: 2.5rem 1.5rem 2.5rem 1.5rem;
+            border-top: 4px solid var(--primary-color, #0e747c);
+            background: linear-gradient(120deg, #f8fafc 80%, #e0f7fa 100%);
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 24px rgba(30,126,109,0.08);
+        }
+        .confirmation-accent {
+            display: inline-block;
+            background: var(--primary-color, #0e747c);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 2rem;
+            padding: 0.4rem 1.5rem;
+            margin-bottom: 2rem;
+            letter-spacing: 0.5px;
+        }
+        .confirmation-flex {
+            display: flex;
+            gap: 2.5rem;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .confirmation-image {
+            width: 320px;
+            min-width: 220px;
+            max-width: 100%;
+            border-radius: 1.25rem;
+            box-shadow: 0 2px 12px rgba(30,126,109,0.10);
+            object-fit: cover;
+        }
+        .confirmation-details {
+            flex: 1;
+        }
+        .confirmation-location-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color, #0e747c);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+        .confirmation-date-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-color, #0a5961);
+            margin-bottom: 1.2rem;
+        }
+        .confirmation-success {
+            background: #e6f9ed;
+            border: 1.5px solid #1e7e6d;
+            color: #1e7e6d;
+            border-radius: 1rem;
+            padding: 1.5rem 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .confirmation-details-list {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .confirmation-detail-label {
+            font-weight: 600;
+            color: var(--primary-color, #0e747c);
+            font-size: 1.08rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .confirmation-detail-value {
+            font-size: 1.08rem;
+            color: #222;
+            margin-bottom: 0.5rem;
+        }
+        .btn-primary {
+            background: var(--primary-color, #0e747c);
+            border-color: var(--primary-color, #0e747c);
+            font-weight: 700;
+            border-radius: 0.75rem;
+            font-size: 1.15rem;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover {
+            background: var(--accent-color, #0a5961);
+            border-color: var(--accent-color, #0a5961);
+        }
+        @media (max-width: 991.98px) {
+            .confirmation-flex {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1.5rem;
+            }
+            .confirmation-image {
+                width: 100%;
+                min-width: 0;
+                max-width: 100%;
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="confirmation-section">
+        <div class="confirmation-accent">Booking Confirmation</div>
+        <div class="confirmation-flex">
+            <% let imageFile = '';
+                const locName = reservation.locationName || (reservation.location && reservation.location.name) || '';
+                switch (locName) {
+                    case 'Lake Murray Public Park':
+                        imageFile = '/static/images/lake-murray.jpg';
+                        break;
+                    case 'Saluda Shoals Park':
+                        imageFile = '/static/images/saluda-shoals.jpg';
+                        break;
+                    case 'Saluda Riverwalk':
+                        imageFile = '/static/images/saluda-riverwalk.jpg';
+                        break;
+                    case 'Dreher Island State Park':
+                        imageFile = '/static/images/dreher-island.jpg';
+                        break;
+                    case 'South Cedar Creek at Congaree National Park':
+                        imageFile = '/static/images/congaree-creek.jpg';
+                        break;
+                    default:
+                        imageFile = '';
+                }
+            %>
+            <% if (imageFile) { %>
+                <img src="<%= imageFile %>" alt="<%= locName %>" class="confirmation-image mb-3 mb-lg-0" />
+            <% } %>
+            <div class="confirmation-details">
+                <div class="confirmation-location-title"><i class="fas fa-map-marker-alt me-2"></i><%= locName %></div>
+                <div class="confirmation-date-title"><i class="fas fa-calendar-alt me-2"></i><%= formattedDate %></div>
+                <div class="confirmation-success">
+                    <h4 class="mb-2">Booking Confirmed!</h4>
+                    <p class="mb-2">Your rental has been successfully booked. Here are your booking details:</p>
+                    <p class="mb-0">A confirmation email will be sent to you shortly. If you have any questions, please contact us at <a href="mailto:scoadmin@sodacityoutdoors.com">scoadmin@sodacityoutdoors.com</a>.</p>
+                </div>
+                <div class="confirmation-details-list">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="confirmation-detail-label"><i class="fas fa-cube"></i> Equipment</div>
+                            <div class="confirmation-detail-value"><%= reservation.equipmentType || (reservation.rentalItem && reservation.rentalItem.type) %></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="confirmation-detail-label"><i class="fas fa-hashtag"></i> Quantity</div>
+                            <div class="confirmation-detail-value"><%= reservation.quantity %></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="confirmation-detail-label"><i class="fas fa-clock"></i> Time</div>
+                            <div class="confirmation-detail-value"><%= reservation.interval === 'half-day' ? 'Half Day' : 'Full Day' %></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="confirmation-detail-label"><i class="fas fa-dollar-sign"></i> Total Amount</div>
+                            <div class="confirmation-detail-value">$<%= reservation.total.toFixed(2) %></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="confirmation-detail-label"><i class="fas fa-credit-card"></i> Payment Method</div>
+                            <div class="confirmation-detail-value"><%= reservation.paymentMethod === 'stripe' ? 'Credit Card' : 'Cash' %></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="confirmation-detail-label"><i class="fas fa-receipt"></i> Payment Status</div>
+                            <div class="confirmation-detail-value"><%= reservation.paymentStatus === 'paid' ? 'Paid' : 'Unpaid' %></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-grid mt-4">
+                    <a href="/" class="btn btn-primary btn-lg fw-bold py-3">Return to Home</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

@@ -1,0 +1,30 @@
+<div class="form-group">
+    <label for="interval">Rental Duration:</label>
+    <select class="form-control" id="interval" name="interval" required>
+        <option value="half-day">Half Day</option>
+        <option value="full-day">Full Day</option>
+    </select>
+</div>
+
+<div class="form-group" id="timeBlockGroup" style="display: none;">
+    <label for="timeBlock">Time Block:</label>
+    <select class="form-control" id="timeBlock" name="timeBlock">
+        <option value="AM">Morning (10AM - 2PM)</option>
+        <option value="PM">Afternoon (2PM - 6PM)</option>
+    </select>
+</div>
+
+<script>
+document.getElementById('interval').addEventListener('change', function() {
+    const timeBlockGroup = document.getElementById('timeBlockGroup');
+    const timeBlockSelect = document.getElementById('timeBlock');
+    
+    if (this.value === 'half-day') {
+        timeBlockGroup.style.display = 'block';
+        timeBlockSelect.required = true;
+    } else {
+        timeBlockGroup.style.display = 'none';
+        timeBlockSelect.required = false;
+    }
+});
+</script> 
