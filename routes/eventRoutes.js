@@ -7,7 +7,7 @@ const { ensureAuthenticated, ensureAdmin } = require('../middleware/authMiddlewa
 const ICalGenerator = require('ical-generator').default;
 const moment = require('moment-timezone');
 const nodemailer = require('nodemailer');
-const { sendRSVPNotification } = require('../services/notifications');
+const { sendRSVPNotification, sendRSVPConfirmationEmail } = require('../services/notifications');
 
 // Configure nodemailer for Hostinger
 const transporter = nodemailer.createTransport({
@@ -307,6 +307,14 @@ router.post('/rsvp/:eventId', ensureAuthenticated, async (req, res) => {
             await sendRSVPNotification(event, rsvp, req.session.user);
         } catch (emailError) {
             console.error('Failed to send RSVP notification:', emailError);
+        }
+
+        // Send confirmation email to the user
+        console.log('Preparing to send RSVP confirmation email to user');
+        try {
+            await sendRSVPConfirmationEmail(rsvp, req.session.user);
+        } catch (emailError) {
+            console.error('Failed to send RSVP confirmation email:', emailError);
         }
 
         // Return success response with updated event data
@@ -624,14 +632,10 @@ router.delete('/rsvp/:eventId', ensureAuthenticated, async (req, res) => {
 
         // Send admin notification
         try {
-            await sendAdminNotification(
-                'Event RSVP Cancelled',
-                `An RSVP has been cancelled:
-                Event: ${updatedEvent.summary}
-                Date: ${new Date(updatedEvent.dtstart).toLocaleDateString()}
-                Attendee: ${req.session.user.username}
-                Email: ${req.session.user.email}
-                Current RSVP Count: ${updatedEvent.rsvps.length}`
+            await sendRSVPNotification(
+                updatedEvent,
+                deletedRSVP,
+                req.session.user
             );
         } catch (emailError) {
             console.error('Failed to send RSVP cancellation notification:', emailError);

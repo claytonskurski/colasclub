@@ -32,6 +32,7 @@ const eventSchema = new mongoose.Schema({
   tags: [{ type: String }],
   attendees: [{ type: String }],
   rsvps: [{ type: String }],
+  maxRSVPs: { type: Number, default: null },
   status: { 
     type: String, 
     enum: ['approved', 'pending', 'rejected'],

@@ -213,6 +213,15 @@ router.post('/register', async (req, res) => {
             console.error('Error sending new user notification:', notifyErr);
         }
 
+        // Send welcome email to the new user
+        try {
+            const { sendWelcomeNewUserEmail } = require('../services/notifications');
+            await sendWelcomeNewUserEmail(newUser);
+            console.log('Welcome email sent to new user');
+        } catch (welcomeErr) {
+            console.error('Error sending welcome email:', welcomeErr);
+        }
+
         // Store user data in session
         req.session.user = {
             _id: newUser._id,

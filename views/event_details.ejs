@@ -110,9 +110,15 @@
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <h3 style="margin-bottom: 0;">RSVP to this Event</h3>
                         <% if (user && !event.rsvps.includes(user.username)) { %>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rsvpModal">
-                                RSVP Now
-                            </button>
+                            <% if (!event.maxRSVPs || event.rsvps.length < event.maxRSVPs) { %>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rsvpModal">
+                                    RSVP Now
+                                </button>
+                            <% } else { %>
+                                <button type="button" class="btn btn-secondary" disabled>
+                                    Event Full
+                                </button>
+                            <% } %>
                         <% } %>
                     </div>
                     <% if (user) { %>
@@ -128,7 +134,7 @@
 
                     <!-- Attendees List -->
                     <div class="attendees-section mt-4">
-                        <h3>Attendees (<span id="attendeeCount"><%= event.rsvps.length %></span>)</h3>
+                        <h3>Attendees (<span id="attendeeCount"><%= event.rsvps.length %></span><% if (event.maxRSVPs) { %>/<%= event.maxRSVPs %><% } %>)</h3>
                         <div id="attendeesList">
                             <% if (event.rsvps && event.rsvps.length > 0) { %>
                                 <div class="attendees-list">
@@ -143,6 +149,12 @@
                                 <p>No RSVPs yet. Be the first to RSVP!</p>
                             <% } %>
                         </div>
+                        <% if (event.maxRSVPs && event.rsvps.length >= event.maxRSVPs) { %>
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-exclamation-circle"></i>
+                                This event has reached its maximum capacity.
+                            </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
