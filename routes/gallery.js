@@ -3,31 +3,35 @@ const GalleryItem = require('../models/GalleryItem'); // Adjust path if necessar
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
+const sharp = require('sharp');
 
-// --- Multer Configuration for File Uploads ---
-
-// Define the destination directory
+// --- Constants ---
 const UPLOAD_DIR = path.join(__dirname, '..', 'public_html', 'uploads', 'gallery');
+const THUMB_DIR = path.join(UPLOAD_DIR, 'thumbnails');
 
-// Ensure the upload directory exists
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Ensure upload directories exist
+async function ensureDirectories() {
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    await fs.mkdir(THUMB_DIR, { recursive: true });
+}
+ensureDirectories();
 
 // Configure disk storage
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: async function (req, file, cb) {
+        await ensureDirectories();
         cb(null, UPLOAD_DIR);
     },
     filename: function (req, file, cb) {
-        // Create a unique filename: timestamp + originalname
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + '-' + file.originalname.replace(/\s+/g, '_')); // Replace spaces
+        const ext = path.extname(file.originalname).toLowerCase();
+        cb(null, uniqueSuffix + ext);
     }
 });
 
 // File filter function
 const fileFilter = (req, file, cb) => {
-    // Accept only specific image types
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const mimetype = allowedTypes.test(file.mimetype);
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -35,75 +39,135 @@ const fileFilter = (req, file, cb) => {
     if (mimetype && extname) {
         return cb(null, true);
     }
-    cb(new Error('Error: File upload only supports the following filetypes - ' + allowedTypes), false);
+    cb(new Error('Only image files (JPEG, PNG, GIF, WEBP) are allowed!'), false);
 };
 
 // Multer middleware instance
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    limits: { 
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+        files: 20 // Allow up to 20 files at once
+    },
     fileFilter: fileFilter
-}).array('galleryImages', 10); // Allow up to 10 images
+}).array('galleryImages', 20);
+
+// Image processing function
+async function processImage(file) {
+    const originalPath = file.path;
+    const filename = path.basename(file.path);
+    const thumbFilename = `thumb_${filename}`;
+    const thumbPath = path.join(THUMB_DIR, thumbFilename);
+    
+    try {
+        // Create optimized main image
+        await sharp(originalPath)
+            .resize(1920, 1080, { 
+                fit: 'inside',
+                withoutEnlargement: true
+            })
+            .jpeg({ quality: 80 })
+            .toFile(originalPath + '_optimized');
+
+        // Create thumbnail
+        await sharp(originalPath)
+            .resize(300, 300, { 
+                fit: 'cover',
+                position: 'centre'
+            })
+            .jpeg({ quality: 70 })
+            .toFile(thumbPath);
+
+        // Replace original with optimized version
+        await fs.unlink(originalPath);
+        await fs.rename(originalPath + '_optimized', originalPath);
+
+        return {
+            mainUrl: `/static/uploads/gallery/${filename}`,
+            thumbnailUrl: `/static/uploads/gallery/thumbnails/${thumbFilename}`
+        };
+    } catch (error) {
+        console.error('Error processing image:', error);
+        throw error;
+    }
+}
 
 // --- Routes ---
 
 // GET /gallery - Display the gallery page
 router.get('/', async (req, res, next) => {
     try {
-        const galleryItems = await GalleryItem.find().sort({ uploadDate: -1 }); // Fetch newest first
-        
+        const galleryItems = await GalleryItem.find().sort({ uploadDate: -1 });
         res.render('gallery', { 
             title: 'Gallery', 
             galleryItems: galleryItems,
-            user: req.user // Pass user if needed for layout/auth checks
+            user: req.user
         });
     } catch (err) {
-        console.error("Error fetching gallery items:", err);
-        // Simple error handling for now, render error page or pass to error handler
-        res.status(500).send("Error loading gallery"); 
-        // Or use next(err) if you have a centralized error handler
+        next(err);
     }
 });
 
 // GET /gallery/upload - Display the upload form
 router.get('/upload', (req, res) => {
-    // Optional: Add middleware here later to check if user is admin/allowed to upload
     res.render('gallery_upload', { 
-        title: 'Upload Gallery Image',
+        title: 'Upload Gallery Images',
         user: req.user
     });
 });
 
 // POST /gallery/upload - Handle the image upload and data saving
-router.post('/upload', upload, async (req, res) => {
-    if (!req.files || req.files.length === 0) {
-        console.log("Upload attempt failed: No files or invalid file types.");
-        return res.status(400).send('Upload failed. Check file types and sizes.');
-    }
-
+router.post('/upload', async (req, res) => {
     try {
-        const { title, description } = req.body;
-        const imageUrls = req.files.map(file => '/static/uploads/gallery/' + file.filename);
+        // Handle file upload
+        await new Promise((resolve, reject) => {
+            upload(req, res, function(err) {
+                if (err instanceof multer.MulterError) {
+                    reject(new Error(`Upload error: ${err.message}`));
+                } else if (err) {
+                    reject(err);
+                }
+                resolve();
+            });
+        });
 
+        if (!req.files || req.files.length === 0) {
+            throw new Error('No files were uploaded.');
+        }
+
+        // Process all images
+        const processedImages = await Promise.all(req.files.map(processImage));
+
+        // Create gallery item
         const newGalleryItem = new GalleryItem({
-            title: title,
-            description: description,
-            imageUrls: imageUrls
+            title: req.body.title,
+            description: req.body.description,
+            imageUrls: processedImages.map(img => img.mainUrl),
+            thumbnailUrls: processedImages.map(img => img.thumbnailUrl)
         });
 
         await newGalleryItem.save();
-
-        console.log('Gallery item saved:', newGalleryItem);
-        res.redirect('/gallery');
-
-    } catch (err) {
-        console.error("Error saving gallery item:", err);
-        req.files.forEach(file => {
-            fs.unlink(file.path, (unlinkErr) => {
-                if (unlinkErr) console.error("Error deleting uploaded file after DB error:", unlinkErr);
-            });
+        
+        res.json({ 
+            success: true, 
+            message: 'Images uploaded successfully',
+            redirect: '/gallery'
         });
-        res.status(500).send('Error saving gallery item to database.');
+
+    } catch (error) {
+        console.error('Upload error:', error);
+        
+        // Clean up any uploaded files if there was an error
+        if (req.files) {
+            await Promise.all(req.files.map(file => 
+                fs.unlink(file.path).catch(err => console.error('Error deleting file:', err))
+            ));
+        }
+        
+        res.status(400).json({ 
+            success: false, 
+            error: error.message || 'Error uploading images'
+        });
     }
 });
 

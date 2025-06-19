@@ -16,19 +16,31 @@ const galleryItemSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Gallery item must have at least one image URL']
     }],
+    thumbnailUrls: [{
+        type: String,
+        required: [true, 'Gallery item must have thumbnail URLs']
+    }],
     uploadDate: {
         type: Date,
         default: Date.now
     },
     // Optional: Add user reference if you want to track who uploaded it
-     uploadedBy: {
-         type: mongoose.Schema.ObjectId,
-         ref: 'User' 
-     }
+    uploadedBy: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+    },
+    metadata: {
+        width: Number,
+        height: Number,
+        size: Number,
+        format: String
+    }
+}, {
+    timestamps: true // Adds createdAt and updatedAt timestamps
 });
 
 // Optional: Indexing for faster queries if needed
-// galleryItemSchema.index({ uploadDate: -1 }); 
+galleryItemSchema.index({ uploadDate: -1 });
 
 const GalleryItem = mongoose.model('GalleryItem', galleryItemSchema);
 

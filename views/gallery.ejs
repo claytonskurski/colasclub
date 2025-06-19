@@ -1,139 +1,253 @@
-<div class="container mt-5">
-    <div class="text-center mb-5">
-        <h1>Photo Gallery</h1>
-        <p class="lead text-muted">Share your adventures with us! Upload your favorite moments and inspire others to explore.</p>
-    </div>
+<!-- Dependencies -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lightgallery.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lg-zoom.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lg-thumbnail.min.css" rel="stylesheet">
 
-    <!-- Action Buttons -->
-    <div class="text-center mb-4">
-        <a href="/gallery" class="btn btn-secondary me-2">Back to Gallery</a>
-        <a href="/gallery/upload" class="btn btn-primary">Upload Images</a>
+<div class="gallery-container">
+    <!-- Header Section -->
+    <div class="gallery-header">
+        <h1>Adventure Gallery</h1>
+        <p class="lead">Capturing Moments, Creating Memories</p>
+        <div class="gallery-actions">
+            <a href="/gallery/upload" class="btn btn-primary btn-lg">
+                <i class="fas fa-upload me-2"></i>Share Your Adventure
+            </a>
+        </div>
     </div>
 
     <% if (galleryItems && galleryItems.length > 0) { %>
-        <div class="gallery-grid">
-            <% galleryItems.forEach(item => { %>
-                <div class="gallery-card">
-                    <div id="carousel<%= item._id %>" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
-                            <% item.imageUrls.forEach((url, index) => { %>
-                                <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                                    <a href="<%= url %>" data-lightbox="gallery-<%= item._id %>" data-title="<%= item.title %>">
-                                        <img src="<%= url %>" class="d-block w-100" alt="<%= item.title %>">
-                                    </a>
-                                </div>
-                            <% }); %>
-                        </div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel<%= item._id %>" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#carousel<%= item._id %>" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
-                    </div>
-                    <div class="gallery-info">
-                        <h5 class="gallery-title text-center"><%= item.title %></h5>
-                        <% if (item.description) { %>
-                            <p class="gallery-description"><%= item.description %></p>
+        <!-- Masonry Gallery -->
+        <div class="gallery-masonry" id="lightgallery">
+            <% 
+            // Flatten all images into a single array with their metadata
+            let allImages = [];
+            galleryItems.forEach(item => {
+                item.imageUrls.forEach((url, index) => {
+                    allImages.push({
+                        mainUrl: url,
+                        thumbUrl: item.thumbnailUrls[index],
+                        title: item.title,
+                        description: item.description,
+                        date: item.uploadDate
+                    });
+                });
+            });
+
+            // Shuffle the images for variety
+            allImages.sort(() => Math.random() - 0.5);
+
+            allImages.forEach(image => { 
+            %>
+                <a href="<%= image.mainUrl %>" 
+                   class="gallery-item"
+                   data-sub-html="<h4><%= image.title %></h4><p><%= image.description %></p>"
+                   data-lg-size="1600-1067">
+                    <img src="<%= image.thumbUrl || image.mainUrl %>" 
+                         alt="<%= image.title %>"
+                         class="img-fluid"
+                         loading="lazy">
+                    <div class="gallery-item-info">
+                        <h3><%= image.title %></h3>
+                        <% if (image.description) { %>
+                            <p><%= image.description %></p>
                         <% } %>
-                        <p class="gallery-date text-muted">
-                            <small>Uploaded: <%= new Date(item.uploadDate).toLocaleDateString() %></small>
-                        </p>
                     </div>
-                </div>
+                </a>
             <% }); %>
         </div>
     <% } else { %>
-        <div class="text-center">
-            <p>No gallery items have been added yet.</p>
-            <!-- Optional: Add a link to upload page for admins later -->
-            <% /* if (user && user.isAdmin) { %>
-                <a href="/admin/gallery/upload" class="btn btn-primary">Upload First Image</a>
-            <% } */ %>
+        <div class="empty-gallery">
+            <i class="fas fa-camera fa-4x"></i>
+            <h2>No Adventures Yet</h2>
+            <p>Be the first to share your outdoor experiences!</p>
+            <a href="/gallery/upload" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-upload me-2"></i>Upload Photos
+            </a>
         </div>
     <% } %>
 </div>
 
-<!-- Basic Styling for the Gallery -->
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/lightgallery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/zoom/lg-zoom.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/thumbnail/lg-thumbnail.min.js"></script>
+
 <style>
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid */
-    gap: 2rem;
-    padding-bottom: 3rem;
+:root {
+    --gallery-spacing: 0.5rem;
+    --header-height: 300px;
 }
 
-.gallery-card {
-    border: 1px solid #eee;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    background-color: #fff;
+.gallery-container {
+    min-height: 100vh;
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+.gallery-header {
+    height: var(--header-height);
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                url('/static/images/SCO Logo.webp') center/cover;
+    background-attachment: fixed;
 }
 
-.gallery-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+.gallery-header h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-.gallery-card a { /* Lightbox link */
-    display: block; /* Make link cover the image area */
+.gallery-header .lead {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
-.gallery-image {
-    width: 100%;
-    height: 220px; /* Fixed height for images */
-    object-fit: cover; /* Crop images nicely */
+.gallery-masonry {
+    columns: 6 250px;
+    column-gap: var(--gallery-spacing);
+    padding: var(--gallery-spacing);
+    background-color: #1a1a1a;
+}
+
+.gallery-item {
+    break-inside: avoid;
+    margin-bottom: var(--gallery-spacing);
+    position: relative;
     display: block;
+    overflow: hidden;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
-.gallery-info {
+.gallery-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.05);
+}
+
+.gallery-item-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 1rem;
-    flex-grow: 1; /* Allows description area to grow if needed */
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: white;
+    opacity: 0;
+    transform: translateY(1rem);
+    transition: all 0.3s ease;
 }
 
-.gallery-title {
+.gallery-item:hover .gallery-item-info {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.gallery-item-info h3 {
     font-size: 1.1rem;
-    font-weight: 600;
     margin-bottom: 0.5rem;
-    color: var(--primary-color, #0e747c); 
-    text-align: center; /* Center the title */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
-.gallery-description {
+.gallery-item-info p {
     font-size: 0.9rem;
-    color: #555;
-    margin-bottom: 0.75rem;
-    line-height: 1.4;
+    margin: 0;
+    opacity: 0.9;
 }
 
-.gallery-date {
-    font-size: 0.8rem;
-    margin-top: auto; /* Pushes date to the bottom */
+.empty-gallery {
+    height: calc(100vh - var(--header-height));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    color: #888;
 }
 
-/* Basic Lightbox styles (if you add one) */
-/* You would typically use a library like Lightbox2 or FancyBox */
-/* These are just placeholders if you don't add a library immediately */
-body.lightbox-open { overflow: hidden; }
-.lightbox-backdrop { /* Example */
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1040; }
-.lightbox-image-container { /* Example */
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050; }
+.empty-gallery i {
+    margin-bottom: 1.5rem;
+}
 
+.empty-gallery h2 {
+    margin-bottom: 1rem;
+}
+
+/* LightGallery Customization */
+.lg-backdrop {
+    background-color: rgba(0, 0, 0, 0.95);
+}
+
+.lg-toolbar,
+.lg-outer {
+    background-color: transparent;
+}
+
+.lg-sub-html {
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 2rem;
+}
+
+.lg-sub-html h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .gallery-header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .gallery-header .lead {
+        font-size: 1.2rem;
+    }
+    
+    .gallery-masonry {
+        columns: 2 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery-masonry {
+        columns: 1 auto;
+    }
+}
 </style>
 
-<!-- Consider adding a Lightbox library for better image viewing -->
-<!-- Example using Lightbox2 (requires adding CSS/JS) -->
-<!-- <link href="/path/to/lightbox.min.css" rel="stylesheet" /> -->
-<!-- <script src="/path/to/lightbox.min.js"></script> -->
-
-<!-- Back to Gallery Button (if needed) -->
-<div class="text-center mt-4">
-    <a href="/gallery" class="btn btn-secondary">Back to Gallery</a>
-</div> 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const gallery = document.getElementById('lightgallery');
+    if (gallery) {
+        lightGallery(gallery, {
+            speed: 500,
+            plugins: [lgZoom, lgThumbnail],
+            licenseKey: 'your-license-key',
+            thumbnail: true,
+            animateThumb: true,
+            zoomFromOrigin: true,
+            allowMediaOverlap: true,
+            toggleThumb: true,
+            closeOnTap: true,
+            download: false,
+            subHtmlSelectorRelative: true
+        });
+    }
+});
+</script> 
