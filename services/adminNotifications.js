@@ -166,20 +166,6 @@ const sendNewUserNotification = async (user) => {
     }
 };
 
-// Schedule notifications for an event
-const scheduleEventNotifications = async (user, event) => {
-    const eventDate = new Date(event.dtstart);
-    
-    // Schedule email for 24 hours before
-    const emailDate = new Date(eventDate);
-    emailDate.setHours(emailDate.getHours() - 24);
-    
-    // Use node-schedule to schedule notifications
-    require('node-schedule').scheduleJob(emailDate, async () => {
-        await sendEmail(user.email, 'eventReminder', { user, event });
-    });
-};
-
 // Send RSVP notification to admin
 const sendRSVPNotification = async (event, rsvp, user) => {
     try {
@@ -225,13 +211,10 @@ Payment Method: ${reservation.paymentMethod === 'stripe' ? 'Credit Card' : 'Cash
 };
 
 module.exports = {
-    sendEmail,
-    scheduleEventNotifications,
-    sendRentalConfirmationEmails,
-    sendRSVPNotification,
-    sendRentalNotification,
     sendNewUserNotification,
     sendAdminNotification,
+    sendRSVPNotification,
+    sendRentalNotification,
     startUserWatcher,
     stopUserWatcher
 };
