@@ -26,7 +26,7 @@ transporter.verify(function (error, success) {
             auth_provided: !!process.env.EMAIL_PASS
         });
     } else {
-        console.log('Notification email server is ready');
+        console.log('Admin notification email server is ready');
     }
 });
 
@@ -58,6 +58,9 @@ const initializeUserWatcher = async () => {
                 const user = await User.findById(change.documentKey._id);
                 if (user) {
                     console.log('[CHANGE STREAM] Processing new user:', user.email);
+                    
+                    // Send admin notification
+                    await sendNewUserNotification(user);
                     
                     // Send welcome email to the new user
                     const { sendWelcomeNewUserEmail } = require('./newUserEmails');
@@ -110,100 +113,56 @@ const stopUserWatcher = () => {
     }
 };
 
-// Function to get upcoming events within the next 7 days
-const getUpcomingEvents = async () => {
-    try {
-        const now = new Date();
-        const sevenDaysFromNow = new Date();
-        sevenDaysFromNow.setDate(now.getDate() + 7);
-        
-        const events = await Event.find({
-            dtstart: {
-                $gte: now.toISOString(),
-                $lte: sevenDaysFromNow.toISOString()
-            },
-            status: 'pending'
-        })
-        .sort({ dtstart: 1 })
-        .limit(3)
-        .select('summary dtstart');
-        
-        return events;
-    } catch (error) {
-        console.error('Error fetching upcoming events:', error);
-        return [];
-    }
-};
-
-// CLIENT-FACING EMAIL TEMPLATES
-const clientEmailTemplates = {
-    welcome: (user) => ({
-        subject: 'Welcome to Soda City Outdoors!',
-        html: `
-            <h1>Welcome to Soda City Outdoors, ${user.firstName}!</h1>
-            <p>We're excited to have you join our community of outdoor enthusiasts.</p>
-            <p>Here are a few things you can do to get started:</p>
-            <ul>
-                <li>Browse our upcoming events</li>
-                <li>Complete your profile</li>
-                <li>Join our forum discussions</li>
-            </ul>
-            <p>Happy adventuring!</p>
-        `
-    }),
-    eventReminder: (user, event) => ({
-        subject: `Reminder: ${event.summary} tomorrow`,
-        html: `
-            <h2>Event Reminder</h2>
-            <p>Hi ${user.firstName},</p>
-            <p>This is a reminder that you're registered for:</p>
-            <h3>${event.summary}</h3>
-            <p><strong>When:</strong> ${new Date(event.dtstart).toLocaleString()}</p>
-            <p><strong>Where:</strong> ${event.location}</p>
-            <p>See you there!</p>
-        `
-    })
-};
-
-// Send client-facing email
-const sendEmail = async (to, template, data) => {
-    try {
-        // Support both sync and async template functions
-        let result = clientEmailTemplates[template](data);
-        if (result instanceof Promise) {
-            result = await result;
-        }
-        const { subject, html } = result;
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to,
-            subject,
-            html
+// Helper function to send admin notifications
+async function sendAdminNotification(subject, text) {
+    console.log('Attempting to send admin notification:', { subject, text });
+    
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.warn('Email configuration not found:', {
+            EMAIL_USER: !!process.env.EMAIL_USER,
+            EMAIL_PASS: !!process.env.EMAIL_PASS
         });
-        console.log(`Client email sent successfully to ${to}`);
+        return;
+    }
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
+        to: 'scoadmin@sodacityoutdoors.com',
+        subject: subject,
+        text: text
+    };
+
+    try {
+        console.log('Sending admin email with options:', {
+            from: mailOptions.from,
+            to: mailOptions.to,
+            subject: mailOptions.subject
+        });
+        await transporter.sendMail(mailOptions);
+        console.log('Admin notification email sent successfully');
+    } catch (emailError) {
+        console.error('Error sending admin notification email:', {
+            error: emailError.message,
+            stack: emailError.stack,
+            code: emailError.code,
+            command: emailError.command
+        });
+    }
+}
+
+// Send new user notification
+const sendNewUserNotification = async (user) => {
+    console.log('[NOTIFY] Entered sendNewUserNotification for user:', user.email);
+    try {
+        await sendAdminNotification(
+            'New User Registration',
+            `A new user has registered:\nUsername: ${user.username}\nEmail: ${user.email}\nFirst Name: ${user.firstName}\nLast Name: ${user.lastName}\nRegistration Date: ${new Date().toLocaleDateString()}`
+        );
+        console.log('[NOTIFY] Admin notification email sent successfully for user:', user.email);
         return true;
     } catch (error) {
-        console.error('Error sending client email:', error);
+        console.error('[NOTIFY] Failed to send new user notification:', error);
         return false;
-    }
-};
-
-// Send RSVP notification
-const sendRSVPNotification = async (event, rsvp, user) => {
-    try {
-        const subject = 'New Event RSVP';
-        const text = `
-New RSVP for Event:
-Event: ${event.summary}
-Date: ${new Date(event.dtstart).toLocaleDateString()}
-Attendee: ${user.username}
-Email: ${user.email}
-Phone: ${rsvp.phoneNumber}
-Current RSVP Count: ${event.rsvps.length}
-        `;
-        await sendEmail(user.email, 'rsvpConfirmation', { rsvp, user });
-    } catch (error) {
-        console.error('Error sending RSVP notification:', error);
     }
 };
 
@@ -221,10 +180,58 @@ const scheduleEventNotifications = async (user, event) => {
     });
 };
 
+// Send RSVP notification to admin
+const sendRSVPNotification = async (event, rsvp, user) => {
+    try {
+        const subject = 'New Event RSVP';
+        const text = `
+New RSVP for Event:
+Event: ${event.summary}
+Date: ${new Date(event.dtstart).toLocaleDateString()}
+Attendee: ${user.username}
+Email: ${user.email}
+Phone: ${rsvp.phoneNumber}
+Current RSVP Count: ${event.rsvps.length}
+        `;
+        await sendAdminNotification(subject, text);
+    } catch (error) {
+        console.error('Error sending RSVP notification:', error);
+    }
+};
+
+// Send rental notification to admin
+const sendRentalNotification = async (reservation) => {
+    try {
+        const subject = 'New Rental Booking';
+        const text = `
+New Rental Booking:
+Customer Name: ${reservation.name}
+Customer Email: ${reservation.email}
+Location: ${reservation.locationName}
+Equipment: ${reservation.equipmentType}
+Quantity: ${reservation.quantity}
+Date: ${reservation.date.toISOString().split('T')[0]}
+Time: ${reservation.interval === 'half-day' 
+    ? `Half Day (${reservation.timeBlock === 'AM' ? '10AM - 2PM' : reservation.timeBlock === 'PM' ? '2PM - 6PM' : ''})` 
+    : 'Full Day (10AM - 6PM)'}
+Total Amount: $${reservation.total.toFixed(2)}
+Payment Status: ${reservation.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+Payment Method: ${reservation.paymentMethod === 'stripe' ? 'Credit Card' : 'Cash'}
+        `;
+        await sendAdminNotification(subject, text);
+    } catch (error) {
+        console.error('Error sending rental notification:', error);
+    }
+};
+
 module.exports = {
     sendEmail,
     scheduleEventNotifications,
+    sendRentalConfirmationEmails,
     sendRSVPNotification,
+    sendRentalNotification,
+    sendNewUserNotification,
+    sendAdminNotification,
     startUserWatcher,
     stopUserWatcher
 };

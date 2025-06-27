@@ -26,7 +26,8 @@ const GalleryItem = require('./models/GalleryItem');
 const rentalLocationsRoutes = require('./routes/rentalLocations');
 const rentalItemsRoutes = require('./routes/rentalItems');
 const rentalRoutes = require('./routes/rentalRoutes');
-const { sendAdminNotification } = require('./services/notifications');
+const { sendAdminNotification } = require('./services/adminNotifications');
+const { startUserWatcher } = require('./services/notifications');
 
 const app = express();
 
@@ -177,6 +178,7 @@ mongoose.set('strictQuery', true);
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         console.log('Connected to MongoDB successfully');
+        startUserWatcher();
     })
     .catch((err) => {
         console.error('MongoDB connection error:', err);

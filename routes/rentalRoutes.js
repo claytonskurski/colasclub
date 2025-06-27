@@ -4,9 +4,9 @@ const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 const RentalItem = require('../models/rentalItem');
 const Reservation = require('../models/reservation');
 const RentalLocation = require('../models/rentalLocation');
-const { sendEmail } = require('../services/notifications');
+const { sendRentalConfirmationEmail } = require('../services/reservationEmails');
 const { format, utcToZonedTime } = require('date-fns-tz');
-const { sendRentalConfirmationEmails, sendRentalNotification } = require('../services/notifications');
+const { sendRentalNotification } = require('../services/adminNotifications');
 
 console.log('rentalRoutes loaded');
 
@@ -512,7 +512,7 @@ router.get('/booking-confirmation/:reservationId', async (req, res) => {
 
         // Send confirmation email
         try {
-            await sendEmail(reservation.email, 'rentalConfirmation', reservation);
+            await sendRentalConfirmationEmail(reservation);
             console.log('Rental confirmation email sent successfully');
         } catch (emailError) {
             console.error('Error sending rental confirmation email:', emailError);
@@ -792,7 +792,7 @@ router.post('/confirm', async (req, res) => {
 
         // Send confirmation email
         try {
-            await sendEmail(reservation.email, 'rentalConfirmation', reservation);
+            await sendRentalConfirmationEmail(reservation);
             console.log('Rental confirmation email sent successfully to:', reservation.email);
         } catch (emailError) {
             console.error('Error sending rental confirmation email:', emailError);

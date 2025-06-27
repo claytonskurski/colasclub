@@ -7,7 +7,8 @@ const { ensureAuthenticated, ensureAdmin } = require('../middleware/authMiddlewa
 const ICalGenerator = require('ical-generator').default;
 const moment = require('moment-timezone');
 const nodemailer = require('nodemailer');
-const { sendRSVPNotification, sendRSVPConfirmationEmail } = require('../services/notifications');
+const { sendRSVPNotification } = require('../services/adminNotifications');
+const { sendRSVPConfirmationEmail } = require('../services/rsvpEmails');
 
 // Configure nodemailer for Hostinger
 const transporter = nodemailer.createTransport({
@@ -88,6 +89,21 @@ router.get('/', async (req, res) => {
         // Check if user is authenticated
         const isAuthenticated = !!req.session.user;
 
+        // Helper function for formatting image paths
+        const formatImagePath = (imagePath) => {
+            if (!imagePath) return '';
+            if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+                return imagePath; // External image, return as is
+            }
+            if (imagePath.startsWith('static/')) {
+                return '/' + imagePath;
+            } else if (imagePath.startsWith('/static/')) {
+                return imagePath;
+            } else {
+                return '/static/' + imagePath;
+            }
+        };
+
         res.render('events', { 
             events,
             tagCounts,
@@ -95,7 +111,8 @@ router.get('/', async (req, res) => {
             title: 'Events',
             user: req.session.user,
             moment: moment,
-            isAuthenticated // Pass this to the template
+            isAuthenticated, // Pass this to the template
+            formatImagePath
         });
     } catch (error) {
         console.error('Error fetching events:', error);
@@ -174,6 +191,9 @@ router.get('/event/:id', ensureAuthenticated, async (req, res) => {
         // Helper function for formatting image paths
         const formatImagePath = (imagePath) => {
             if (!imagePath) return '';
+            if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+                return imagePath; // External image, return as is
+            }
             if (imagePath.startsWith('static/')) {
                 return '/' + imagePath;
             } else if (imagePath.startsWith('/static/')) {

@@ -11,7 +11,7 @@ const fs = require('fs');
 const Event = require('../models/events');
 const RSVP = require('../models/rsvp');
 const Host = require('../models/host');
-const { sendNewUserNotification } = require('../services/notifications');
+const { sendNewUserNotification } = require('../services/adminNotifications');
 
 // Configure multer for handling file uploads
 const storage = multer.diskStorage({
@@ -215,7 +215,7 @@ router.post('/register', async (req, res) => {
 
         // Send welcome email to the new user
         try {
-            const { sendWelcomeNewUserEmail } = require('../services/notifications');
+            const { sendWelcomeNewUserEmail } = require('../services/newUserEmails');
             await sendWelcomeNewUserEmail(newUser);
             console.log('Welcome email sent to new user');
         } catch (welcomeErr) {
