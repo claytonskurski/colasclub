@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Issues Dashboard - Soda City Outdoors</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .user-card {
+            border-left: 4px solid #dc3545;
+            margin-bottom: 1rem;
+        }
+        .user-card.suspended {
+            border-left-color: #dc3545;
+        }
+        .user-card.paused {
+            border-left-color: #ffc107;
+        }
+        .user-card.pending {
+            border-left-color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">Payment Issues Dashboard</h1>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <h5>Suspended</h5>
+                                <h3 id="suspended-count">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body text-center">
+                                <h5>Paused</h5>
+                                <h3 id="paused-count">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h5>Pending Review</h5>
+                                <h3 id="pending-count">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-secondary text-white">
+                            <div class="card-body text-center">
+                                <h5>Total Issues</h5>
+                                <h3 id="total-count">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Users with Payment Issues</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="users-container">
+                            <div class="text-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Details Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">User Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="userModalBody">
+                    <!-- User details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="reinstateBtn">Reinstate Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentUserId = null;
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/payment-issues');
+                const users = await response.json();
+                
+                updateCounts(users);
+                renderUsers(users);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('users-container').innerHTML = 
+                    '<div class="alert alert-danger">Error loading users</div>';
+            }
+        }
+
+        function updateCounts(users) {
+            const counts = {
+                suspended: users.filter(u => u.accountStatus === 'suspended').length,
+                paused: users.filter(u => u.accountStatus === 'paused').length,
+                pending: users.filter(u => u.accountStatus === 'pending_reinstatement').length,
+                total: users.length
+            };
+
+            document.getElementById('suspended-count').textContent = counts.suspended;
+            document.getElementById('paused-count').textContent = counts.paused;
+            document.getElementById('pending-count').textContent = counts.pending;
+            document.getElementById('total-count').textContent = counts.total;
+        }
+
+        function renderUsers(users) {
+            const container = document.getElementById('users-container');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No users with payment issues found.</div>';
+                return;
+            }
+
+            container.innerHTML = users.map(user => `
+                <div class="card user-card ${user.accountStatus}" onclick="showUserDetails('${user._id}')">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <h6 class="mb-1">${user.firstName} ${user.lastName}</h6>
+                                <small class="text-muted">${user.email}</small>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="badge status-badge bg-${getStatusColor(user.accountStatus)}">
+                                    ${user.accountStatus.replace('_', ' ')}
+                                </span>
+                            </div>
+                            <div class="col-md-2">
+                                <small class="text-muted">${user.membership}</small>
+                            </div>
+                            <div class="col-md-2">
+                                <small class="text-muted">
+                                    ${user.lastPaymentFailure ? 
+                                        `${user.lastPaymentFailure.attempts} attempts` : 
+                                        'No failures'
+                                    }
+                                </small>
+                            </div>
+                            <div class="col-md-2">
+                                <small class="text-muted">
+                                    ${user.accountPauseDate ? 
+                                        new Date(user.accountPauseDate).toLocaleDateString() : 
+                                        'N/A'
+                                    }
+                                </small>
+                            </div>
+                            <div class="col-md-1">
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'suspended': return 'danger';
+                case 'paused': return 'warning';
+                case 'pending_reinstatement': return 'info';
+                default: return 'secondary';
+            }
+        }
+
+        async function showUserDetails(userId) {
+            try {
+                const response = await fetch(`/api/admin/user/${userId}`);
+                const user = await response.json();
+                
+                currentUserId = userId;
+                
+                const modalBody = document.getElementById('userModalBody');
+                modalBody.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>User Information</h6>
+                            <p><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                            <p><strong>Username:</strong> ${user.username}</p>
+                            <p><strong>Phone:</strong> ${user.phone}</p>
+                            <p><strong>Membership:</strong> ${user.membership}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Account Status</h6>
+                            <p><strong>Status:</strong> <span class="badge bg-${getStatusColor(user.accountStatus)}">${user.accountStatus}</span></p>
+                            <p><strong>Subscription:</strong> ${user.accountStatus}</p>
+                            <p><strong>Paid This Month:</strong> ${user.paidForCurrentMonth ? 'Yes' : 'No'}</p>
+                            <p><strong>Pause Reason:</strong> ${user.accountPauseReason || 'N/A'}</p>
+                            <p><strong>Pause Date:</strong> ${user.accountPauseDate ? new Date(user.accountPauseDate).toLocaleDateString() : 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    ${user.lastPaymentFailure ? `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Last Payment Failure</h6>
+                            <p><strong>Date:</strong> ${new Date(user.lastPaymentFailure.date).toLocaleDateString()}</p>
+                            <p><strong>Reason:</strong> ${user.lastPaymentFailure.reason}</p>
+                            <p><strong>Attempts:</strong> ${user.lastPaymentFailure.attempts}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${user.paymentFailureHistory && user.paymentFailureHistory.length > 0 ? `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Payment Failure History</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Reason</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${user.paymentFailureHistory.map(failure => `
+                                            <tr>
+                                                <td>${new Date(failure.date).toLocaleDateString()}</td>
+                                                <td>${failure.reason}</td>
+                                                <td>${failure.amount ? `$${(failure.amount / 100).toFixed(2)}` : 'N/A'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Admin Notes</h6>
+                            <textarea class="form-control" id="adminNotes" rows="3">${user.adminNotes || ''}</textarea>
+                        </div>
+                    </div>
+                `;
+                
+                const modal = new bootstrap.Modal(document.getElementById('userModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Error loading user details:', error);
+                alert('Error loading user details');
+            }
+        }
+
+        document.getElementById('reinstateBtn').addEventListener('click', async function() {
+            if (!currentUserId) return;
+            
+            const adminNotes = document.getElementById('adminNotes').value;
+            
+            try {
+                const response = await fetch(`/api/admin/user/${currentUserId}/reinstate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ adminNotes })
+                });
+                
+                if (response.ok) {
+                    alert('Account reinstated successfully');
+                    bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+                    loadUsers(); // Refresh the list
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                console.error('Error reinstating account:', error);
+                alert('Error reinstating account');
+            }
+        });
+
+        // Load users on page load
+        document.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+</body>
+</html> 

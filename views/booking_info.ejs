@@ -178,7 +178,24 @@
                             <select class="form-select form-control-lg" id="paymentMethod" name="paymentMethod" required>
                                 <option value="card">Card</option>
                                 <option value="cash">Cash</option>
+                                <option value="member">Member (Free)</option>
                             </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="howDidYouHear" class="form-label fw-semibold">How did you hear about us?</label>
+                            <select class="form-select form-control-lg" id="howDidYouHear" name="howDidYouHear" required>
+                                <option value="">Select an option</option>
+                                <option value="Google">Google</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Reddit">Reddit</option>
+                                <option value="Flyers">Flyers</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="howDidYouHearOtherGroup" style="display: none;">
+                            <label for="howDidYouHearOther" class="form-label fw-semibold">Please specify</label>
+                            <input type="text" class="form-control form-control-lg" id="howDidYouHearOther" name="howDidYouHearOther" placeholder="How did you hear about us?">
                         </div>
                     </div>
                     <div class="d-grid mt-5">
@@ -223,11 +240,28 @@
         }
     }
 
+    function updateHowDidYouHearOtherVisibility() {
+        const howDidYouHear = document.getElementById('howDidYouHear');
+        const howDidYouHearOtherGroup = document.getElementById('howDidYouHearOtherGroup');
+        const howDidYouHearOther = document.getElementById('howDidYouHearOther');
+        
+        if (howDidYouHear.value === 'Other') {
+            howDidYouHearOtherGroup.style.display = 'block';
+            howDidYouHearOther.required = true;
+        } else {
+            howDidYouHearOtherGroup.style.display = 'none';
+            howDidYouHearOther.required = false;
+            howDidYouHearOther.value = '';
+        }
+    }
+
     document.getElementById('interval').addEventListener('change', updateTimeBlockVisibility);
     document.getElementById('equipment').addEventListener('change', updateQuantityLimit);
+    document.getElementById('howDidYouHear').addEventListener('change', updateHowDidYouHearOtherVisibility);
     document.addEventListener('DOMContentLoaded', () => {
         updateTimeBlockVisibility();
         updateQuantityLimit();
+        updateHowDidYouHearOtherVisibility();
     });
     </script>
 </body>

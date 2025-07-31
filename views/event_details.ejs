@@ -13,11 +13,11 @@
         <!-- Hero Image -->
         <% if (event.images && event.images.length > 0) { %>
             <div class="hero-image">
-                <img src="<%= event.images[0] %>" alt="<%= event.summary %>">
+                <img src="<%= formatImagePath(event.images[0]) %>" alt="<%= event.summary %>">
             </div>
         <% } else if (event.image) { %>
             <div class="hero-image">
-                <img src="<%= event.image %>" alt="<%= event.summary %>">
+                <img src="<%= formatImagePath(event.image) %>" alt="<%= event.summary %>">
             </div>
         <% } %>
 
@@ -42,7 +42,7 @@
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-map-marker-alt"></i>
-                        <a href="https://www.google.com/maps/search/?api=1&query=<%= encodeURIComponent(event.location) %>" target="_blank" class="location-link">
+                        <a href="https://www.openstreetmap.org/search?query=<%= encodeURIComponent(event.location) %>" target="_blank" class="location-link">
                             <%= event.location %>
                         </a>
                     </div>

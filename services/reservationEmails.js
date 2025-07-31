@@ -58,21 +58,21 @@ const rentalConfirmationTemplate = (reservation) => {
                 <h2 style="color:#2c3e50;margin:0 0 20px 0;">Rental Confirmation</h2>
                 <p style="margin:0 0 15px 0;">Thank you for your rental with Soda City Outdoors! Our goal is to make it as easy as possible for you to get on the water this summer!</p>
                 <p style="margin:0 0 20px 0;">Please find your rental details below, and make sure they are correct. We will meet you at your selected location and provide you with all the equipment you need.</p>
-                <div style="background-color:#f8f9fa;padding:15px;border-radius:5px;margin:20px 0;">
-                    <h3 style="color:#2c3e50;margin:0 0 15px 0;">Rental Details:</h3>
-                    <ul style="list-style:none;padding:0;margin:0;">
-                        <li style="margin-bottom:10px;"><strong>Location:</strong> ${reservation.locationName}</li>
-                        <li style="margin:0 0 10px 20px;color:#666;">${locationAddress}</li>
-                        <li style="margin-bottom:10px;"><strong>Equipment:</strong> ${reservation.equipmentType} ${equipmentDetails}</li>
-                        <li style="margin-bottom:10px;"><strong>Quantity:</strong> ${reservation.quantity}</li>
-                        <li style="margin-bottom:10px;"><strong>Date:</strong> ${reservation.date.toISOString().split('T')[0]}</li>
-                        <li style="margin-bottom:10px;"><strong>Time:</strong> ${reservation.interval === 'half-day' 
+                <div style="background-color:#f8f9fa;padding:20px;border-radius:8px;margin:20px 0;border-left:4px solid #0e747c;">
+                    <h2 style="color:#2c3e50;margin:0 0 15px 0;">Rental Details</h2>
+                    <div style="margin-bottom:15px;">
+                        <h3 style="color:#0e747c;margin:0 0 10px 0;">${reservation.equipmentType} ${equipmentDetails}</h3>
+                        <p style="margin:0 0 8px 0;color:#666;"><strong>Location:</strong> ${reservation.locationName}</p>
+                        <p style="margin:0 0 8px 0;color:#666;"><strong>Address:</strong> ${locationAddress}</p>
+                        <p style="margin:0 0 8px 0;color:#666;"><strong>Quantity:</strong> ${reservation.quantity}</p>
+                        <p style="margin:0 0 8px 0;color:#666;"><strong>Date:</strong> ${reservation.date.toISOString().split('T')[0]}</p>
+                        <p style="margin:0 0 8px 0;color:#666;"><strong>Time:</strong> ${reservation.interval === 'half-day' 
                             ? `Half Day (${reservation.timeBlock === 'AM' ? '10AM - 2PM' : reservation.timeBlock === 'PM' ? '2PM - 6PM' : ''})` 
-                            : 'Full Day (10AM - 6PM)'}</li>
-                        <li style="margin-bottom:10px;"><strong>Total Amount:</strong> $${reservation.total.toFixed(2)}</li>
-                        <li style="margin-bottom:10px;"><strong>Payment Status:</strong> ${reservation.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}</li>
-                        <li style="margin-bottom:0;"><strong>Payment Method:</strong> ${reservation.paymentMethod === 'stripe' ? 'Credit Card' : 'Cash'}</li>
-                    </ul>
+                            : 'Full Day (10AM - 6PM)'}</p>
+                        <p style="margin:0 0 8px 0;color:#666;"><strong>Total Amount:</strong> $${reservation.total.toFixed(2)}</p>
+                        <p style="margin:0 0 8px 0;color:#666;"><strong>Payment Status:</strong> ${reservation.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}</p>
+                        <p style="margin:10px 0 0 0;color:#666;"><strong>Payment Method:</strong> ${reservation.paymentMethod === 'stripe' ? 'Credit Card' : reservation.paymentMethod === 'member' ? 'Member (Free)' : 'Cash'}</p>
+                    </div>
                 </div>
                 <p style="margin:20px 0;">If you have any questions, please contact us at <a href="mailto:scoadmin@sodacityoutdoors.com" style="color:#0e747c;text-decoration:none;">scoadmin@sodacityoutdoors.com</a></p>
                 <div style="margin-top:30px;padding-top:20px;border-top:1px solid #eee;">

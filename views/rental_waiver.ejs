@@ -215,6 +215,8 @@
                     <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>">
                     <input type="hidden" name="date" value="<%= date %>">
                     <input type="hidden" name="timeBlock" value="<%= timeBlock %>">
+                    <input type="hidden" name="howDidYouHear" value="<%= howDidYouHear %>">
+                    <input type="hidden" name="howDidYouHearOther" value="<%= howDidYouHearOther %>">
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" id="waiverAgreement" required>
                         <label class="form-check-label" for="waiverAgreement">
@@ -233,7 +235,7 @@
     <script>
     document.getElementById('waiverForm').addEventListener('submit', function(e) {
         var paymentMethod = document.querySelector('input[name="paymentMethod"]').value;
-        if (paymentMethod === 'cash') {
+        if (paymentMethod === 'cash' || paymentMethod === 'member') {
             this.action = '/rentals/confirm';
         } else {
             this.action = '/rentals/payment';

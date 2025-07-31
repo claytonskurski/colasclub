@@ -4,21 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title><%= typeof title !== 'undefined' ? title + ' - Soda City Outdoors' : 'Calendar - Soda City Outdoors' %></title>
-    <!-- Inherit styles from layout.ejs -->
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <!-- Event Header -->
-    <div class="events-header">
-        <h1>Event Calendar</h1>
+<body style="background: #f8fafc; min-height: 100vh; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
+    <!-- Header -->
+    <div class="bg-white border-bottom border-slate-200 sticky-top" style="z-index: 10;">
+        <div class="max-w-7xl mx-auto px-4 py-6" style="max-width: 1400px; margin: 0 auto; padding: 1.5rem;">
+            <h1 class="text-3xl font-bold text-slate-900" style="font-size: 1.875rem; font-weight: 700; color: #1e293b; margin: 0;">Event Calendar</h1>
+        </div>
     </div>
 
-    <div class="container-fluid calendar-page-container py-3 d-flex flex-column align-items-center">
-        <!-- Reduced mt-5 to py-3 to remove whitespace above calendar -->
-        <section class="calendar-top-section">
-            <div class="calendar-top-row d-flex align-items-stretch justify-content-between mb-5">
-                <div class="upcoming-events-horizontal" style="flex: 1;">
-                    <h3 class="mb-4">Upcoming Events</h3>
-                    <div class="upcoming-events-row">
+    <div class="max-w-7xl mx-auto px-4 py-8 space-y-8" style="max-width: 1400px; margin: 0 auto; padding: 1rem;">
+        <!-- Top Section -->
+        <div class="grid lg:grid-cols-2 gap-8" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+            <!-- Upcoming Events -->
+            <div class="shadow-sm border-0 bg-white" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border: none; background: white; border-radius: 0.5rem;">
+                <div class="p-6" style="padding: 1rem;">
+                    <h2 class="text-xl font-semibold text-slate-900 mb-6" style="font-size: 1.125rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Upcoming Events</h2>
+                    <div class="space-y-4" style="display: flex; flex-direction: column; gap: 0.75rem;">
                         <% 
                             const today = moment().startOf('day');
                             const nextWeek = moment().add(7, 'days').endOf('day');
@@ -27,7 +35,7 @@
                                 return eventDate.isBetween(today, nextWeek, null, '[]');
                             });
                         %>
-                        <% filteredEvents.slice(0, 10).forEach(function(event) { %>
+                        <% filteredEvents.slice(0, 5).forEach(function(event) { %>
                             <% 
                                 let type = (event.type || '').toLowerCase();
                                 let iconClass = 'fas fa-calendar';
@@ -43,457 +51,349 @@
                                     iconClass = 'fas fa-biking';
                                 }
                             %>
-                            <div class="upcoming-event-card">
-                                <div class="event-date-badge"><%= moment(event.dtstart).format('MMM D') %></div>
-                                <div class="event-info">
-                                    <div class="event-title"><a href="/events/event/<%= event.eventId %>"><%= event.summary %></a></div>
-                                    <div class="event-meta">
-                                        <span class="event-type <%= type %>"><i class="<%= iconClass %>"></i> <%= type.charAt(0).toUpperCase() + type.slice(1) %></span>
-                                        <span class="event-time"><%= moment(event.dtstart).format('h:mm A') %></span>
+                            <div class="group">
+                                <a href="/events/event/<%= event.eventId %>" 
+                                   class="flex items-center gap-4 p-4 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 transition-all duration-200 hover:shadow-sm border border-transparent hover:border-slate-200"
+                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 0.75rem; background: rgba(248, 250, 252, 0.5); transition: all 0.2s ease; border: 1px solid transparent; text-decoration: none; color: inherit; min-height: 60px;">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-teal-500 rounded-lg flex items-center justify-center text-white font-semibold text-sm"
+                                             style="width: 2.5rem; height: 2.5rem; background: #0e747c; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.75rem;">
+                                            <%= moment(event.dtstart).format('D') %>
+                                            <div class="text-xs opacity-90 ml-1" style="font-size: 0.625rem; opacity: 0.9; margin-left: 0.125rem;"><%= moment(event.dtstart).format('MMM') %></div>
+                                        </div>
                                     </div>
-                                </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-medium text-slate-900 group-hover:text-teal-700 transition-colors truncate"
+                                            style="font-weight: 500; color: #1e293b; transition: color 0.2s ease; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.875rem;">
+                                            <%= event.summary %>
+                                        </h3>
+                                        <div class="flex items-center gap-3 mt-1 text-sm text-slate-600" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem; font-size: 0.75rem; color: #64748b;">
+                                            <span class="flex items-center gap-1" style="display: flex; align-items: center; gap: 0.25rem;">
+                                                <span><%= type === 'hike' ? '🥾' : type === 'water' ? '🚣' : type === 'social' ? '👥' : type === 'sport' ? '🏃' : type === 'bike' ? '🚴' : '📅' %></span>
+                                                <%= type.charAt(0).toUpperCase() + type.slice(1) %>
+                                            </span>
+                                            <span><%= moment(event.dtstart).format('h:mm A') %></span>
+                                        </div>
+                                    </div>
+                                </a>
                             </div>
                         <% }); %>
                     </div>
                 </div>
-                <div class="submit_event_container text-center ms-5" style="flex: 1; min-width: 260px;">
-                    <p class="submit-description mb-2">Have an idea for an adventure? Submit an event below.</p>
-                    <a href="/submit_event" class="submit_event_btn"><i class="fas fa-plus me-2"></i>Submit Event</a>
+            </div>
+
+            <!-- Submit Event -->
+            <div class="shadow-sm border-0 bg-teal-50" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border: none; background: #f0fdfa; border-radius: 0.5rem;">
+                <div class="p-6 flex flex-col items-center justify-center text-center h-full" style="padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 200px;">
+                    <div class="w-16 h-16 bg-teal-500 rounded-2xl flex items-center justify-center mb-4" style="width: 3rem; height: 3rem; background: #0e747c; border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
+                        <i class="fas fa-plus text-white" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2" style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Have an Adventure Idea?</h3>
+                    <p class="text-slate-600 mb-6 max-w-sm" style="color: #64748b; margin-bottom: 1rem; max-width: 20rem; font-size: 0.875rem;">
+                        Share your outdoor adventure ideas with the community and help others discover new experiences.
+                    </p>
+                    <a href="/submit_event" 
+                       class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                       style="background: #0e747c; color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 500; transition: all 0.2s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; min-height: 44px;">
+                        <i class="fas fa-plus" style="font-size: 0.875rem;"></i>
+                        Submit Event
+                    </a>
                 </div>
             </div>
-        </section>
-        <section class="calendar-section">
-            <div class="calendar-container card">
-                <div id="calendar"></div>
-                <% if (user && user.subscriptionStatus === 'active') { %>
-                    <div class="calendar-download-section mt-4 p-3 border-top">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <button id="downloadCalendarBtn" class="btn btn-primary" style="background-color: #80bec0; border-color: #80bec0;">
-                                    <i class="fas fa-download me-2"></i>Download Calendar (ICS)
+        </div>
+
+        <!-- Calendar Section -->
+        <div class="shadow-sm border-0 bg-white" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border: none; background: white; border-radius: 0.5rem;">
+            <div class="p-6" style="padding: 1rem;">
+                <div id="calendar" class="calendar-container"></div>
+
+                <!-- Download Section -->
+                <% if (user && (user.accountStatus === 'active' || user.accountStatus === 'trial')) { %>
+                    <div class="mt-6 pt-6 border-t border-slate-200" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div class="flex-1">
+                                <button id="downloadCalendarBtn" 
+                                        class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-md"
+                                        style="background: #0e747c; color: white; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.2s ease; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; min-height: 44px; width: 100%; justify-content: center;">
+                                    <i class="fas fa-download" style="font-size: 0.875rem;"></i>
+                                    Download Calendar (ICS)
                                 </button>
-                                <p class="text-muted mt-2 mb-0 small">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    <em>Note: The calendar is subject to change, so please be sure to reference this version if you have a previous download</em>
+                                <p class="text-sm text-slate-500 mt-2 flex items-start gap-2" style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                    <i class="fas fa-info-circle mt-0.5 flex-shrink-0" style="margin-top: 0.125rem; flex-shrink: 0; font-size: 0.75rem;"></i>
+                                    <span>
+                                        <em>Note: The calendar is subject to change, so please reference this version if you have a previous download</em>
+                                    </span>
                                 </p>
                             </div>
                         </div>
                     </div>
                 <% } else if (!user) { %>
-                    <div class="calendar-download-section mt-4 p-3 border-top">
-                        <div class="alert alert-info">
-                            <i class="fas fa-lock me-2"></i>
-                            Calendar download is available for members only. 
-                            <a href="/signin" class="alert-link">Sign in</a> or <a href="/signup" class="alert-link">join now</a> to access this feature!
+                    <div class="mt-6 pt-6 border-t border-slate-200" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                        <div class="border-blue-200 bg-blue-50 p-4 rounded-lg" style="border: 1px solid #bfdbfe; background: #eff6ff; padding: 0.75rem; border-radius: 0.5rem;">
+                            <div class="flex items-start gap-3" style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                <i class="fas fa-lock text-blue-600" style="color: #2563eb; font-size: 0.875rem; margin-top: 0.125rem;"></i>
+                                <div class="text-blue-800" style="color: #1e40af; font-size: 0.875rem;">
+                                    Calendar download is available for members only. 
+                                    <a href="/signin" class="font-medium underline hover:no-underline" style="font-weight: 500; text-decoration: underline;">Sign in</a> or 
+                                    <a href="/signup" class="font-medium underline hover:no-underline" style="font-weight: 500; text-decoration: underline;">join now</a> to access this feature!
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <% } else { %>
-                    <div class="calendar-download-section mt-4 p-3 border-top">
-                        <div class="alert alert-info">
-                            <i class="fas fa-lock me-2"></i>
-                            Calendar download is available for active members only. 
-                            Please <a href="/account" class="alert-link">activate your membership</a> to access this feature!
+                    <div class="mt-6 pt-6 border-t border-slate-200" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                        <div class="border-blue-200 bg-blue-50 p-4 rounded-lg" style="border: 1px solid #bfdbfe; background: #eff6ff; padding: 0.75rem; border-radius: 0.5rem;">
+                            <div class="flex items-start gap-3" style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                <i class="fas fa-lock text-blue-600" style="color: #2563eb; font-size: 0.875rem; margin-top: 0.125rem;"></i>
+                                <div class="text-blue-800" style="color: #1e40af; font-size: 0.875rem;">
+                                    Calendar download is available for active members only. 
+                                    <a href="/account" class="font-medium underline hover:no-underline" style="font-weight: 500; text-decoration: underline;">Activate your membership</a> to access this feature!
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <% } %>
             </div>
-        </section>
+        </div>
     </div>
 
     <style>
-    :root {
-        --primary-color: #0e747c;
-        --accent-color: #80bec0;
-        --text-color: #333;
-        --light-bg: #f8f9fa;
-        --hiking-color: #2e7d32; /* Green for hiking */
-        --water-color: #0288d1; /* Blue for all water activities */
-        --social-color: #f57c00; /* Orange for social events */
-        --sport-color: #d32f2f; /* Red for sports */
-        --bike-color: #ab47bc; /* Light purple for bike */
-    }
-
-    .container {
-        background: linear-gradient(135deg, rgba(248, 249, 250, 0.9), rgba(255, 255, 255, 0.9)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path fill="%23e0e0e0" fill-opacity="0.1" d="M50,150 Q100,50 150,150 T250,150" stroke="none"/></svg>') repeat;
-        border-radius: 12px;
-    }
-
-    .calendar-container {
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        margin-bottom: 20px;
-    }
-
-    .submit_event_container {
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center; /* Vertically center content */
-        align-items: center; /* Horizontally center content */
-        background: white; /* Match background of upcoming events */
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Match shadow */
-    }
-
-    .submit-description {
-        font-size: 1rem;
-        color: var(--text-color);
-        font-weight: 500;
-    }
-
-    .submit_event_btn {
-        display: block;
-        width: 100%;
-        padding: 12px 24px;
-        background-color: var(--primary-color);
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-size: 1.1em;
-        transition: all 0.3s ease;
-        text-align: center;
-    }
-
-    .submit_event_btn:hover {
-        background-color: var(--accent-color);
-        transform: translateY(-2px);
-    }
-
-    .upcoming-events {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .upcoming-events h3 {
-        color: var(--primary-color);
-        margin-bottom: 20px;
-        font-size: 1.5em;
-        font-weight: 600;
-    }
-
-    .event-item {
-        display: flex;
-        align-items: center;
-        padding: 15px;
-        border-bottom: 1px solid #eee;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        margin-bottom: 10px;
-    }
-
-    .event-item:hover {
-        background-color: var(--light-bg);
-        transform: translateY(-2px);
-    }
-
-    .event-item:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-    }
-
-    .event-thumbnail {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        border-radius: 8px;
-        margin-right: 15px;
-    }
-
-    .event-info {
-        flex: 1;
-    }
-
-    .event-title {
-        color: var(--primary-color);
-        font-weight: 500;
-        margin-bottom: 5px;
-        font-size: 1.1em;
-        display: block;
-    }
-
-    .event-time {
-        color: var(--text-color);
-        font-size: 0.95em;
-        display: block;
-    }
-
-    .event-tag {
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 10px;
-        background-color: var(--light-bg);
-        border-radius: 12px;
-        font-size: 0.85em;
-        margin-right: 5px;
-        transition: background-color 0.3s ease;
-    }
-
-    .event-tag i {
-        margin-right: 5px;
-        font-size: 0.9em;
-    }
-
-    .event-tag.hike { background-color: var(--hiking-color); color: white; }
-    .event-tag.water { background-color: var(--water-color); color: white; }
-    .event-tag.social { background-color: var(--social-color); color: white; }
-    .event-tag.sport { background-color: var(--sport-color); color: white; }
-    .event-tag.bike { background-color: var(--bike-color); color: white; } /* Added bike color */
-
-    .event-tag:hover {
-        opacity: 0.9;
-    }
-
-    .view-all-link {
-        display: inline-block;
-        color: var(--primary-color);
-        text-decoration: none;
-        font-weight: 500;
-        transition: color 0.3s ease;
-    }
-
-    .view-all-link:hover {
-        color: var(--accent-color);
-    }
-
-    /* FullCalendar Styles */
-    .fc-header-toolbar {
-        margin-bottom: 2em !important;
-        font-family: 'Roboto', sans-serif;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        justify-content: flex-end; /* Moved buttons to right */
-    }
-
-    .fc-button-primary {
-        background-color: var(--primary-color) !important;
-        border-color: var(--primary-color) !important;
-        border-radius: 8px;
-        padding: 8px 16px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .fc-button-primary:hover {
-        background-color: var(--accent-color) !important;
-        border-color: var(--accent-color) !important;
-        transform: translateY(-2px);
-    }
-
-    .fc-button-primary:focus {
-        box-shadow: 0 0 0 0.2rem rgba(14, 116, 124, 0.25) !important;
-    }
-
-    .fc-day-grid .fc-row {
-        border-color: #e0e0e0 !important;
-    }
-
-    .fc-day-header {
-        padding: 10px !important;
-        font-weight: 600;
-        color: var(--text-color);
-    }
-
-    .fc-day {
-        transition: background-color 0.3s ease;
-    }
-
-    .fc-day:hover {
-        background-color: rgba(0, 0, 0, 0.03);
-    }
-
-    .fc-day-top {
-        padding: 8px !important;
-    }
-
-    .fc-day-number {
-        font-size: 1.1em;
-        color: var(--text-color);
-    }
-
-    .fc-day-today {
-        background-color: rgba(14, 116, 124, 0.2) !important;
-        border: 2px solid var(--primary-color) !important;
-        border-radius: 8px;
-    }
-
-    .fc-day-today .fc-day-number {
-        color: var(--primary-color);
-        font-weight: 600;
-    }
-
-    .fc-event {
-        display: flex;
-        align-items: center;
-        padding: 6px 10px;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s ease, opacity 0.3s ease;
-        font-size: 0.9em;
-        position: relative;
-        border: none !important;
-        margin: 2px 0;
-    }
-
-    .fc-event:hover {
-        transform: translateY(-2px);
-        opacity: 0.9;
-    }
-
-    .fc-event.hike { background-color: var(--hiking-color); }
-    .fc-event.water { background-color: var(--water-color); }
-    .fc-event.social { background-color: var(--social-color); }
-    .fc-event.sport { background-color: var(--sport-color); }
-    .fc-event.bike { background-color: var(--bike-color); } /* Added bike color */
-
-    .fc-event .event-icon {
-        margin-right: 5px;
-        font-size: 0.9em;
-    }
-
-    .fc-event .tooltip {
-        visibility: hidden;
-        background-color: var(--text-color);
-        color: white;
-        text-align: center;
-        border-radius: 6px;
-        padding: 8px 12px;
-        position: absolute;
-        z-index: 1000;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 0.85em;
-        white-space: nowrap;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    .fc-event:hover .tooltip {
-        visibility: visible;
-    }
-
-    /* Mobile Responsiveness */
-    @media (max-width: 767.98px) {
-        .col-md-9,
-        .col-md-3 {
-            width: 100%;
-        }
-
-        .calendar-container {
-            display: block; /* Ensure calendar loads on mobile */
-        }
-
-        .upcoming-events {
-            margin-top: 20px;
-        }
-
-        #upcoming-events-list {
-            margin-bottom: 0;
+        /* FullCalendar Modern Styling */
+        .fc {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         .fc-header-toolbar {
-            flex-direction: column;
-            gap: 10px;
-            justify-content: center; /* Center buttons on mobile */
+            margin-bottom: 1.5rem !important;
+            padding: 0 0.5rem;
+            flex-direction: column !important;
+            gap: 1rem !important;
         }
 
-        .fc-center {
-            order: -1;
-            margin-bottom: 10px;
-            text-align: center; /* Center title on mobile */
+        .fc-toolbar-title {
+            font-size: 1.25rem !important;
+            font-weight: 600 !important;
+            color: #1e293b !important;
+            text-align: center !important;
         }
 
-        .submit_event_btn {
-            width: 100%;
-            text-align: center;
+        .fc-button-group {
+            justify-content: center !important;
+            display: flex !important;
+            gap: 0.5rem !important;
         }
 
-        .calendar-top-row {
-            flex-direction: column;
-            gap: 20px;
+        .fc-button-primary {
+            background: #0e747c !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            padding: 0.75rem 1rem !important;
+            font-weight: 500 !important;
+            font-size: 0.875rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+            min-height: 44px !important;
+            min-width: 44px !important;
         }
 
-        .upcoming-events-horizontal, .submit_event_container {
-            flex: 100%;
+        .fc-button-primary:hover {
+            background: #0a5961 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
         }
-    }
 
-    /* Ensure upcoming events and submit sections match calendar width */
-    .calendar-top-row {
-        max-width: 1700px; /* Match calendar container max-width */
-        width: 100%;
-    }
-
-    .upcoming-events-horizontal, .submit_event_container {
-        flex: 1;
-        min-width: 0; /* Allow flex to adjust width */
-    }
-
-    #calendar {
-        max-width: 1700px;
-        width: 100%;
-        margin: 0 auto;
-        background: #fff;
-        border-radius: 18px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        padding: 0;
-    }
-    .calendar-container.card {
-        max-width: 1700px;
-        width: 100%;
-        margin: 0 auto;
-        background: #fff;
-        border-radius: 18px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        padding: 18px 8px 8px 8px;
-    }
-    /* Remove fixed height if present */
-    .calendar-container.card[style] {
-        height: auto !important;
-    }
-
-    /* Remove blue underline from calendar links and event titles */
-    .fc a,
-    .fc-event-title,
-    .fc-event .event-title,
-    .fc-event .event-type {
-        text-decoration: none !important;
-        color: inherit !important;
-    }
-
-    .fc-event-hike { background: #168f3e !important; color: #fff !important; }
-    .fc-event-water { background: #1976d2 !important; color: #fff !important; }
-    .fc-event-social { background: #f57c00 !important; color: #fff !important; }
-    .fc-event-sport { background: #c62828 !important; color: #fff !important; }
-    .fc-event-bike { background: #7b1fa2 !important; color: #fff !important; }
-    .fc-event-default { background: #757575 !important; color: #fff !important; }
-
-    /* Mobile Responsiveness: shrink calendar and font on mobile */
-    @media (max-width: 900px) {
-        .calendar-container.card {
-            width: 100vw;
-            max-width: 100vw;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 0;
-            margin: 0;
-            border-radius: 0;
+        .fc-button-primary:focus {
+            box-shadow: 0 0 0 3px rgba(14, 116, 124, 0.3) !important;
         }
-        #calendar {
-            width: 350px;
-            min-width: 350px;
-            max-width: 100vw;
+
+        .fc-daygrid {
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 0.75rem !important;
+            overflow: hidden;
         }
-        .fc {
-            font-size: 12px;
+
+        .fc-day-header {
+            background: #f8fafc !important;
+            padding: 0.75rem 0.25rem !important;
+            font-weight: 600 !important;
+            color: #475569 !important;
+            font-size: 0.75rem !important;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            border-bottom: 1px solid #e2e8f0 !important;
         }
-        .fc .fc-daygrid-day-frame {
-            padding: 2px;
+
+        .fc-daygrid-day {
+            border-right: 1px solid #f1f5f9 !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            transition: background-color 0.2s ease !important;
         }
-    }
+
+        .fc-daygrid-day:hover {
+            background-color: #f8fafc !important;
+        }
+
+        .fc-daygrid-day-number {
+            padding: 0.5rem !important;
+            font-weight: 500 !important;
+            color: #374151 !important;
+            font-size: 0.75rem !important;
+        }
+
+        .fc-day-today {
+            background: rgba(14, 116, 124, 0.1) !important;
+            border: 2px solid #0e747c !important;
+        }
+
+        .fc-day-today .fc-daygrid-day-number {
+            color: #0e747c !important;
+            font-weight: 700 !important;
+        }
+
+        .fc-event {
+            border: none !important;
+            border-radius: 0.375rem !important;
+            padding: 0.25rem 0.5rem !important;
+            margin: 0.125rem !important;
+            font-size: 0.625rem !important;
+            font-weight: 500 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.2s ease !important;
+            min-height: 32px !important;
+        }
+
+        .fc-event:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .fc-event-hike { 
+            background: #2e7d32 !important; 
+            color: white !important; 
+        }
+        .fc-event-water { 
+            background: #0288d1 !important; 
+            color: white !important; 
+        }
+        .fc-event-social { 
+            background: #f57c00 !important; 
+            color: white !important; 
+        }
+        .fc-event-sport { 
+            background: #d32f2f !important; 
+            color: white !important; 
+        }
+        .fc-event-bike { 
+            background: #ab47bc !important; 
+            color: white !important; 
+        }
+        .fc-event-default { 
+            background: #757575 !important; 
+            color: white !important; 
+        }
+
+        .fc-event .event-type {
+            display: block;
+            font-size: 0.5rem;
+            opacity: 0.9;
+            margin-bottom: 0.125rem;
+            color: white !important;
+        }
+
+        .fc-event .event-title {
+            display: block;
+            font-weight: 600;
+            line-height: 1.2;
+            color: white !important;
+            font-size: 0.625rem !important;
+        }
+
+        /* Mobile Responsiveness */
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr 1fr !important;
+            }
+            
+            .fc-header-toolbar {
+                flex-direction: row !important;
+                gap: 1rem !important;
+            }
+            
+            .fc-toolbar-title {
+                font-size: 1.5rem !important;
+                text-align: left !important;
+            }
+            
+            .fc-button-group {
+                justify-content: flex-end !important;
+            }
+            
+            .fc-daygrid-day-number {
+                padding: 0.75rem !important;
+                font-size: 0.875rem !important;
+            }
+            
+            .fc-event {
+                font-size: 0.75rem !important;
+                padding: 0.25rem 0.5rem !important;
+            }
+
+            .fc-event .event-type {
+                font-size: 0.625rem;
+            }
+
+            .fc-event .event-title {
+                font-size: 0.75rem !important;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .max-w-7xl {
+                padding: 2rem 1rem !important;
+            }
+            
+            .p-6 {
+                padding: 1.5rem !important;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (max-width: 767px) {
+            .fc-button-primary {
+                padding: 1rem 1.25rem !important;
+                font-size: 1rem !important;
+                min-height: 48px !important;
+                min-width: 48px !important;
+            }
+
+            .fc-daygrid-day-number {
+                padding: 0.75rem !important;
+                font-size: 0.875rem !important;
+            }
+
+            .fc-event {
+                padding: 0.375rem 0.5rem !important;
+                font-size: 0.75rem !important;
+                min-height: 40px !important;
+            }
+
+            .fc-event .event-type {
+                font-size: 0.625rem;
+            }
+
+            .fc-event .event-title {
+                font-size: 0.75rem !important;
+            }
+
+            /* Improve touch targets */
+            .fc-daygrid-day {
+                min-height: 60px !important;
+            }
+
+            .fc-daygrid-day-frame {
+                min-height: 60px !important;
+            }
+        }
     </style>
 
     <script id="events-data" type="application/json">
@@ -509,12 +409,13 @@
         bike: 'fas fa-biking',
         default: 'fas fa-calendar'
     };
+    
     document.addEventListener('DOMContentLoaded', function() {
         const calendarEl = document.getElementById('calendar');
         const events = JSON.parse(document.getElementById('events-data').textContent || '[]');
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            height: 900,
+            height: 'auto',
             events: events.map(event => {
                 const type = (event.type || 'default').toLowerCase();
                 return {

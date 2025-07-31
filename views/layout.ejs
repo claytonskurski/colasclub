@@ -1,133 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://* data:;">
+    
+    <!-- Title -->
     <title><%= typeof title !== 'undefined' ? title + ' - Soda City Outdoors' : 'Soda City Outdoors' %></title>
-    <link rel="preload" href="/static/images/Congaree NP-optimized.webp" as="image">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/images/Favicon/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/images/Favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/images/Favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/images/Favicon/favicon-16x16.png">
     <link rel="manifest" href="/static/images/Favicon/site.webmanifest">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="/static/images/Congaree NP-optimized.webp" as="image">
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- External Stylesheets -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17058940165"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-17058940165');
+    </script>
+    
     <style>
+        /* CSS Variables */
         :root {
-            /* Colors */
             --primary-color: #0e747c;
             --accent-color: #80bec0;
             --text-color: #333;
             --light-bg: #f8f9fa;
+            --white: #fff;
             
-            /* Typography */
             --heading-font: 'Montserrat', sans-serif;
             --body-font: 'Open Sans', sans-serif;
             
-            /* Font Weights */
             --font-regular: 400;
             --font-medium: 500;
             --font-semibold: 600;
             --font-bold: 700;
+            
+            --shadow-light: 0 2px 8px rgba(0,0,0,0.08);
+            --border-radius: 0.5rem;
         }
+
+        /* Base Styles */
         body, html {
             margin: 0;
             padding: 0;
-        }
-        main {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-        .navbar {
-            font-family: var(--heading-font);
-            font-weight: var(--font-medium);
-            background: #80bec0 !important;
-            margin-bottom: 0;
-            padding-top: 0;
-        }
-        .navbar .navbar-brand .brand-name {
-            color: #fff !important;
-        }
-        .dropdown-menu {
-            background: #80bec0 !important;
-            backdrop-filter: none !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .dropdown-menu .dropdown-item {
-            color: #fff;
-        }
-        .dropdown-menu .dropdown-item:hover, .dropdown-menu .dropdown-item:focus {
-            background: var(--primary-color);
-            color: #fff;
-        }
-        /* Center nav items on desktop */
-        @media (min-width: 768px) {
-            .navbar-nav.centered {
-                margin-left: auto;
-                margin-right: auto;
-                display: flex;
-                justify-content: center;
-            }
-        }
-        /* Remove extra space above navbar on all screens */
-        body {
-            padding-top: 0 !important;
-        }
-
-        /* Global Typography */
-        body {
             font-family: var(--body-font);
             color: var(--text-color);
             line-height: 1.6;
         }
 
+        main {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* Typography */
         h1, h2, h3, h4, h5, h6 {
             font-family: var(--heading-font);
             font-weight: var(--font-bold);
         }
 
-        /* Button Styles */
         .btn, button {
             font-family: var(--heading-font);
             font-weight: var(--font-medium);
         }
 
-        /* Navigation */
-        .navbar {
-            font-family: var(--heading-font);
-            font-weight: var(--font-medium);
-        }
-
-        .navbar-brand {
-            font-weight: var(--font-bold);
-        }
-
-        /* Links */
         a {
             font-weight: var(--font-medium);
         }
 
-        /* Form Elements */
         input, textarea, select {
             font-family: var(--body-font);
         }
 
-        /* Custom Classes */
-        .feature-title {
+        .lead {
+            font-family: var(--heading-font);
+            font-weight: var(--font-medium);
+        }
+
+        /* Custom Typography Classes */
+        .feature-title,
+        .section-title {
             font-family: var(--heading-font);
             font-weight: var(--font-bold);
         }
 
         .section-title {
-            font-family: var(--heading-font);
-            font-weight: var(--font-bold);
             margin-bottom: 1.5rem;
         }
 
@@ -136,99 +116,150 @@
             font-weight: var(--font-semibold);
         }
 
-        /* Emphasis Text */
-        .lead {
+        /* Navigation Styles */
+        .navbar {
             font-family: var(--heading-font);
             font-weight: var(--font-medium);
+            background: var(--accent-color) !important;
+            margin-bottom: 0;
+            padding-top: 0;
         }
 
-        /* Footer */
-        footer {
-            font-family: var(--body-font);
+        .navbar-brand {
+            font-weight: var(--font-bold);
         }
 
+        .navbar-brand .brand-name {
+            color: var(--white) !important;
+        }
+
+        /* Dropdown Styles */
+        .dropdown-menu {
+            background: var(--accent-color) !important;
+            backdrop-filter: none !important;
+            box-shadow: var(--shadow-light);
+        }
+
+        .dropdown-menu .dropdown-item {
+            color: var(--white);
+        }
+
+        .dropdown-menu .dropdown-item:hover,
+        .dropdown-menu .dropdown-item:focus {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* Desktop Navigation */
+        @media (min-width: 768px) {
+            .navbar-nav.centered {
+                margin-left: auto;
+                margin-right: auto;
+                display: flex;
+                justify-content: center;
+            }
+        }
+
+        /* Mobile Navigation */
         @media (max-width: 767.98px) {
-            .dropdown-menu {
-                background: #80bec0 !important;
-                border-radius: 0 0 0.5rem 0.5rem;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            }
+            .dropdown-menu,
             .navbar-collapse {
-                background: #80bec0 !important;
-                border-radius: 0 0 0.5rem 0.5rem;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                background: var(--accent-color) !important;
+                border-radius: 0 0 var(--border-radius) var(--border-radius);
+                box-shadow: var(--shadow-light);
             }
+
             .navbar-toggler {
                 position: absolute;
                 top: 0.5rem;
                 right: 1rem;
                 z-index: 1051;
             }
+
             .navbar-brand {
                 margin-right: auto;
             }
         }
     </style>
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-md" style="background: #80bec0;">
-      <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="/">
-          <img src="/static/images/SCO Logo.webp" alt="Logo" class="logo me-2">
-          <span class="brand-name">Soda City Outdoors</span>
-        </a>
-        <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNavbar">
-          <ul class="navbar-nav centered mb-2 mb-md-0">
-            <li class="nav-item"><a class="nav-link nav-button" href="/rentals">Rentals</a></li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle nav-button" href="#" id="eventsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Our Events
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="eventsDropdown">
-                <li><a class="dropdown-item" href="/events">Events List</a></li>
-                <li><a class="dropdown-item" href="/calendar">Event Calendar</a></li>
-              </ul>
-            </li>
-            <li class="nav-item"><a class="nav-link nav-button" href="/forum">Discussion Forum</a></li>
-            <li class="nav-item"><a class="nav-link nav-button" href="/resources">Resources</a></li>
-            <li class="nav-item"><a class="nav-link nav-button" href="/gallery">Gallery</a></li>
-            <li class="nav-item"><a class="nav-link nav-button" href="/about">About Us</a></li>
-            <li class="nav-item"><a class="nav-link nav-button" href="/contact">Contact Us</a></li>
-            <li class="nav-item"><a class="nav-link nav-button highlight" href="<%= user ? '/account' : '/signup' %>">Join Now!</a></li>
-          </ul>
-          <ul class="navbar-nav ms-auto mb-2 mb-md-0">
-            <% if (user && user.firstName) { %>
-              <li class="nav-item dropdown welcome">
-                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Welcome, <%= user.firstName %>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                  <li><a class="dropdown-item" href="/account">My Account</a></li>
-                  <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-md">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/static/images/SCO Logo.webp" alt="Soda City Outdoors Logo" class="logo me-2">
+                <span class="brand-name">Soda City Outdoors</span>
+            </a>
+            
+            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <!-- Main Navigation -->
+                <ul class="navbar-nav centered mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a class="nav-link nav-button" href="/rentals">Rentals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-button" href="/events">Events List</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-button" href="/calendar">Event Calendar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-button" href="/contact">Contact Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-button highlight" href="<%= user ? '/account' : '/signup' %>">Join Now!</a>
+                    </li>
                 </ul>
-              </li>
-            <% } else { %>
-              <li class="nav-item sign-in"><a class="nav-link" href="/signin">Sign In</a></li>
-            <% } %>
-          </ul>
+                
+                <!-- User Navigation -->
+                <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+                    <% if (user && user.firstName) { %>
+                        <li class="nav-item dropdown welcome">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Welcome, <%= user.firstName %>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="/account">My Account</a></li>
+                                <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item sign-in">
+                            <a class="nav-link" href="/signin">Sign In</a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
         </div>
-      </div>
     </nav>
 
+    <!-- Main Content -->
     <main>
         <%- body %>
     </main>
 
+    <!-- Footer -->
     <footer class="bottom-nav">
         <div class="bottom-content">
-            <p>© 2025 - Soda City Outdoors - <a href="mailto:scoadmin@sodacityoutdoors.com">Contact us</a></p>
+            <p>&copy; 2025 - Soda City Outdoors - <a href="mailto:scoadmin@sodacityoutdoors.com">Contact us</a></p>
             <div class="social-icons">
-                <a href="mailto:scoadmin@sodacityoutdoors.com"><i class="fas fa-envelope"></i></a>
-                <a href="https://www.facebook.com/SodaCityOutdoor" target="_blank"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://www.reddit.com/r/SodaCityOutdoor/" target="_blank"><i class="fab fa-reddit-alien"></i></a>
+                <a href="mailto:scoadmin@sodacityoutdoors.com" aria-label="Email us">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a href="https://www.facebook.com/SodaCityOutdoor" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://www.instagram.com/sodacityoutdoor/" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://www.reddit.com/r/SodaCityOutdoor/" target="_blank" rel="noopener noreferrer" aria-label="Join our Reddit community">
+                    <i class="fab fa-reddit-alien"></i>
+                </a>
             </div>
         </div>
     </footer>

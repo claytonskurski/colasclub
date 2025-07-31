@@ -159,7 +159,7 @@ router.post('/calendar/:locationId', async (req, res) => {
     if (!location) {
         return res.status(404).render('error', { title: 'Error', message: 'Location not found.' });
     }
-    const { equipment, quantity, interval, timeBlock, name, email, phone, paymentMethod } = req.body;
+    const { equipment, quantity, interval, timeBlock, name, email, phone, paymentMethod, howDidYouHear, howDidYouHearOther } = req.body;
     const rentalItem = await RentalItem.findById(equipment);
     if (!rentalItem) {
         return res.status(404).render('error', { title: 'Error', message: 'Equipment not found.' });
@@ -176,6 +176,8 @@ router.post('/calendar/:locationId', async (req, res) => {
         email,
         phone,
         paymentMethod,
+        howDidYouHear,
+        howDidYouHearOther,
         locationName: location.name,
         equipmentType: rentalItem.type
     };
@@ -191,6 +193,8 @@ router.post('/calendar/:locationId', async (req, res) => {
         email,
         phone,
         paymentMethod,
+        howDidYouHear,
+        howDidYouHearOther,
         bookingInfo,
         locationName: location.name,
         equipmentType: rentalItem.type
@@ -452,7 +456,7 @@ router.get('/payment-success', async (req, res) => {
         // If reservation does not exist, create it from metadata (new flow)
         if (!reservation) {
             // Get all booking data from session.metadata
-            const { location, equipment, quantity, interval, name, email, phone, date, locationName, equipmentType } = session.metadata;
+            const { location, equipment, quantity, interval, name, email, phone, date, locationName, equipmentType, howDidYouHear, howDidYouHearOther } = session.metadata;
             // Fetch rental item and location
             const rentalItem = await RentalItem.findById(equipment);
             const locationObj = await RentalLocation.findById(location);
@@ -473,7 +477,9 @@ router.get('/payment-success', async (req, res) => {
                 paymentMethod: 'stripe',
                 status: 'confirmed',
                 locationName: locationName || (locationObj && locationObj.name),
-                equipmentType: equipmentType || (rentalItem && rentalItem.type)
+                equipmentType: equipmentType || (rentalItem && rentalItem.type),
+                howDidYouHear,
+                howDidYouHearOther
             });
             await reservation.save();
         }
@@ -545,7 +551,9 @@ router.post('/create-reservation', async (req, res) => {
             paymentMethod,
             date,
             locationName,
-            equipmentType
+            equipmentType,
+            howDidYouHear,
+            howDidYouHearOther
         } = req.body;
 
         // Validate required fields
@@ -587,7 +595,9 @@ router.post('/create-reservation', async (req, res) => {
             paymentMethod: normalizedPaymentMethod,
             status: 'in-progress',
             locationName: locationName || locationObj.name,
-            equipmentType: equipmentType || rentalItem.type
+            equipmentType: equipmentType || rentalItem.type,
+            howDidYouHear,
+            howDidYouHearOther
         });
         await reservation.save();
         // Respond with reservationId
@@ -620,7 +630,7 @@ router.post('/update-reservation-date', async (req, res) => {
 
 // NEW: Render booking review page after calendar selection
 router.post('/review', async (req, res) => {
-    const { location, equipment, quantity, interval, name, email, phone, paymentMethod, date, locationName, equipmentType, timeBlock } = req.body;
+    const { location, equipment, quantity, interval, name, email, phone, paymentMethod, date, locationName, equipmentType, timeBlock, howDidYouHear, howDidYouHearOther } = req.body;
     const locationObj = await RentalLocation.findById(location);
     const rentalItem = await RentalItem.findById(equipment);
     res.render('booking_review', {
@@ -634,6 +644,8 @@ router.post('/review', async (req, res) => {
         paymentMethod,
         date,
         timeBlock,
+        howDidYouHear,
+        howDidYouHearOther,
         locationName: locationName || (locationObj && locationObj.name),
         equipmentType: equipmentType || (rentalItem && rentalItem.type)
     });
@@ -657,7 +669,7 @@ router.post('/waiver', async (req, res) => {
 // NEW: Render payment page after waiver (if card)
 router.post('/payment', async (req, res) => {
     try {
-        const { location, equipment, quantity, interval, name, email, phone, paymentMethod, date, timeBlock } = req.body;
+        const { location, equipment, quantity, interval, name, email, phone, paymentMethod, date, timeBlock, howDidYouHear, howDidYouHearOther } = req.body;
         
         const rentalItem = await RentalItem.findById(equipment);
         const locationObj = await RentalLocation.findById(location);
@@ -701,12 +713,17 @@ router.post('/payment', async (req, res) => {
                     date,
                     locationName: locationObj.name,
                     equipmentType: rentalItem.type,
-                    timeBlock
+                    timeBlock,
+                    howDidYouHear,
+                    howDidYouHearOther
                 }
             });
             return res.redirect(303, session.url);
         } else if (paymentMethod === 'cash') {
             // For cash payments, redirect directly to confirmation
+            return res.redirect('/rentals/confirm');
+        } else if (paymentMethod === 'member') {
+            // For member payments, redirect directly to confirmation (free rentals)
             return res.redirect('/rentals/confirm');
         }
 
@@ -724,7 +741,9 @@ router.post('/payment', async (req, res) => {
                 total,
                 locationName: locationObj.name,
                 equipmentType: rentalItem.type,
-                timeBlock
+                timeBlock,
+                howDidYouHear,
+                howDidYouHearOther
             }
         });
     } catch (error) {
@@ -737,7 +756,7 @@ router.post('/payment', async (req, res) => {
 router.post('/confirm', async (req, res) => {
     try {
         // All booking data is in req.body
-        const { location, equipment, quantity, interval, name, email, phone, paymentMethod, date, timeBlock } = req.body;
+        const { location, equipment, quantity, interval, name, email, phone, paymentMethod, date, timeBlock, howDidYouHear, howDidYouHearOther } = req.body;
         const rentalItem = await RentalItem.findById(equipment);
         const locationObj = await RentalLocation.findById(location);
         
@@ -761,7 +780,7 @@ router.post('/confirm', async (req, res) => {
         }
 
         const basePrice = interval === 'half-day' ? rentalItem.priceHalfDay : rentalItem.priceFullDay;
-        const total = basePrice * parseInt(quantity);
+        const total = paymentMethod === 'member' ? 0 : basePrice * parseInt(quantity);
 
         // Create reservation
         const reservation = new Reservation({
@@ -779,7 +798,9 @@ router.post('/confirm', async (req, res) => {
             status: 'confirmed',
             locationName: locationObj.name,
             equipmentType: rentalItem.type,
-            timeBlock
+            timeBlock,
+            howDidYouHear,
+            howDidYouHearOther
         });
 
         await reservation.save();

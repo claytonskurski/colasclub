@@ -124,12 +124,14 @@ router.post('/submit-sign-up', async (req, res) => {
 router.post('/register', async (req, res) => {
     console.log('==== /api/users/register called ====');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('Request headers:', req.headers);
+    
     if (!req.stripe) {
         console.error('Stripe initialization failed');
         return res.status(500).json({ message: 'Stripe initialization failed' });
     }
 
-    const { stripeCustomerId, subscriptionStatus, paidForCurrentMonth, pendingUserId } = req.body;
+    const { stripeCustomerId, paidForCurrentMonth, pendingUserId } = req.body;
 
     // Log the incoming request body
     console.log('Register request body:', JSON.stringify(req.body, null, 2));
@@ -160,8 +162,8 @@ router.post('/register', async (req, res) => {
     const { username, password, email, firstName, lastName, phone, membership } = pendingUser;
 
     // Check for missing fields
-    if (!username || !password || !email || !firstName || !lastName || !phone || !stripeCustomerId || !subscriptionStatus || paidForCurrentMonth === undefined) {
-        console.error('Missing fields in register request:', { username, password, email, firstName, lastName, phone, stripeCustomerId, subscriptionStatus, paidForCurrentMonth });
+    if (!username || !password || !email || !firstName || !lastName || !phone || !stripeCustomerId || paidForCurrentMonth === undefined) {
+        console.error('Missing fields in register request:', { username, password, email, firstName, lastName, phone, stripeCustomerId, paidForCurrentMonth });
         return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -185,7 +187,6 @@ router.post('/register', async (req, res) => {
             lastName,
             phone,
             stripeCustomerId,
-            subscriptionStatus,
             paidForCurrentMonth,
             membership,
             accountType, // Add the determined account type
@@ -205,23 +206,6 @@ router.post('/register', async (req, res) => {
         await newUser.save();
         console.log('User saved to MongoDB:', JSON.stringify(newUser, null, 2));
 
-        // Send email notification for new account
-        try {
-            await sendNewUserNotification(newUser);
-            console.log('New user notification sent');
-        } catch (notifyErr) {
-            console.error('Error sending new user notification:', notifyErr);
-        }
-
-        // Send welcome email to the new user
-        try {
-            const { sendWelcomeNewUserEmail } = require('../services/newUserEmails');
-            await sendWelcomeNewUserEmail(newUser);
-            console.log('Welcome email sent to new user');
-        } catch (welcomeErr) {
-            console.error('Error sending welcome email:', welcomeErr);
-        }
-
         // Store user data in session
         req.session.user = {
             _id: newUser._id,
@@ -230,9 +214,9 @@ router.post('/register', async (req, res) => {
             lastName: newUser.lastName,
             email: newUser.email,
             phone: newUser.phone,
-            subscriptionStatus: newUser.subscriptionStatus,
             paidForCurrentMonth: newUser.paidForCurrentMonth,
-            membership: newUser.membership
+            membership: newUser.membership,
+            accountType: newUser.accountType
         };
 
         // Explicitly save the session
@@ -308,9 +292,9 @@ router.post('/login', async (req, res) => {
             lastName: user.lastName,
             email: user.email,
             phone: user.phone,
-            subscriptionStatus: user.subscriptionStatus,
             paidForCurrentMonth: user.paidForCurrentMonth,
-            membership: user.membership // Include membership for authMiddleware
+            membership: user.membership,
+            accountType: user.accountType
         };
         console.log('Session data before saving:', req.session);
 
@@ -328,7 +312,6 @@ router.post('/login', async (req, res) => {
                     firstName: user.firstName,
                     lastName: user.lastName,
                     email: user.email,
-                    subscriptionStatus: user.subscriptionStatus,
                     paidForCurrentMonth: user.paidForCurrentMonth
                 },
                 redirectUrl: redirectUrl || '/' // Include redirectUrl in response
@@ -392,7 +375,16 @@ router.post('/account/delete', ensureAuthenticated, async (req, res) => {
         // Delete the user account
         await User.findByIdAndDelete(userId);
 
-        // Send email notification for account deletion
+        // Send account deletion email to the user
+        try {
+            const { sendAccountDeletionEmail } = require('../services/accountDeletionEmail');
+            await sendAccountDeletionEmail(userInfo);
+            console.log('Account deletion email sent to user');
+        } catch (emailErr) {
+            console.error('Error sending account deletion email:', emailErr);
+        }
+
+        // Send admin notification about the deletion
         await sendNewUserNotification(user, 'User Account Deleted');
 
         // Clear the session
@@ -488,6 +480,47 @@ router.get('/account', ensureAuthenticated, async (req, res) => {
         console.error('Error loading account page:', error);
         req.flash('error', 'Error loading account information');
         res.redirect('/');
+    }
+});
+
+// Request account reinstatement
+router.post('/request-reinstatement', ensureAuthenticated, async (req, res) => {
+    try {
+        const user = await User.findById(req.session.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if user can request reinstatement
+        if (user.accountStatus !== 'suspended' && user.accountStatus !== 'paused') {
+            return res.status(400).json({ message: 'Account reinstatement not needed' });
+        }
+
+        if (user.reinstatementRequested) {
+            return res.status(400).json({ message: 'Reinstatement already requested' });
+        }
+
+        await user.requestReinstatement();
+        
+        // Send admin notification
+        const subject = `Account Reinstatement Request - ${user.email}`;
+        const text = `
+Account Reinstatement Request:
+User: ${user.firstName} ${user.lastName} (${user.email})
+Account Status: ${user.accountStatus}
+Request Date: ${new Date().toISOString()}
+Action Required: Review account and approve/reject reinstatement
+        `;
+        
+        await sendNewUserNotification(user, subject, text); // Changed sendAdminNotification to sendNewUserNotification
+        
+        res.json({ 
+            message: 'Reinstatement request submitted successfully',
+            status: 'pending_reinstatement'
+        });
+    } catch (error) {
+        console.error('Error requesting reinstatement:', error);
+        res.status(500).json({ message: 'Error requesting reinstatement' });
     }
 });
 

@@ -1,0 +1,432 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { Plus, Download, Info, Lock } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+
+// Mock data for demonstration - replace with your actual data
+const mockEvents = [
+  {
+    eventId: "1",
+    summary: "Morning Hike at Congaree",
+    dtstart: "2024-01-15T09:00:00",
+    type: "hike",
+    location: "Congaree National Park",
+  },
+  {
+    eventId: "2",
+    summary: "Kayaking Adventure",
+    dtstart: "2024-01-16T10:00:00",
+    type: "water",
+    location: "Saluda River",
+  },
+  {
+    eventId: "3",
+    summary: "Social Meetup",
+    dtstart: "2024-01-17T18:00:00",
+    type: "social",
+    location: "Downtown Columbia",
+  },
+]
+
+const mockUser = {
+  accountStatus: "active",
+}
+
+export default function CalendarPage() {
+  const [calendarLoaded, setCalendarLoaded] = useState(false)
+
+  useEffect(() => {
+    // Load FullCalendar
+    const script = document.createElement("script")
+    script.src = "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"
+    script.onload = () => {
+      initializeCalendar()
+      setCalendarLoaded(true)
+    }
+    document.head.appendChild(script)
+
+    return () => {
+      document.head.removeChild(script)
+    }
+  }, [])
+
+  const initializeCalendar = () => {
+    const calendarEl = document.getElementById("calendar")
+    if (!calendarEl || !window.FullCalendar) return
+
+    const eventTypeIcons = {
+      hike: "fas fa-hiking",
+      water: "fas fa-water",
+      social: "fas fa-users",
+      sport: "fas fa-running",
+      bike: "fas fa-biking",
+      default: "fas fa-calendar",
+    }
+
+    const calendar = new window.FullCalendar.Calendar(calendarEl, {
+      initialView: "dayGridMonth",
+      height: "auto",
+      events: mockEvents.map((event) => ({
+        title: event.summary,
+        start: event.dtstart,
+        url: `/events/event/${event.eventId}`,
+        allDay: true,
+        eventType: event.type || "default",
+      })),
+      eventClassNames: (arg) => ["fc-event-" + (arg.event.extendedProps.eventType || "default")],
+      eventContent: (arg) => {
+        const type = arg.event.extendedProps.eventType || "default"
+        const iconClass = eventTypeIcons[type] || eventTypeIcons.default
+        return {
+          html: `
+            <span class="event-type"><i class="${iconClass}"></i> ${type.charAt(0).toUpperCase() + type.slice(1)}</span><br>
+            <span class="event-title" style="white-space: normal;">${arg.event.title}</span>
+          `,
+        }
+      },
+      eventClick: (info) => {
+        if (info.event.url) {
+          window.location.href = info.event.url
+          info.jsEvent.preventDefault()
+        }
+      },
+    })
+
+    calendar.render()
+  }
+
+  const getEventIcon = (type: string) => {
+    switch (type) {
+      case "hike":
+        return "🥾"
+      case "water":
+        return "🚣"
+      case "social":
+        return "👥"
+      case "sport":
+        return "🏃"
+      case "bike":
+        return "🚴"
+      default:
+        return "📅"
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })
+  }
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold text-slate-900">Event Calendar</h1>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        {/* Top Section */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Upcoming Events */}
+          <Card className="shadow-sm border-0 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold text-slate-900 mb-6">Upcoming Events</h2>
+              <div className="space-y-4">
+                {mockEvents.slice(0, 5).map((event) => (
+                  <div key={event.eventId} className="group">
+                    <a
+                      href={`/events/event/${event.eventId}`}
+                      className="flex items-center gap-4 p-4 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 transition-all duration-200 hover:shadow-sm border border-transparent hover:border-slate-200"
+                    >
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center text-white font-semibold text-sm">
+                          {formatDate(event.dtstart).split(" ")[1]}
+                          <div className="text-xs opacity-90 ml-1">{formatDate(event.dtstart).split(" ")[0]}</div>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-slate-900 group-hover:text-teal-700 transition-colors truncate">
+                          {event.summary}
+                        </h3>
+                        <div className="flex items-center gap-3 mt-1 text-sm text-slate-600">
+                          <span className="flex items-center gap-1">
+                            <span>{getEventIcon(event.type)}</span>
+                            {event.type?.charAt(0).toUpperCase() + event.type?.slice(1)}
+                          </span>
+                          <span>{formatTime(event.dtstart)}</span>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit Event */}
+          <Card className="shadow-sm border-0 bg-gradient-to-br from-teal-50 to-emerald-50">
+            <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
+              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4">
+                <Plus className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Have an Adventure Idea?</h3>
+              <p className="text-slate-600 mb-6 max-w-sm">
+                Share your outdoor adventure ideas with the community and help others discover new experiences.
+              </p>
+              <Button
+                asChild
+                className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+              >
+                <a href="/submit_event">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Submit Event
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Calendar Section */}
+        <Card className="shadow-sm border-0 bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div id="calendar" className="calendar-container"></div>
+
+            {/* Download Section */}
+            {mockUser && (mockUser.accountStatus === "active" || mockUser.accountStatus === "trial") ? (
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex-1">
+                    <Button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-md">
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Calendar (ICS)
+                    </Button>
+                    <p className="text-sm text-slate-500 mt-2 flex items-start gap-2">
+                      <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <span>
+                        <em>
+                          Note: The calendar is subject to change, so please reference this version if you have a
+                          previous download
+                        </em>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : !mockUser ? (
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <Alert className="border-blue-200 bg-blue-50">
+                  <Lock className="w-4 h-4" />
+                  <AlertDescription className="text-blue-800">
+                    Calendar download is available for members only.{" "}
+                    <a href="/signin" className="font-medium underline hover:no-underline">
+                      Sign in
+                    </a>{" "}
+                    or{" "}
+                    <a href="/signup" className="font-medium underline hover:no-underline">
+                      join now
+                    </a>{" "}
+                    to access this feature!
+                  </AlertDescription>
+                </Alert>
+              </div>
+            ) : (
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <Alert className="border-blue-200 bg-blue-50">
+                  <Lock className="w-4 h-4" />
+                  <AlertDescription className="text-blue-800">
+                    Calendar download is available for active members only.{" "}
+                    <a href="/account" className="font-medium underline hover:no-underline">
+                      Activate your membership
+                    </a>{" "}
+                    to access this feature!
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <style jsx global>{`
+        /* FullCalendar Modern Styling */
+        .fc {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .fc-header-toolbar {
+          margin-bottom: 2rem !important;
+          padding: 0 1rem;
+        }
+
+        .fc-toolbar-title {
+          font-size: 1.5rem !important;
+          font-weight: 600 !important;
+          color: #1e293b !important;
+        }
+
+        .fc-button-primary {
+          background: linear-gradient(135deg, #0d9488, #059669) !important;
+          border: none !important;
+          border-radius: 0.5rem !important;
+          padding: 0.5rem 1rem !important;
+          font-weight: 500 !important;
+          font-size: 0.875rem !important;
+          transition: all 0.2s ease !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .fc-button-primary:hover {
+          background: linear-gradient(135deg, #0f766e, #047857) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .fc-button-primary:focus {
+          box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.3) !important;
+        }
+
+        .fc-daygrid {
+          border: 1px solid #e2e8f0 !important;
+          border-radius: 0.75rem !important;
+          overflow: hidden;
+        }
+
+        .fc-day-header {
+          background: #f8fafc !important;
+          padding: 1rem 0.5rem !important;
+          font-weight: 600 !important;
+          color: #475569 !important;
+          font-size: 0.875rem !important;
+          text-transform: uppercase;
+          letter-spacing: 0.025em;
+          border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        .fc-daygrid-day {
+          border-right: 1px solid #f1f5f9 !important;
+          border-bottom: 1px solid #f1f5f9 !important;
+          transition: background-color 0.2s ease !important;
+        }
+
+        .fc-daygrid-day:hover {
+          background-color: #f8fafc !important;
+        }
+
+        .fc-daygrid-day-number {
+          padding: 0.75rem !important;
+          font-weight: 500 !important;
+          color: #374151 !important;
+          font-size: 0.875rem !important;
+        }
+
+        .fc-day-today {
+          background: linear-gradient(135deg, rgba(13, 148, 136, 0.1), rgba(5, 150, 105, 0.1)) !important;
+          border: 2px solid #0d9488 !important;
+        }
+
+        .fc-day-today .fc-daygrid-day-number {
+          color: #0d9488 !important;
+          font-weight: 700 !important;
+        }
+
+        .fc-event {
+          border: none !important;
+          border-radius: 0.375rem !important;
+          padding: 0.25rem 0.5rem !important;
+          margin: 0.125rem !important;
+          font-size: 0.75rem !important;
+          font-weight: 500 !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+          transition: all 0.2s ease !important;
+        }
+
+        .fc-event:hover {
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .fc-event-hike { 
+          background: linear-gradient(135deg, #059669, #047857) !important; 
+          color: white !important; 
+        }
+        .fc-event-water { 
+          background: linear-gradient(135deg, #0284c7, #0369a1) !important; 
+          color: white !important; 
+        }
+        .fc-event-social { 
+          background: linear-gradient(135deg, #ea580c, #dc2626) !important; 
+          color: white !important; 
+        }
+        .fc-event-sport { 
+          background: linear-gradient(135deg, #dc2626, #b91c1c) !important; 
+          color: white !important; 
+        }
+        .fc-event-bike { 
+          background: linear-gradient(135deg, #9333ea, #7c3aed) !important; 
+          color: white !important; 
+        }
+        .fc-event-default { 
+          background: linear-gradient(135deg, #6b7280, #4b5563) !important; 
+          color: white !important; 
+        }
+
+        .fc-event .event-type {
+          display: block;
+          font-size: 0.625rem;
+          opacity: 0.9;
+          margin-bottom: 0.125rem;
+        }
+
+        .fc-event .event-title {
+          display: block;
+          font-weight: 600;
+          line-height: 1.2;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+          .fc-header-toolbar {
+            flex-direction: column !important;
+            gap: 1rem !important;
+          }
+          
+          .fc-toolbar-title {
+            font-size: 1.25rem !important;
+            text-align: center !important;
+          }
+          
+          .fc-button-group {
+            justify-content: center !important;
+          }
+          
+          .fc-daygrid-day-number {
+            padding: 0.5rem !important;
+            font-size: 0.75rem !important;
+          }
+          
+          .fc-event {
+            font-size: 0.625rem !important;
+            padding: 0.125rem 0.25rem !important;
+          }
+        }
+      `}</style>
+    </div>
+  )
+}

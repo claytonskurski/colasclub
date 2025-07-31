@@ -412,7 +412,7 @@ function createEventICS(event, req) {
 router.get('/calendar/download', ensureAuthenticated, async (req, res) => {
     try {
         // Check if user has active subscription
-        if (!req.session.user || req.session.user.subscriptionStatus !== 'active') {
+        if (!req.session.user || req.session.user.accountStatus !== 'active') {
             return res.status(403).json({ error: 'This feature is only available for active members' });
         }
 
@@ -449,7 +449,7 @@ router.get('/calendar/download', ensureAuthenticated, async (req, res) => {
 router.get('/event/:id/download', ensureAuthenticated, async (req, res) => {
     try {
         // Check if user has active subscription
-        if (!req.session.user || req.session.user.subscriptionStatus !== 'active') {
+        if (!req.session.user || req.session.user.accountStatus !== 'active') {
             return res.status(403).json({ error: 'This feature is only available for active members' });
         }
 

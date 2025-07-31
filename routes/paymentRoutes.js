@@ -123,7 +123,19 @@ router.get('/payment-success', async (req, res) => {
         let pendingUser;
         try {
             console.log('Attempting to retrieve PendingUser with ID:', pendingUserId);
-            pendingUser = await PendingUser.findById(pendingUserId);
+            
+            // Validate that pendingUserId is a valid ObjectId
+            if (pendingUserId && pendingUserId !== 'null' && pendingUserId !== 'undefined' && pendingUserId.match(/^[0-9a-fA-F]{24}$/)) {
+                pendingUser = await PendingUser.findById(pendingUserId);
+            } else {
+                console.log('Invalid ObjectId format for pendingUserId:', pendingUserId);
+                // Try to find by email as fallback
+                if (session.customer_email) {
+                    pendingUser = await PendingUser.findOne({ email: session.customer_email });
+                    console.log('Found pending user by email:', pendingUser ? 'Yes' : 'No');
+                }
+            }
+            
             console.log('Retrieved pending user:', pendingUser);
         } catch (error) {
             console.error('Error retrieving pending user in /payment-success:', error);
@@ -146,7 +158,7 @@ router.get('/payment-success', async (req, res) => {
         }
 
         // Initialize subscription details
-        let subscriptionStatus = 'inactive';
+        let accountStatus = 'inactive';
         let paidForCurrentMonth = false;
         let subscriptionStart = new Date();
         let subscriptionEnd = null;
@@ -159,7 +171,7 @@ router.get('/payment-success', async (req, res) => {
                 console.log('Retrieved subscription:', JSON.stringify(subscription, null, 2));
 
                 if (subscription.status === 'active' || subscription.status === 'trialing') {
-                    subscriptionStatus = subscription.status === 'trialing' ? 'trial' : 'active';
+                    accountStatus = subscription.status === 'trialing' ? 'trial' : 'active';
                     paidForCurrentMonth = true;
                     subscriptionStart = new Date(subscription.current_period_start * 1000);
                     if (pendingUser.membership === 'annual') {
@@ -185,13 +197,14 @@ router.get('/payment-success', async (req, res) => {
             }
         }
 
-        const stripeCustomerId = pendingUser.stripeCustomerId;
+        // Use the actual customer ID from the payment session, not the one from signup
+        const stripeCustomerId = session.customer || pendingUser.stripeCustomerId;
         const { username, email, firstName, lastName, membership } = pendingUser;
         console.log('Retrieved stripeCustomerId:', stripeCustomerId);
         console.log('Preparing to POST to /api/users/register on localhost:3001');
         console.log('POST body:', {
             stripeCustomerId,
-            subscriptionStatus,
+            accountStatus,
             paidForCurrentMonth,
             subscriptionStart,
             subscriptionEnd,
@@ -207,7 +220,7 @@ router.get('/payment-success', async (req, res) => {
                 },
                 body: JSON.stringify({
                     stripeCustomerId,
-                    subscriptionStatus,
+                    accountStatus,
                     paidForCurrentMonth,
                     subscriptionStart,
                     subscriptionEnd,
@@ -276,18 +289,18 @@ router.get('/payment-cancel', async (req, res) => {
 
 // Update subscription status
 router.post('/update-status', async (req, res) => {
-    const { email, subscriptionStatus, paidForCurrentMonth } = req.body;
+    const { email, accountStatus, paidForCurrentMonth } = req.body;
     try {
         const user = await User.findOne({ email });
         if (!user) {
             console.error('User not found for email:', email);
             return res.status(404).json({ message: 'User not found' });
         }
-        user.subscriptionStatus = subscriptionStatus;
+        user.accountStatus = accountStatus;
         user.paidForCurrentMonth = paidForCurrentMonth;
         await user.save();
         console.log('Subscription status updated for user:', email);
-        res.json({ message: 'Subscription status updated', subscriptionStatus, paidForCurrentMonth });
+        res.json({ message: 'Subscription status updated', accountStatus, paidForCurrentMonth });
     } catch (error) {
         console.error('Error updating subscription status:', error);
         res.status(500).json({ message: 'Error updating subscription status', error: error.message });
@@ -319,7 +332,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 console.error('No PendingUser found for email:', customerEmail);
                 return res.status(404).send('PendingUser not found');
             }
-            // Promote to User (copy your existing logic here)
+            // Promote to User - use the actual customer ID from the payment session
             const user = new User({
                 username: pendingUser.username,
                 password: pendingUser.password,
@@ -327,9 +340,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 firstName: pendingUser.firstName,
                 lastName: pendingUser.lastName,
                 phone: pendingUser.phone,
-                stripeCustomerId: pendingUser.stripeCustomerId,
-                membership: pendingUser.membership,
-                subscriptionStatus: 'active',
+                stripeCustomerId: session.customer || pendingUser.stripeCustomerId,
+                accountStatus: 'active',
                 paidForCurrentMonth: true,
                 waiverAccepted: pendingUser.waiverAccepted,
                 waiverAcceptedDate: pendingUser.waiverAcceptedDate,

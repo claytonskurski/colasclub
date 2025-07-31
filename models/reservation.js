@@ -16,10 +16,12 @@ const reservationSchema = new mongoose.Schema({
     quantity: { type: Number, required: true, min: 1 },
     total: { type: Number, required: true },
     paymentStatus: { type: String, enum: ['paid', 'unpaid'], default: 'unpaid' },
-    paymentMethod: { type: String, enum: ['stripe', 'cash'], required: true },
+    paymentMethod: { type: String, enum: ['stripe', 'cash', 'member'], required: true },
     location: { type: mongoose.Schema.Types.ObjectId, ref: 'RentalLocation', required: true },
     locationName: { type: String, required: true },
     equipmentType: { type: String, required: true },
+    howDidYouHear: { type: String, required: true, enum: ['Google', 'Facebook', 'Instagram', 'Reddit', 'Flyers', 'Other'] },
+    howDidYouHearOther: { type: String, required: function() { return this.howDidYouHear === 'Other'; } },
     createdAt: { type: Date, default: Date.now }
 });
 

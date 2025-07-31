@@ -2,7 +2,6 @@ const nodemailer = require('nodemailer');
 const { format, utcToZonedTime } = require('date-fns-tz');
 const Event = require('../models/events');
 const User = require('../models/user');
-const mongoose = require('mongoose');
 
 // Initialize nodemailer transporter with Hostinger SMTP
 const transporter = nodemailer.createTransport({
@@ -30,92 +29,9 @@ transporter.verify(function (error, success) {
     }
 });
 
-// Set up MongoDB change stream to watch for new user registrations
-let userChangeStream = null;
-
-const initializeUserWatcher = async () => {
-    try {
-        // Get the users collection
-        const usersCollection = mongoose.connection.collection('users');
-        
-        // Create a change stream to watch for insert operations
-        userChangeStream = usersCollection.watch([
-            {
-                $match: {
-                    operationType: 'insert'
-                }
-            }
-        ]);
-
-        console.log('User change stream initialized successfully');
-
-        // Listen for changes
-        userChangeStream.on('change', async (change) => {
-            console.log('[CHANGE STREAM] New user detected:', change.documentKey._id);
-            
-            try {
-                // Get the full user document
-                const user = await User.findById(change.documentKey._id);
-                if (user) {
-                    console.log('[CHANGE STREAM] Processing new user:', user.email);
-                    
-                    // Send admin notification
-                    await sendNewUserNotification(user);
-                    
-                    // Send welcome email to the new user
-                    const { sendWelcomeNewUserEmail } = require('./newUserEmails');
-                    await sendWelcomeNewUserEmail(user);
-                    
-                    console.log('[CHANGE STREAM] Notifications sent successfully for user:', user.email);
-                }
-            } catch (error) {
-                console.error('[CHANGE STREAM] Error processing new user notification:', error);
-            }
-        });
-
-        userChangeStream.on('error', (error) => {
-            console.error('[CHANGE STREAM] Error in user change stream:', error);
-            // Attempt to reconnect after a delay
-            setTimeout(() => {
-                console.log('[CHANGE STREAM] Attempting to reconnect...');
-                initializeUserWatcher();
-            }, 5000);
-        });
-
-    } catch (error) {
-        console.error('[CHANGE STREAM] Error initializing user watcher:', error);
-        // Attempt to reconnect after a delay
-        setTimeout(() => {
-            console.log('[CHANGE STREAM] Attempting to reconnect...');
-            initializeUserWatcher();
-        }, 5000);
-    }
-};
-
-// Function to start the user watcher
-const startUserWatcher = () => {
-    // Wait for MongoDB connection to be ready
-    if (mongoose.connection.readyState === 1) {
-        initializeUserWatcher();
-    } else {
-        mongoose.connection.once('connected', () => {
-            initializeUserWatcher();
-        });
-    }
-};
-
-// Function to stop the user watcher
-const stopUserWatcher = () => {
-    if (userChangeStream) {
-        userChangeStream.close();
-        userChangeStream = null;
-        console.log('[CHANGE STREAM] User watcher stopped');
-    }
-};
-
-// Helper function to send admin notifications
-async function sendAdminNotification(subject, text) {
-    console.log('Attempting to send admin notification:', { subject, text });
+// Send admin notification
+async function sendAdminNotification(subject, content, isHtml = false) {
+    console.log('[ADMIN NOTIFY] Sending admin notification:', subject);
     
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
         console.warn('Email configuration not found:', {
@@ -128,20 +44,29 @@ async function sendAdminNotification(subject, text) {
     const mailOptions = {
         from: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
         to: 'scoadmin@sodacityoutdoors.com',
-        subject: subject,
-        text: text
+        subject: subject
     };
 
+    // Add content based on type
+    if (isHtml) {
+        mailOptions.html = content;
+        // Also provide plain text fallback
+        mailOptions.text = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    } else {
+        mailOptions.text = content;
+    }
+
     try {
-        console.log('Sending admin email with options:', {
+        console.log('[ADMIN NOTIFY] Sending admin email with options:', {
             from: mailOptions.from,
             to: mailOptions.to,
-            subject: mailOptions.subject
+            subject: mailOptions.subject,
+            contentType: isHtml ? 'HTML' : 'Text'
         });
         await transporter.sendMail(mailOptions);
-        console.log('Admin notification email sent successfully');
+        console.log('[ADMIN NOTIFY] Admin notification email sent successfully');
     } catch (emailError) {
-        console.error('Error sending admin notification email:', {
+        console.error('[ADMIN NOTIFY] Error sending admin notification email:', {
             error: emailError.message,
             stack: emailError.stack,
             code: emailError.code,
@@ -152,16 +77,38 @@ async function sendAdminNotification(subject, text) {
 
 // Send new user notification
 const sendNewUserNotification = async (user) => {
-    console.log('[NOTIFY] Entered sendNewUserNotification for user:', user.email);
+    console.log('[ADMIN NOTIFY] Entered sendNewUserNotification for user:', user.email);
     try {
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h2 style="color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
+                        🎉 New User Registration
+                    </h2>
+                    <div style="background-color: #ecf0f1; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                        <p style="margin: 8px 0;"><strong>Username:</strong> ${user.username}</p>
+                        <p style="margin: 8px 0;"><strong>Email:</strong> ${user.email}</p>
+                        <p style="margin: 8px 0;"><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
+                        <p style="margin: 8px 0;"><strong>Registration Date:</strong> ${new Date().toLocaleDateString()}</p>
+                        <p style="margin: 8px 0;"><strong>Account Type:</strong> ${user.accountType || 'member'}</p>
+                        <p style="margin: 8px 0;"><strong>Membership:</strong> ${user.membership || 'monthly'}</p>
+                    </div>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-top: 20px;">
+                        This user has successfully completed registration and is now active in the system.
+                    </p>
+                </div>
+            </div>
+        `;
+        
         await sendAdminNotification(
             'New User Registration',
-            `A new user has registered:\nUsername: ${user.username}\nEmail: ${user.email}\nFirst Name: ${user.firstName}\nLast Name: ${user.lastName}\nRegistration Date: ${new Date().toLocaleDateString()}`
+            htmlContent,
+            true // isHtml = true
         );
-        console.log('[NOTIFY] Admin notification email sent successfully for user:', user.email);
+        console.log('[ADMIN NOTIFY] Admin notification email sent successfully for user:', user.email);
         return true;
     } catch (error) {
-        console.error('[NOTIFY] Failed to send new user notification:', error);
+        console.error('[ADMIN NOTIFY] Failed to send new user notification:', error);
         return false;
     }
 };
@@ -170,16 +117,35 @@ const sendNewUserNotification = async (user) => {
 const sendRSVPNotification = async (event, rsvp, user) => {
     try {
         const subject = 'New Event RSVP';
-        const text = `
-New RSVP for Event:
-Event: ${event.summary}
-Date: ${new Date(event.dtstart).toLocaleDateString()}
-Attendee: ${user.username}
-Email: ${user.email}
-Phone: ${rsvp.phoneNumber}
-Current RSVP Count: ${event.rsvps.length}
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h2 style="color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
+                        📅 New Event RSVP
+                    </h2>
+                    <div style="background-color: #ecf0f1; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                        <h3 style="color: #e74c3c; margin-top: 0;">Event Details</h3>
+                        <p style="margin: 8px 0;"><strong>Event:</strong> ${event.summary}</p>
+                        <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(event.dtstart).toLocaleDateString()}</p>
+                        <p style="margin: 8px 0;"><strong>Time:</strong> ${new Date(event.dtstart).toLocaleTimeString()}</p>
+                        
+                        <h3 style="color: #e74c3c; margin-top: 20px;">Attendee Information</h3>
+                        <p style="margin: 8px 0;"><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
+                        <p style="margin: 8px 0;"><strong>Username:</strong> ${user.username}</p>
+                        <p style="margin: 8px 0;"><strong>Email:</strong> ${user.email}</p>
+                        <p style="margin: 8px 0;"><strong>Phone:</strong> ${rsvp.phoneNumber}</p>
+                        
+                        <h3 style="color: #e74c3c; margin-top: 20px;">RSVP Statistics</h3>
+                        <p style="margin: 8px 0;"><strong>Current RSVP Count:</strong> ${event.rsvps.length}</p>
+                        <p style="margin: 8px 0;"><strong>RSVP Date:</strong> ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-top: 20px;">
+                        This RSVP has been automatically recorded in the system.
+                    </p>
+                </div>
+            </div>
         `;
-        await sendAdminNotification(subject, text);
+        await sendAdminNotification(subject, htmlContent, true);
     } catch (error) {
         console.error('Error sending RSVP notification:', error);
     }
@@ -189,22 +155,46 @@ Current RSVP Count: ${event.rsvps.length}
 const sendRentalNotification = async (reservation) => {
     try {
         const subject = 'New Rental Booking';
-        const text = `
-New Rental Booking:
-Customer Name: ${reservation.name}
-Customer Email: ${reservation.email}
-Location: ${reservation.locationName}
-Equipment: ${reservation.equipmentType}
-Quantity: ${reservation.quantity}
-Date: ${reservation.date.toISOString().split('T')[0]}
-Time: ${reservation.interval === 'half-day' 
-    ? `Half Day (${reservation.timeBlock === 'AM' ? '10AM - 2PM' : reservation.timeBlock === 'PM' ? '2PM - 6PM' : ''})` 
-    : 'Full Day (10AM - 6PM)'}
-Total Amount: $${reservation.total.toFixed(2)}
-Payment Status: ${reservation.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
-Payment Method: ${reservation.paymentMethod === 'stripe' ? 'Credit Card' : 'Cash'}
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h2 style="color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
+                        🏕️ New Rental Booking
+                    </h2>
+                    <div style="background-color: #ecf0f1; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                        <h3 style="color: #e74c3c; margin-top: 0;">Customer Information</h3>
+                        <p style="margin: 8px 0;"><strong>Name:</strong> ${reservation.name}</p>
+                        <p style="margin: 8px 0;"><strong>Email:</strong> ${reservation.email}</p>
+                        <p style="margin: 8px 0;"><strong>Phone:</strong> ${reservation.phone}</p>
+                        
+                        <h3 style="color: #e74c3c; margin-top: 20px;">Booking Details</h3>
+                        <p style="margin: 8px 0;"><strong>Location:</strong> ${reservation.locationName}</p>
+                        <p style="margin: 8px 0;"><strong>Equipment:</strong> ${reservation.equipmentType}</p>
+                        <p style="margin: 8px 0;"><strong>Quantity:</strong> ${reservation.quantity}</p>
+                        <p style="margin: 8px 0;"><strong>Date:</strong> ${reservation.date.toISOString().split('T')[0]}</p>
+                        <p style="margin: 8px 0;"><strong>Time:</strong> ${reservation.interval === 'half-day' 
+                            ? `Half Day (${reservation.timeBlock === 'AM' ? '10AM - 2PM' : reservation.timeBlock === 'PM' ? '2PM - 6PM' : ''})` 
+                            : 'Full Day (10AM - 6PM)'}</p>
+                        
+                        <h3 style="color: #e74c3c; margin-top: 20px;">Payment Information</h3>
+                        <p style="margin: 8px 0;"><strong>Total Amount:</strong> $${reservation.total.toFixed(2)}</p>
+                        <p style="margin: 8px 0;"><strong>Payment Status:</strong> 
+                            <span style="color: ${reservation.paymentStatus === 'paid' ? '#27ae60' : '#e74c3c'}; font-weight: bold;">
+                                ${reservation.paymentStatus === 'paid' ? '✅ Paid' : '❌ Unpaid'}
+                            </span>
+                        </p>
+                        <p style="margin: 8px 0;"><strong>Payment Method:</strong> 
+                            ${reservation.paymentMethod === 'stripe' ? '💳 Credit Card' : 
+                              reservation.paymentMethod === 'member' ? '👥 Member (Free)' : '💵 Cash'}
+                        </p>
+                    </div>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-top: 20px;">
+                        This rental booking has been automatically recorded in the system.
+                    </p>
+                </div>
+            </div>
         `;
-        await sendAdminNotification(subject, text);
+        await sendAdminNotification(subject, htmlContent, true);
     } catch (error) {
         console.error('Error sending rental notification:', error);
     }
@@ -214,7 +204,5 @@ module.exports = {
     sendNewUserNotification,
     sendAdminNotification,
     sendRSVPNotification,
-    sendRentalNotification,
-    startUserWatcher,
-    stopUserWatcher
+    sendRentalNotification
 };

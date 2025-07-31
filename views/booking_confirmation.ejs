@@ -172,7 +172,15 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="confirmation-detail-label"><i class="fas fa-credit-card"></i> Payment Method</div>
-                            <div class="confirmation-detail-value"><%= reservation.paymentMethod === 'stripe' ? 'Credit Card' : 'Cash' %></div>
+                            <div class="confirmation-detail-value">
+                                <% if (reservation.paymentMethod === 'stripe') { %>
+                                    Credit Card
+                                <% } else if (reservation.paymentMethod === 'member') { %>
+                                    Member (Free)
+                                <% } else { %>
+                                    Cash
+                                <% } %>
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="confirmation-detail-label"><i class="fas fa-receipt"></i> Payment Status</div>

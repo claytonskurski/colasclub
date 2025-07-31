@@ -26,12 +26,17 @@
             <div class="row justify-content-center mt-5 g-4">
                 <div class="col-md-6 col-lg-3">
                     <div class="info-card p-4 h-100 bg-white shadow rounded-4 border-0 text-start">
-                        <div class="feature-icon mb-2"><i class="fas fa-tag fa-lg text-primary"></i></div>
-                        <h3 class="h6 mb-3 fw-bold">Our Promise</h3>
-                        <ul class="mb-0 ps-3 small">
-                            <li class="mb-2"><span class="fw-semibold">The price you see is the price you pay</span>—no extra charges for paddles, life vests, dry bags, or even taxes!</li>
-                            <li><span class="fw-semibold">No storage? No transportation? No problem!</span> We deliver the equipment to your desired location. No hassle—just show up and get on the water.</li>
+                        <div class="feature-icon mb-2"><i class="fas fa-dollar-sign fa-lg text-primary"></i></div>
+                        <h3 class="h6 mb-3 fw-bold">Our Prices</h3>
+                        <ul class="list-unstyled small mb-0">
+                            <li class="mb-2"><span class="fw-bold text-primary">$60</span> – Full day kayak rental</li>
+                            <li><span class="fw-bold text-primary">$40</span> – Half day kayak rental</li>
                         </ul>
+                        <div class="mt-3 pt-2 border-top">
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success me-1"></i>All equipment included
+                            </small>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
@@ -72,12 +77,6 @@
         </div>
         <div class="position-absolute top-0 start-0 w-100 h-100 z-1" style="opacity: 0.08; background: url('/static/images/lake-murray.jpg') center/cover no-repeat;"></div>
     </div>
-        <div class="row mb-5">
-            <div class="col-12">
-                <div id="map" style="height: 400px;"></div>
-            </div>
-        </div>
-
         <div id="location-step" class="row mb-5">
             <div class="col-12">
                 <h2 id="choose-location" class="h3 mb-4 text-center">Choose Your Location</h2>
@@ -201,9 +200,6 @@
                                 `<img src="${imageFile}" alt="${loc.name}" class="img-fluid w-100 h-100 object-fit-cover" style="object-fit: cover; border-top-left-radius: 1.25rem; border-top-right-radius: 1.25rem;">` : 
                                 `<i class="fas fa-map-marker-alt fa-3x text-primary"></i>`
                             }
-                            <div class="w-100 position-absolute bottom-0 start-0 p-2" style="background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(14,116,124,0.7) 100%); border-bottom-left-radius: 1.25rem; border-bottom-right-radius: 1.25rem;">
-                                <span class="badge bg-primary text-white shadow" style="font-size: 1rem;">${loc.name.split(' ')[0]}</span>
-                            </div>
                         </div>
                         <div class="card-body p-4 bg-white position-relative" style="border-bottom-left-radius: 1.25rem; border-bottom-right-radius: 1.25rem;">
                             <h5 class="card-title h4 mb-2 fw-bold">${loc.name}</h5>
@@ -230,76 +226,10 @@
         }
     }
 
-    // Google Maps locations and style
-    const rentalLocations = [
-        {
-            name: "Lake Murray Public Park",
-            address: "1832-1834 N Lake Dr, Lexington, SC 29072",
-            lat: 34.0455,
-            lng: -81.2306
-        },
-        {
-            name: "Saluda Shoals Park",
-            address: "5605 Bush River Rd, Columbia, SC 29212",
-            lat: 34.0532,
-            lng: -81.1636
-        },
-        {
-            name: "Saluda Riverwalk",
-            address: "650 Candi Ln, Columbia, SC 29210",
-            lat: 34.0006,
-            lng: -81.0702
-        },
-        {
-            name: "Dreher Island State Park",
-            address: "3677 State Park Rd, Prosperity, SC 29127",
-            lat: 34.1421,
-            lng: -81.4132
-        },
-        {
-            name: "South Cedar Creek at Congaree National Park",
-            address: "1716 S Cedar Creek Rd, Gadsden, SC 29052",
-            lat: 33.7942,
-            lng: -80.7516
-        }
-    ];
-
-    const mapStyle = [
-        {"featureType":"landscape.natural","elementType":"geometry.fill","stylers":[{"visibility":"on"},{"color":"#e0efef"}]},
-        {"featureType":"poi","elementType":"geometry.fill","stylers":[{"visibility":"on"},{"hue":"#1900ff"},{"color":"#c0e8e8"}]},
-        {"featureType":"road","elementType":"geometry","stylers":[{"lightness":100},{"visibility":"simplified"}]},
-        {"featureType":"road","elementType":"labels","stylers":[{"visibility":"off"}]},
-        {"featureType":"transit.line","elementType":"geometry","stylers":[{"visibility":"on"},{"lightness":700}]},
-        {"featureType":"water","elementType":"all","stylers":[{"color":"#7dcdcd"}]}
-    ];
-
-    function initMap() {
-        const center = { lat: 34.0455, lng: -81.2306 };
-        const map = new google.maps.Map(document.getElementById("map"), {
-            zoom: 9,
-            center: center,
-            styles: mapStyle
-        });
-        rentalLocations.forEach(loc => {
-            const marker = new google.maps.Marker({
-                position: { lat: loc.lat, lng: loc.lng },
-                map: map,
-                title: loc.name
-            });
-            const infoWindow = new google.maps.InfoWindow({
-                content: `<strong>${loc.name}</strong><br>${loc.address}`
-            });
-            marker.addListener('click', function() {
-                infoWindow.open(map, marker);
-            });
-        });
-    }
-
     // Initialize the page
     document.addEventListener('DOMContentLoaded', function() {
         renderLocationCards();
     });
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=<%= GOOGLE_PLACES_API_KEY %>&callback=initMap" async defer></script>
 </body>
 </html>

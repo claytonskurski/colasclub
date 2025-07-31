@@ -47,7 +47,7 @@
             <a href="/events/event/<%= event.eventId %>" class="event-card">
                 <div class="event-image-container">
                     <% if (event.image) { %>
-                        <img src="<%= event.image %>" alt="<%= event.summary %>" class="event-image">
+                        <img src="<%= formatImagePath(event.image) %>" alt="<%= event.summary %>" class="event-image">
                     <% } %>
                 </div>
                 <div class="event-content">
@@ -71,7 +71,7 @@
             <div class="event-card">
                 <div class="event-image-container">
                     <% if (event.image) { %>
-                        <img src="<%= event.image %>" alt="<%= event.summary %>" class="event-image">
+                        <img src="<%= formatImagePath(event.image) %>" alt="<%= event.summary %>" class="event-image">
                     <% } %>
                 </div>
                 <div class="event-content">

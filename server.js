@@ -10,7 +10,6 @@ const userRoutes = require('./routes/userRoutes');
 const paymentWebhook = require('./routes/paymentWebhook');
 const eventRoutes = require('./routes/eventRoutes');
 const submitEvent = require('./routes/submitEvent');
-const forumRoutes = require('./routes/forumRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const galleryRoutes = require('./routes/gallery');
 const { ensureAuthenticated } = require('./middleware/authMiddleware');
@@ -26,8 +25,8 @@ const GalleryItem = require('./models/GalleryItem');
 const rentalLocationsRoutes = require('./routes/rentalLocations');
 const rentalItemsRoutes = require('./routes/rentalItems');
 const rentalRoutes = require('./routes/rentalRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const { sendAdminNotification } = require('./services/adminNotifications');
-const { startUserWatcher } = require('./services/notifications');
 
 const app = express();
 
@@ -178,7 +177,6 @@ mongoose.set('strictQuery', true);
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         console.log('Connected to MongoDB successfully');
-        startUserWatcher();
     })
     .catch((err) => {
         console.error('MongoDB connection error:', err);
@@ -217,12 +215,12 @@ app.get('/', async (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/events', eventRoutes);
 app.use('/submit_event', submitEvent);
-app.use('/forum', forumRoutes);
 app.use('/contact', contactRoutes);
 app.use('/gallery', galleryRoutes);
 app.use('/rentals', rentalRoutes);
 app.use('/api/rental-locations', rentalLocationsRoutes);
 app.use('/api/rental-items', rentalItemsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Redirect /calendar to /events/calendar
 app.get('/calendar', (req, res) => {
@@ -360,11 +358,6 @@ app.get('/payment', (req, res) => {
     });
 });
 
-// Resources page route
-app.get('/resources', (req, res) => {
-    res.render('resources', { title: 'Resources', user: req.session.user });
-});
-
 app.get('/about', (req, res) => {
     res.render('about', { title: 'About Us', user: req.session.user });
 });
@@ -452,7 +445,7 @@ app.post('/account/update-profile', ensureAuthenticated, async (req, res) => {
             lastName: user.lastName,
             email: user.email,
             phone: user.phone,
-            subscriptionStatus: user.subscriptionStatus,
+            accountStatus: user.accountStatus,
             paidForCurrentMonth: user.paidForCurrentMonth
         };
 
@@ -526,7 +519,7 @@ cron.schedule('0 0 1 * *', async () => {
     console.log('Running monthly subscription status check...');
     const users = await User.find();
     for (const user of users) {
-        if (user.stripeCustomerId && user.membership === 'monthly') {
+        if (user.stripeCustomerId && user.accountStatus === 'active') {
             try {
                 const subscriptions = await stripe.subscriptions.list({ customer: user.stripeCustomerId });
                 let newStatus = 'inactive';
@@ -549,8 +542,8 @@ cron.schedule('0 0 1 * *', async () => {
                     }
                 }
 
-                if (user.subscriptionStatus !== newStatus || user.paidForCurrentMonth !== paidForCurrentMonth) {
-                    user.subscriptionStatus = newStatus;
+                if (user.accountStatus !== newStatus || user.paidForCurrentMonth !== paidForCurrentMonth) {
+                    user.accountStatus = newStatus;
                     user.paidForCurrentMonth = paidForCurrentMonth;
                     await user.save();
                     console.log(`Updated subscription status for ${user.email} to ${newStatus}, paidForCurrentMonth: ${paidForCurrentMonth}`);
@@ -685,6 +678,30 @@ app.post('/account/delete', ensureAuthenticated, async (req, res) => {
             user: req.session.user 
         });
     }
+});
+
+// Account status pages
+app.get('/account-suspended', (req, res) => {
+    res.render('account_suspended', { title: 'Account Suspended', user: req.session.user });
+});
+
+app.get('/account-paused', (req, res) => {
+    res.render('account_paused', { title: 'Account Paused', user: req.session.user });
+});
+
+app.get('/account-pending', (req, res) => {
+    res.render('account_pending', { title: 'Account Pending Review', user: req.session.user });
+});
+
+// Admin dashboard
+app.get('/admin/payment-issues', ensureAuthenticated, async (req, res) => {
+    // Check if user is admin
+    const user = await User.findById(req.session.user._id);
+    if (!user || (user.accountType !== 'founder' && user.accountType !== 'moderator')) {
+        return res.status(403).render('error', { title: 'Access Denied', message: 'Admin access required' });
+    }
+    
+    res.render('admin_payment_issues', { title: 'Payment Issues Dashboard', user: req.session.user });
 });
 
 // Error handling middleware

@@ -216,11 +216,27 @@ const sendWeeklySummaries = async () => {
 };
 
 /**
- * Check if it's Sunday at 6 PM for weekly summaries
+ * Check if it's Monday at 9 AM for weekly summaries
+ * More flexible check that allows for a 1-hour window
  */
 const shouldSendWeeklySummary = () => {
     const now = new Date();
-    return isSunday(now) && now.getHours() === 18; // 6 PM
+    const isMondayToday = now.getDay() === 1; // 1 = Monday
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    // Check if it's Monday and between 9:00 AM and 9:59 AM
+    const shouldSend = isMondayToday && currentHour === 9;
+    
+    // Add logging for debugging
+    console.log(`[${now.toISOString()}] Weekly summary check:`, {
+        isMonday: isMondayToday,
+        currentHour,
+        currentMinute,
+        shouldSend
+    });
+    
+    return shouldSend;
 };
 
 /**
@@ -246,9 +262,18 @@ const triggerWeeklySummaries = async () => {
     await sendWeeklySummaries();
 };
 
+/**
+ * Force send weekly summaries (for testing - bypasses time check)
+ */
+const forceSendWeeklySummaries = async () => {
+    console.log('🚀 Force sending weekly summaries (bypassing time check)...');
+    await sendWeeklySummaries();
+};
+
 module.exports = {
     sendWeeklySummaries,
     runEmailChecks,
     triggerWeeklySummaries,
+    forceSendWeeklySummaries,
     getEventsForNextSevenDays
 }; 

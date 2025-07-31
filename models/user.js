@@ -10,11 +10,6 @@ const userSchema = new mongoose.Schema({
     lastName: { type: String, required: true },
     phone: { type: String, required: true },
     stripeCustomerId: { type: String },
-    subscriptionStatus: { 
-        type: String, 
-        enum: ['trial', 'active', 'inactive', 'expired'],
-        default: 'trial' 
-    },
     subscriptionStart: { type: Date },
     subscriptionEnd: { type: Date },
     trialEnd: { type: Date },
@@ -22,8 +17,32 @@ const userSchema = new mongoose.Schema({
     membership: { 
         type: String, 
         enum: ['monthly', 'annual', 'none'],
-        required: true 
+        required: true  
     },
+    // New fields for payment failure handling
+    accountStatus: {
+        type: String,
+        enum: ['trial', 'active', 'paused', 'suspended', 'pending_reinstatement'],
+        default: 'trial'
+    },
+    paymentFailureHistory: [{
+        date: { type: Date, default: Date.now },
+        reason: { type: String, required: true },
+        stripeEventId: { type: String },
+        amount: { type: Number },
+        description: { type: String }
+    }],
+    lastPaymentFailure: {
+        date: { type: Date },
+        reason: { type: String },
+        stripeEventId: { type: String },
+        attempts: { type: Number, default: 0 }
+    },
+    accountPauseReason: { type: String },
+    accountPauseDate: { type: Date },
+    reinstatementRequested: { type: Boolean, default: false },
+    reinstatementRequestDate: { type: Date },
+    adminNotes: { type: String },
     waiver: {
         accepted: { type: Boolean, default: false, immutable: true },
         acceptedDate: { type: Date, immutable: true },
@@ -53,36 +72,29 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-// Set trial end date on new user creation
+// Set trial end date and accountStatus on new user creation
 userSchema.pre('save', function(next) {
     if (this.isNew) {
         const now = new Date();
         this.subscriptionStart = now;
         this.trialEnd = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days from now
-        this.subscriptionEnd = this.trialEnd;
+        this.accountStatus = 'trial';
+        this.paidForCurrentMonth = true;
     }
     next();
 });
 
-// Update subscription status based on dates
+// Update accountStatus and paidForCurrentMonth based on trial and payment
 userSchema.pre('save', function(next) {
     const now = new Date();
-    
-    // If subscription end date exists and has passed
-    if (this.subscriptionEnd && this.subscriptionEnd < now) {
-        this.subscriptionStatus = 'expired';
-        this.paidForCurrentMonth = false;
+    if (this.accountStatus === 'trial' && this.trialEnd && this.trialEnd < now) {
+        // Trial expired, check payment
+        if (this.paidForCurrentMonth) {
+            this.accountStatus = 'active';
+        } else {
+            this.accountStatus = 'paused';
+        }
     }
-    // If in trial period
-    else if (this.trialEnd && this.trialEnd > now) {
-        this.subscriptionStatus = 'trial';
-        this.paidForCurrentMonth = true;
-    }
-    // If subscription is active and not expired
-    else if (this.subscriptionEnd && this.subscriptionEnd > now) {
-        this.subscriptionStatus = 'active';
-    }
-    
     next();
 });
 
@@ -90,7 +102,7 @@ userSchema.pre('save', function(next) {
 userSchema.methods.activateSubscription = function(type) {
     const now = new Date();
     this.subscriptionStart = now;
-    this.subscriptionStatus = 'active';
+    this.accountStatus = 'active';
     this.paidForCurrentMonth = true;
     
     if (type === 'monthly') {
@@ -106,10 +118,85 @@ userSchema.methods.activateSubscription = function(type) {
 userSchema.methods.isSubscriptionActive = function() {
     const now = new Date();
     return (
-        this.subscriptionStatus === 'active' ||
-        (this.subscriptionStatus === 'trial' && this.trialEnd > now) ||
+        this.accountStatus === 'active' ||
+        (this.accountStatus === 'trial' && this.trialEnd > now) ||
         (this.subscriptionEnd && this.subscriptionEnd > now)
     );
+};
+
+// Method to handle payment failure
+userSchema.methods.handlePaymentFailure = function(failureData) {
+    const failure = {
+        date: new Date(),
+        reason: failureData.reason,
+        stripeEventId: failureData.stripeEventId,
+        amount: failureData.amount,
+        description: failureData.description
+    };
+    
+    this.paymentFailureHistory.push(failure);
+    this.lastPaymentFailure = {
+        date: failure.date,
+        reason: failure.reason,
+        stripeEventId: failure.stripeEventId,
+        attempts: (this.lastPaymentFailure?.attempts || 0) + 1
+    };
+    
+    // Determine account action based on failure reason and attempts
+    if (failureData.reason === 'stolen_card' || failureData.reason === 'fraudulent') {
+        this.accountStatus = 'suspended';
+        this.accountPauseReason = `Account suspended due to ${failureData.reason}`;
+        this.accountPauseDate = new Date();
+    } else if (this.lastPaymentFailure.attempts >= 3) {
+        this.accountStatus = 'paused';
+        this.accountPauseReason = 'Multiple payment failures';
+        this.accountPauseDate = new Date();
+    }
+    
+    return this.save();
+};
+
+// Method to pause account
+userSchema.methods.pauseAccount = function(reason, adminNotes = '') {
+    this.accountStatus = 'paused';
+    this.accountPauseReason = reason;
+    this.accountPauseDate = new Date();
+    this.adminNotes = adminNotes;
+    return this.save();
+};
+
+// Method to suspend account
+userSchema.methods.suspendAccount = function(reason, adminNotes = '') {
+    this.accountStatus = 'suspended';
+    this.accountPauseReason = reason;
+    this.accountPauseDate = new Date();
+    this.adminNotes = adminNotes;
+    return this.save();
+};
+
+// Method to request reinstatement
+userSchema.methods.requestReinstatement = function() {
+    this.reinstatementRequested = true;
+    this.reinstatementRequestDate = new Date();
+    this.accountStatus = 'pending_reinstatement';
+    return this.save();
+};
+
+// Method to reinstate account
+userSchema.methods.reinstateAccount = function(adminNotes = '') {
+    this.accountStatus = 'active';
+    this.reinstatementRequested = false;
+    this.reinstatementRequestDate = null;
+    this.accountPauseReason = null;
+    this.accountPauseDate = null;
+    this.lastPaymentFailure = null;
+    this.adminNotes = adminNotes;
+    return this.save();
+};
+
+// Method to check if account is accessible
+userSchema.methods.isAccountAccessible = function() {
+    return this.accountStatus === 'active' && this.isSubscriptionActive();
 };
 
 // Hash password before saving
@@ -254,6 +341,32 @@ userSchema.pre(['updateOne', 'findOneAndUpdate', 'updateMany'], async function(n
         }
     }
     next();
+});
+
+userSchema.pre('findOneAndDelete', async function(next) {
+    const user = await this.model.findOne(this.getQuery());
+    if (user) {
+        try {
+            const { sendAccountDeletionEmail } = require('../services/accountDeletionEmail');
+            await sendAccountDeletionEmail(user);
+        } catch (err) {
+            console.error('[PRE-DELETE HOOK] Error sending account deletion email:', err);
+        }
+    }
+    next();
+});
+
+// Post-save hook to send welcome email for new users (like account deletion emails)
+userSchema.post('save', async function(doc) {
+    if (doc.isNew) {
+        try {
+            const { sendWelcomeNewUserEmail } = require('../services/newUserEmails');
+            await sendWelcomeNewUserEmail(doc);
+            console.log('[POST-SAVE HOOK] Welcome email sent to new user:', doc.email);
+        } catch (err) {
+            console.error('[POST-SAVE HOOK] Error sending welcome email:', err);
+        }
+    }
 });
 
 module.exports = mongoose.model('User', userSchema);
