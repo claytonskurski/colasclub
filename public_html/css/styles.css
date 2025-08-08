@@ -25,41 +25,7 @@
     box-sizing: border-box;
 }
 
-/* Base Styles */
-html, body {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    overflow-x: hidden;
-}
-
-body {
-    flex: 1;
-    font-family: 'Roboto', sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    text-align: center;
-}
-
-/* Updated Navigation Styles */
-nav {
-    background-color: var(--secondary-color);
-    padding: 5px 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 70px;
-}
-
+/* Navigation component styles - these work with the layout.ejs navbar */
 .nav-left, .nav-center, .nav-right {
     display: flex;
     align-items: center;
@@ -99,7 +65,7 @@ nav {
 }
 
 .logo {
-    height: 60px; /* Increased from 50px */
+    height: 60px;
     margin-right: 10px;
     object-fit: contain;
 }
@@ -187,10 +153,6 @@ nav {
 }
 
 @media (max-width: 768px) {
-    nav {
-        padding: 5px 15px;
-    }
-
     .brand-name {
         font-size: 1.2em;
     }
@@ -204,22 +166,9 @@ nav {
     }
 }
 
-main {
-    margin-top: 70px;
-    padding: 0;
-    width: 100%;
-}
+/* Main content area - layout.ejs handles the main element styling */
 
-/* Modern Button Styles */
-.btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-}
+/* Button Styles - layout.ejs handles basic button styling */
 
 /* Event Card Styles */
 .events-grid {
@@ -436,33 +385,9 @@ main {
     }
 }
 
-/* Section Styles */
-section {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    margin-right: calc(-50vw + 50%);
-    padding: 4rem 2rem;
-    position: relative;
-    background-color: var(--white);
-}
+/* Section Styles - layout.ejs handles basic section styling */
 
-/* Override background color for specific sections */
-#services,
-#about,
-#contact {
-    background: var(--white);
-}
-
-/* Form Styling */
-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-label, input {
-    margin: 5px;
-}
+/* Form Styling - layout.ejs handles basic form styling */
 
 /* Contact Us Section Styling */
 #contact form {
@@ -494,21 +419,7 @@ label, input {
     font-size: 1em;
 }
 
-/* Button Styling */
-.btn, .sign-up-button, .events-button, .submit-button {
-    background-color: var(--primary-color);
-    color: var(--white);
-    padding: 0.5rem 1rem;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    text-transform: uppercase;
-}
-
-.btn:hover, .sign-up-button:hover, .events-button:hover, .submit-button:hover {
-    background-color: var(--primary-hover);
-}
-
+/* Button Styling - layout.ejs handles basic button styling */
 .join-now-button, .events-button, .submit-button {
     font-size: 1.5em;
     padding: 25px 50px;
@@ -532,16 +443,6 @@ label, input {
 }
 
 /* Bootstrap Button Overrides */
-.btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-}
-
 .btn-danger {
     background-color: var(--primary-hover); /* Use a shade of primary for "danger" */
     border-color: var(--primary-hover);
@@ -608,80 +509,7 @@ footer {
     opacity: 0.9;
 }
 
-/* Navigation Bar Styling */
-nav ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    align-items: center;
-}
-
-nav ul.nav-left,
-nav ul.nav-right {
-    display: flex;
-    align-items: center;
-}
-
-nav ul li {
-    display: inline;
-    margin-right: 10px;
-}
-
-nav ul li.logo {
-    margin-right: 10px;
-}
-
-nav ul li a {
-    display: inline-block;
-    color: var(--white);
-    text-align: center;
-    padding: 10px 20px;
-    text-decoration: none;
-}
-
-nav ul li a:hover {
-    background-color: var(--primary-hover);
-}
-
-nav ul li.sign-in a {
-    background-color: var(--secondary-color);
-    border-radius: 5px;
-}
-
-nav ul li.sign-in a:hover {
-    background-color: var(--secondary-hover);
-}
-
-/* Dropdown Menu Styling */
-.welcome a {
-    color: var(--white);
-    text-decoration: none;
-    padding: 10px;
-}
-
-.welcome a:hover {
-    color: var(--secondary-color);
-}
-
-.nav-right li {
-    display: inline-block;
-    margin-left: 15px;
-}
-
-.dropdown-menu {
-    z-index: 2000 !important; /* Ensure dropdown is above other elements */
-    background-color: var(--white);
-}
-
-.dropdown-menu .dropdown-item {
-    color: var(--text-color);
-}
-
-.dropdown-menu .dropdown-item:hover {
-    background-color: var(--secondary-color);
-    color: var(--white);
-}
+/* Navigation Bar Styling - layout.ejs handles the main navbar structure */
 
 /* Hero Section Styling */
 .top-background {
@@ -723,42 +551,14 @@ nav ul li.sign-in a:hover {
     padding: 25px 50px;
 }
 
-/* Main Content Styling */
-h1 {
-    color: var(--primary-color);
-    text-align: center;
-    padding: 20px;
-}
-
-p {
-    color: var(--light-text-color);
-    text-align: center;
-    padding: 10px;
-}
+/* Main Content Styling - layout.ejs handles basic typography */
 
 /* Index Page Spacing */
 .join-now-section {
     margin-bottom: 3rem;
 }
 
-/* Navigation Links */
-.nav-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.nav-link {
-    color: white !important;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    transition: background-color 0.3s ease;
-}
-
-.nav-link:hover {
-    background-color: rgba(255,255,255,0.1);
-}
+/* Navigation Links - layout.ejs handles navbar link styling */
 
 /* Event Calendar View */
 .event-filters {
@@ -800,21 +600,7 @@ p {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Form Styles */
-.form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(14, 116, 124, 0.25);
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-}
+/* Form Styles - layout.ejs handles basic form styling */
 
 .resource-button {
     background-color: var(--primary-color);

@@ -125,6 +125,7 @@ const welcomeNewUserTemplate = async (user) => {
                 <div style="text-align:center;margin:30px 0 0 0;">
                     <a href="https://facebook.com/sodacityoutdoors" style="margin:0 10px;display:inline-block;"><img src="https://cdn-icons-png.flaticon.com/24/733/733547.png" alt="Facebook" style="vertical-align:middle;"></a>
                     <a href="https://instagram.com/sodacityoutdoors" style="margin:0 10px;display:inline-block;"><img src="https://cdn-icons-png.flaticon.com/24/2111/2111463.png" alt="Instagram" style="vertical-align:middle;"></a>
+                    <a href="https://www.reddit.com/r/SodaCityOutdoor/" style="margin:0 10px;display:inline-block;"><img src="https://cdn-icons-png.flaticon.com/24/2111/2111463.png" alt="Reddit" style="vertical-align:middle;"></a>
                     <a href="mailto:scoadmin@sodacityoutdoors.com" style="margin:0 10px;display:inline-block;"><img src="https://cdn-icons-png.flaticon.com/24/732/732200.png" alt="Email" style="vertical-align:middle;"></a>
                 </div>
                 <div style="margin-top:30px;padding-top:20px;border-top:1px solid #eee;padding-bottom:50px;">

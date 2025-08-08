@@ -33,11 +33,6 @@ const eventSchema = new mongoose.Schema({
   attendees: [{ type: String }],
   rsvps: [{ type: String }],
   maxRSVPs: { type: Number, default: null },
-  status: { 
-    type: String, 
-    enum: ['approved', 'pending', 'rejected'],
-    default: 'pending'
-  },
   host: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -52,24 +47,15 @@ const eventSchema = new mongoose.Schema({
   link: { type: String },
   type: { type: String },
   region: { type: String },
-  suggestedBy: { 
-    type: mongoose.Schema.Types.Mixed,
-    default: 'system'
-  },
   timezone: {
     type: String,
     default: 'America/New_York',
     required: true
-  },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
   }
 });
 
 // Add indexes for better query performance
 eventSchema.index({ tags: 1 });
-eventSchema.index({ status: 1 });
 eventSchema.index({ dtstart: 1 });
 eventSchema.index({ event_type: 1 });
 eventSchema.index({ host: 1 });

@@ -71,7 +71,20 @@ const spamPatterns = [
     'marketing services',
     'boost ranking',
     'cheap',
-    'free trial'
+    'free trial',
+    // Additional patterns for sophisticated spam
+    'improve performance',
+    'help improve',
+    'couple of small things',
+    'let me know if you\'d like',
+    'check your site',
+    'performance improvements',
+    'site optimization',
+    'website performance',
+    'digital marketing',
+    'online presence',
+    'traffic boost',
+    'ranking improvement'
 ];
 
 // Spam check function
@@ -97,6 +110,46 @@ function isSpam(name, email, message) {
     // Check for numeric or special character density
     const nonAlphaPercentage = (message.match(/[^a-zA-Z\s]/g) || []).length / message.length;
     if (nonAlphaPercentage > 0.4) return true;
+
+    // Check for suspicious email patterns
+    const emailDomain = email.split('@')[1];
+    if (emailDomain) {
+        // Check for suspicious domain patterns
+        const suspiciousDomains = [
+            'gmail.com', // Common in spam, but also legitimate
+            'yahoo.com',
+            'hotmail.com',
+            'outlook.com'
+        ];
+        
+        // If it's a common free email provider, apply stricter checks
+        if (suspiciousDomains.includes(emailDomain.toLowerCase())) {
+            // Check for name/email mismatch patterns
+            const nameWords = name.toLowerCase().split(/\s+/);
+            const emailUsername = email.split('@')[0].toLowerCase();
+            
+            // If name doesn't appear in email username, it's suspicious
+            const nameInEmail = nameWords.some(word => 
+                word.length > 2 && emailUsername.includes(word)
+            );
+            
+            if (!nameInEmail && nameWords.length > 0) {
+                // Additional check for common spam patterns in the message
+                const suspiciousMessagePatterns = [
+                    'check your site',
+                    'improve performance',
+                    'couple of things',
+                    'let me know if you\'d like'
+                ];
+                
+                if (suspiciousMessagePatterns.some(pattern => 
+                    message.toLowerCase().includes(pattern)
+                )) {
+                    return true;
+                }
+            }
+        }
+    }
 
     return false;
 }
@@ -134,6 +187,14 @@ router.post('/submit', contactLimiter, async (req, res) => {
         // Check for spam
         if (isSpam(name, email, message)) {
             console.log('Spam detected from:', email);
+            console.log('Spam details:', {
+                name: name,
+                email: email,
+                messageLength: message.length,
+                timestamp: new Date().toISOString(),
+                ip: req.ip,
+                userAgent: req.get('User-Agent')
+            });
             return res.status(400).json({
                 success: false,
                 message: 'Your message was flagged as potential spam. Please try again with appropriate content.'

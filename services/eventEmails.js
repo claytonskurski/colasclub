@@ -63,7 +63,8 @@ const getEventsForNextSevenDays = async () => {
 const getAllUsers = async () => {
     try {
         const users = await User.find({
-            email: { $exists: true, $ne: '' }
+            email: { $exists: true, $ne: '' },
+            accountStatus: { $ne: 'inactive' }
         }).select('email firstName lastName');
         
         return users;
@@ -74,20 +75,15 @@ const getAllUsers = async () => {
 };
 
 /**
- * Format event date and time for display
+ * Format event date for display
  */
 const formatEventDateTime = (event) => {
     try {
         const eventDate = parseISO(event.dtstart);
-        const timezone = event.timezone || 'America/New_York';
-        const zonedDate = utcToZonedTime(eventDate, timezone);
-        
-        return format(zonedDate, 'EEEE, MMMM do, yyyy \'at\' h:mm a', {
-            timeZone: timezone
-        });
+        return format(eventDate, 'EEEE, MMMM do, yyyy');
     } catch (error) {
         console.error('Error formatting event date:', error);
-        return new Date(event.dtstart).toLocaleString();
+        return new Date(event.dtstart).toLocaleDateString();
     }
 };
 

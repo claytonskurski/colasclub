@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const WaiverAudit = require('./waiverAudit');
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
@@ -207,26 +206,10 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
-// Prevent modifications to waiver information and log attempts
+// Prevent modifications to waiver information
 userSchema.pre('save', async function(next) {
     if (!this.isNew && this.isModified('waiver')) {
         console.error('Attempt to modify waiver information detected');
-        
-        // Create audit log
-        try {
-            await WaiverAudit.create({
-                userId: this._id,
-                action: 'modify',
-                previousValue: this._original.waiver,
-                newValue: this.waiver,
-                modifiedBy: 'direct_db_modification',
-                ipAddress: 'unknown',
-                userAgent: 'unknown'
-            });
-        } catch (error) {
-            console.error('Failed to create audit log:', error);
-        }
-        
         const err = new Error('Waiver information cannot be modified once set');
         return next(err);
     }
@@ -239,32 +222,11 @@ userSchema.pre('save', function(next) {
     next();
 });
 
-// Additional middleware to prevent waiver updates and log attempts
+// Additional middleware to prevent waiver updates
 userSchema.pre(['updateOne', 'findOneAndUpdate', 'updateMany'], async function(next) {
     const update = this.getUpdate();
     if (update && (update.waiver || update['$set']?.waiver)) {
         console.error('Attempt to modify waiver information detected');
-        
-        // Get the documents that would be modified
-        const docs = await this.model.find(this.getQuery());
-        
-        // Create audit logs for each affected document
-        try {
-            await Promise.all(docs.map(doc => 
-                WaiverAudit.create({
-                    userId: doc._id,
-                    action: 'modify',
-                    previousValue: doc.waiver,
-                    newValue: update.waiver || update['$set'].waiver,
-                    modifiedBy: 'direct_db_modification',
-                    ipAddress: 'unknown',
-                    userAgent: 'unknown'
-                })
-            ));
-        } catch (error) {
-            console.error('Failed to create audit logs:', error);
-        }
-        
         const err = new Error('Waiver information cannot be modified once set');
         return next(err);
     }
