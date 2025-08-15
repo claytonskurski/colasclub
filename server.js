@@ -220,9 +220,7 @@ app.get('/signup', (req, res) => {
     res.render('signup', { title: 'Sign Up', user: req.session.user });
 });
 
-app.get('/register', (req, res) => {
-    res.render('register', { title: 'Create Account', user: req.session.user });
-});
+
 
 app.get('/waiver', async (req, res) => {
     const pendingUserId = req.query.pendingUserId;
@@ -268,76 +266,7 @@ app.get('/waiver', async (req, res) => {
     }
 });
 
-// Handle initial form submission from signup page
-app.post('/waiver', async (req, res) => {
-    try {
-        console.log('POST /waiver - Request body:', req.body);
-        
-        // Check database connection
-        if (mongoose.connection.readyState !== 1) {
-            console.error('Database not connected. Ready state:', mongoose.connection.readyState);
-            return res.status(500).render('error', { 
-                title: 'Database Error', 
-                message: 'Database connection is not available. Please try again later.',
-                user: null 
-            });
-        }
-        
-        const { username, password, email, firstName, lastName, phone } = req.body;
-        
-        // Validate required fields
-        if (!username || !password || !email || !firstName || !lastName) {
-            console.error('Missing required fields in waiver form submission:', { username, password, email, firstName, lastName, phone });
-            return res.status(400).render('error', { 
-                title: 'Missing Information', 
-                message: 'Please fill in all required fields.',
-                user: null 
-            });
-        }
 
-        // Check for existing user
-        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-        if (existingUser) {
-            console.error('User already exists:', { username, email });
-            return res.status(400).render('error', { 
-                title: 'User Already Exists', 
-                message: 'A user with this username or email already exists.',
-                user: null 
-            });
-        }
-
-        console.log('Creating pending user with data:', { username, email, firstName, lastName, phone });
-        
-        // Create pending user
-        const pendingUser = new PendingUser({
-            username,
-            password,
-            email,
-            firstName,
-            lastName,
-            phone,
-            waiver: {
-                accepted: false
-            }
-        });
-
-        console.log('PendingUser instance created, attempting to save...');
-        await pendingUser.save();
-        console.log('Pending user created successfully:', pendingUser._id);
-
-        // Redirect to waiver page with the pending user ID
-        res.redirect(`/waiver?pendingUserId=${pendingUser._id}`);
-    } catch (error) {
-        console.error('Error processing waiver form submission:', error);
-        console.error('Error stack:', error.stack);
-        res.status(500).render('error', { 
-            title: 'Error', 
-            message: 'An error occurred while processing your request. Please try again.',
-            user: null,
-            error: process.env.NODE_ENV === 'development' ? error : null
-        });
-    }
-});
 
 app.post('/waiver/accept', async (req, res) => {
     try {
@@ -437,130 +366,11 @@ app.post('/contact/submit', async (req, res) => {
     }
 });
 
-// Account Page
-app.get('/account', ensureAuthenticated, async (req, res) => {
-    console.log('Reached /account route');
-    console.log('req.session.user in /account:', req.session.user);
-    try {
-        if (!req.session.user) {
-            console.log('No user in session, redirecting to signin');
-            return res.redirect('/signin');
-        }
 
-        const userId = req.session.user._id;
-        console.log('Fetching user with ID:', userId);
-        const user = await User.findById(userId);
-        if (!user) {
-            console.log('User not found in database:', userId);
-            return res.status(404).render('404', { title: 'Not Found', message: 'User not found', user: null });
-        }
-        console.log('Rendering account page for user:', user.username);
-        res.render('account', { title: 'My Account', user });
-    } catch (error) {
-        console.error('Error loading account page:', error);
-        res.status(500).render('account', { title: 'My Account', user: req.session.user || null, error: 'Failed to load account details' });
-    }
-});
 
-// Update Profile
-app.post('/account/update-profile', ensureAuthenticated, async (req, res) => {
-    try {
-        if (!req.session.user) {
-            console.log('No user in session, redirecting to signin');
-            return res.redirect('/signin');
-        }
 
-        const userId = req.session.user._id;
-        const { username, firstName, lastName, email, phone } = req.body;
 
-        const user = await User.findById(userId);
-        if (!user) {
-            console.log('User not found in database:', userId);
-            return res.status(404).render('404', { title: 'Not Found', message: 'User not found', user: null });
-        }
 
-        // Check if the new username or email is already taken by another user
-        const existingUser = await User.findOne({
-            $or: [
-                { username, _id: { $ne: userId } },
-                { email, _id: { $ne: userId } }
-            ]
-        });
-        if (existingUser) {
-            return res.render('account', { title: 'My Account', user, error: 'Username or email already in use' });
-        }
-
-        // Update user fields
-        user.username = username;
-        user.firstName = firstName;
-        user.lastName = lastName;
-        user.email = email;
-        user.phone = phone;
-
-        await user.save();
-
-        // Update session with new user data
-        req.session.user = {
-            _id: user._id,
-            username: user.username,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            phone: user.phone
-        };
-
-        req.session.save((err) => {
-            if (err) {
-                console.error('Error saving session during profile update:', err);
-                return res.status(500).render('account', { title: 'My Account', user, error: 'Error saving session' });
-            }
-            console.log('Profile updated and session saved for user:', user.username);
-            res.render('account', { title: 'My Account', user, success: 'Profile updated successfully' });
-        });
-    } catch (error) {
-        console.error('Error updating profile:', error);
-        res.status(500).render('account', { title: 'My Account', user: req.session.user || null, error: 'Failed to update profile' });
-    }
-});
-
-// Change Password
-app.post('/account/change-password', ensureAuthenticated, async (req, res) => {
-    try {
-        if (!req.session.user) {
-            console.log('No user in session, redirecting to signin');
-            return res.redirect('/signin');
-        }
-
-        const userId = req.session.user._id;
-        const { currentPassword, newPassword, confirmPassword } = req.body;
-
-        const user = await User.findById(userId);
-        if (!user) {
-            console.log('User not found in database:', userId);
-            return res.status(404).render('404', { title: 'Not Found', message: 'User not found', user: null });
-        }
-
-        // Verify current password
-        const isMatch = await user.comparePassword(currentPassword);
-        if (!isMatch) {
-            return res.render('account', { title: 'My Account', user, error: 'Current password is incorrect' });
-        }
-
-        // Check if new password matches confirm password
-        if (newPassword !== confirmPassword) {
-            return res.render('account', { title: 'My Account', user, error: 'New password and confirm password do not match' });
-        }
-
-        // Update password (this will trigger the pre('save') middleware to hash the new password)
-        user.password = newPassword;
-        await user.save();
-
-        res.render('account', { title: 'My Account', user, success: 'Password changed successfully' });
-    } catch (error) {
-        console.error('Error changing password:', error);
-        res.status(500).render('account', { title: 'My Account', user: req.session.user || null, error: 'Failed to change password' });
-    }
-});
 
 // Logout route
 app.get('/logout', (req, res) => {
@@ -579,62 +389,7 @@ app.get('/logout', (req, res) => {
 // === AdminJS (AdminBro) Setup ===
 // Note: AdminJS has been removed as it was related to rental management
 
-// Mount account deletion route
-app.post('/account/delete', ensureAuthenticated, async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.redirect('/signin');
-        }
 
-        const userId = req.session.user._id;
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(404).render('error', { 
-                title: 'Not Found', 
-                message: 'User not found',
-                user: null 
-            });
-        }
-
-        // Store user info for email notification before deletion
-        const userInfo = {
-            username: user.username,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName
-        };
-
-        // Delete the user account
-        await User.findByIdAndDelete(userId);
-
-        // Send email notification for account deletion
-        await sendAdminNotification(
-            'Account Deletion Notification',
-            `User Account Deleted:
-            Username: ${userInfo.username}
-            Email: ${userInfo.email}
-            Name: ${userInfo.firstName} ${userInfo.lastName}
-            
-            Account has been successfully removed from the system.`
-        );
-
-        // Clear the session
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Error destroying session:', err);
-            }
-            res.redirect('/');
-        });
-    } catch (error) {
-        console.error('Error deleting account:', error);
-        res.status(500).render('error', { 
-            title: 'Error', 
-            message: 'Failed to delete account. Please try again or contact support.',
-            user: req.session.user 
-        });
-    }
-});
 
 
 

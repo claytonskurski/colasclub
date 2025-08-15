@@ -46,72 +46,7 @@ const upload = multer({
 
 
 
-// Registration page route
-router.get('/register', async (req, res) => {
-    const { pendingUserId } = req.query;
-    
-    if (!pendingUserId) {
-        return res.render('register', { title: 'Create Account', user: req.session.user });
-    }
 
-    try {
-        // Handle registration completion after waiver acceptance
-        const pendingUser = await PendingUser.findById(pendingUserId);
-        if (!pendingUser) {
-            console.error('Pending user not found in GET /register:', pendingUserId);
-            return res.status(404).render('error', { 
-                title: 'Not Found', 
-                message: 'User data not found',
-                user: null 
-            });
-        }
-
-        // Check if waiver was accepted
-        if (!pendingUser.waiver.accepted) {
-            return res.status(400).render('error', { 
-                title: 'Waiver Not Accepted', 
-                message: 'Please accept the waiver before completing registration.',
-                user: null 
-            });
-        }
-
-        // Create the user account
-        const accountType = pendingUser.username.toLowerCase() === 'claytonskurski' ? 'founder' : 'member';
-        
-        const newUser = new User({
-            username: pendingUser.username,
-            password: pendingUser.password,
-            email: pendingUser.email,
-            firstName: pendingUser.firstName,
-            lastName: pendingUser.lastName,
-            phone: pendingUser.phone,
-            accountType,
-            waiver: {
-                accepted: pendingUser.waiver.accepted,
-                acceptedDate: pendingUser.waiver.acceptedDate,
-                version: '2025-04-17',
-                ipAddress: pendingUser.waiver.ipAddress,
-                userAgent: pendingUser.waiver.userAgent
-            }
-        });
-
-        await newUser.save();
-        console.log('User account created successfully:', newUser._id);
-
-        // Delete the pending user
-        await PendingUser.findByIdAndDelete(pendingUserId);
-
-        // Redirect to signin page
-        res.redirect('/signin?message=Account created successfully! Please sign in.');
-    } catch (error) {
-        console.error('Error completing registration:', error);
-        res.status(500).render('error', { 
-            title: 'Error', 
-            message: 'An error occurred while completing your registration. Please try again.',
-            user: null 
-        });
-    }
-});
 
 
 
@@ -307,7 +242,179 @@ router.get('/protected', ensureAuthenticated, (req, res) => {
     res.json({ message: 'This is a protected route' });
 });
 
-// Delete account route
+
+
+// Account Page
+router.get('/account', ensureAuthenticated, async (req, res) => {
+    try {
+        const user = await User.findById(req.session.user._id);
+        const now = new Date();
+
+        // Count past events attended by the user (RSVPs with eventDate in the past)
+        const trimmedUsername = user.username.trim();
+        const pastEventsCount = await RSVP.countDocuments({
+            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
+            eventDate: { $lt: now }
+        });
+
+        // Count events hosted by the user (Host records with status 'approved'), case-insensitive and trimmed
+        const eventsHostedCount = await Host.countDocuments({
+            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
+            status: 'approved'
+        });
+
+        res.render('account', {
+            title: 'My Account',
+            user: user,
+            pastEventsCount,
+            eventsHostedCount
+        });
+    } catch (error) {
+        console.error('Error loading account page:', error);
+        res.status(500).render('account', { 
+            title: 'My Account', 
+            user: req.session.user || null, 
+            error: 'Failed to load account details' 
+        });
+    }
+});
+
+// Update Profile
+router.post('/account/update-profile', ensureAuthenticated, async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.redirect('/signin');
+        }
+
+        const userId = req.session.user._id;
+        const { username, firstName, lastName, email, phone } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).render('error', { 
+                title: 'Not Found', 
+                message: 'User not found',
+                user: null 
+            });
+        }
+
+        // Check if the new username or email is already taken by another user
+        const existingUser = await User.findOne({
+            $or: [
+                { username, _id: { $ne: userId } },
+                { email, _id: { $ne: userId } }
+            ]
+        });
+        if (existingUser) {
+            return res.render('account', { 
+                title: 'My Account', 
+                user, 
+                error: 'Username or email already in use' 
+            });
+        }
+
+        // Update user fields
+        user.username = username;
+        user.firstName = firstName;
+        user.lastName = lastName;
+        user.email = email;
+        user.phone = phone;
+
+        await user.save();
+
+        // Update session with new user data
+        req.session.user = {
+            _id: user._id,
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phone: user.phone
+        };
+
+        req.session.save((err) => {
+            if (err) {
+                console.error('Error saving session during profile update:', err);
+                return res.status(500).render('account', { 
+                    title: 'My Account', 
+                    user, 
+                    error: 'Error saving session' 
+                });
+            }
+            res.render('account', { 
+                title: 'My Account', 
+                user, 
+                success: 'Profile updated successfully' 
+            });
+        });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).render('account', { 
+            title: 'My Account', 
+            user: req.session.user || null, 
+            error: 'Failed to update profile' 
+        });
+    }
+});
+
+// Change Password
+router.post('/account/change-password', ensureAuthenticated, async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.redirect('/signin');
+        }
+
+        const userId = req.session.user._id;
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).render('error', { 
+                title: 'Not Found', 
+                message: 'User not found',
+                user: null 
+            });
+        }
+
+        // Verify current password
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.render('account', { 
+                title: 'My Account', 
+                user, 
+                error: 'Current password is incorrect' 
+            });
+        }
+
+        // Check if new password matches confirm password
+        if (newPassword !== confirmPassword) {
+            return res.render('account', { 
+                title: 'My Account', 
+                user, 
+                error: 'New password and confirm password do not match' 
+            });
+        }
+
+        // Update password (this will trigger the pre('save') middleware to hash the new password)
+        user.password = newPassword;
+        await user.save();
+
+        res.render('account', { 
+            title: 'My Account', 
+            user, 
+            success: 'Password changed successfully' 
+        });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).render('account', { 
+            title: 'My Account', 
+            user: req.session.user || null, 
+            error: 'Failed to change password' 
+        });
+    }
+});
+
+// Delete Account
 router.post('/account/delete', ensureAuthenticated, async (req, res) => {
     try {
         if (!req.session.user) {
@@ -318,7 +425,11 @@ router.post('/account/delete', ensureAuthenticated, async (req, res) => {
         const user = await User.findById(userId);
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).render('error', { 
+                title: 'Not Found', 
+                message: 'User not found',
+                user: null 
+            });
         }
 
         // Store user info for email notification before deletion
@@ -329,22 +440,19 @@ router.post('/account/delete', ensureAuthenticated, async (req, res) => {
             lastName: user.lastName
         };
 
-
-
         // Delete the user account
         await User.findByIdAndDelete(userId);
 
-        // Send account deletion email to the user
-        try {
-            const { sendAccountDeletionEmail } = require('../services/accountDeletionEmail');
-            await sendAccountDeletionEmail(userInfo);
-            console.log('Account deletion email sent to user');
-        } catch (emailErr) {
-            console.error('Error sending account deletion email:', emailErr);
-        }
-
-        // Send admin notification about the deletion
-        await sendNewUserNotification(user, 'User Account Deleted');
+        // Send email notification for account deletion
+        await sendAdminNotification(
+            'Account Deletion Notification',
+            `User Account Deleted:
+            Username: ${userInfo.username}
+            Email: ${userInfo.email}
+            Name: ${userInfo.firstName} ${userInfo.lastName}
+            
+            Account has been successfully removed from the system.`
+        );
 
         // Clear the session
         req.session.destroy((err) => {
@@ -355,7 +463,11 @@ router.post('/account/delete', ensureAuthenticated, async (req, res) => {
         });
     } catch (error) {
         console.error('Error deleting account:', error);
-        res.status(500).json({ message: 'Error deleting account', error: error.message });
+        res.status(500).render('error', { 
+            title: 'Error', 
+            message: 'Failed to delete account. Please try again or contact support.',
+            user: req.session.user 
+        });
     }
 });
 
@@ -394,53 +506,7 @@ router.post('/upload-photo', ensureAuthenticated, upload.single('photo'), async 
     }
 });
 
-router.get('/account', ensureAuthenticated, async (req, res) => {
-    try {
-        const user = await User.findById(req.user._id);
-        const now = new Date();
 
-        // Count past events attended by the user (RSVPs with eventDate in the past)
-        const trimmedUsername = user.username.trim();
-        const pastEventsCount = await RSVP.countDocuments({
-            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
-            eventDate: { $lt: now }
-        });
-
-        // Count events hosted by the user (Host records with status 'approved'), case-insensitive and trimmed
-        const eventsHostedCount = await Host.countDocuments({
-            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
-            status: 'approved'
-        });
-
-        // Debug logs
-        const hostedDocs = await Host.find({
-            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
-            status: 'approved'
-        });
-        const attendedDocs = await RSVP.find({
-            username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') },
-            eventDate: { $lt: now }
-        });
-        console.log('RSVP count query:', { username: trimmedUsername });
-        console.log('RSVP count result:', pastEventsCount);
-        console.log('Attended docs:', attendedDocs);
-        console.log('Host count query:', { username: trimmedUsername, status: 'approved' });
-        console.log('Host count result:', eventsHostedCount);
-        console.log('Hosted docs:', hostedDocs);
-
-        res.render('account', {
-            user: user,
-            pastEventsCount,
-            eventsHostedCount,
-            error: req.flash('error'),
-            success: req.flash('success')
-        });
-    } catch (error) {
-        console.error('Error loading account page:', error);
-        req.flash('error', 'Error loading account information');
-        res.redirect('/');
-    }
-});
 
 
 
