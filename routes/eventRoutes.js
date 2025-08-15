@@ -34,8 +34,8 @@ async function sendAdminNotification(subject, text) {
     }
 
     const mailOptions = {
-        from: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
-        to: 'scoadmin@sodacityoutdoors.com',
+        from: process.env.EMAIL_USER || 'admin@colasclub.com',
+        to: 'admin@colasclub.com',
         subject: subject,
         text: text
     };
@@ -171,21 +171,6 @@ router.get('/event/:id', ensureAuthenticated, async (req, res) => {
             return res.status(404).render('404', { title: 'Not Found', user: req.session.user });
         }
 
-        // Get approved host for this event
-        const approvedHost = await Host.findOne({
-            eventId: event.eventId,
-            status: 'approved'
-        });
-
-        // Get the current user's host application if it exists
-        let userHostApplication = null;
-        if (req.session.user) {
-            userHostApplication = await Host.findOne({
-                eventId: event.eventId,
-                username: req.session.user.username
-            });
-        }
-
         console.log('Fetched event for /event/:id:', event);
 
         // Helper function for formatting image paths
@@ -206,8 +191,6 @@ router.get('/event/:id', ensureAuthenticated, async (req, res) => {
         res.render('event_details', { 
             title: `Event: ${event.summary}`, 
             event,
-            approvedHost,
-            userHostApplication,
             user: req.session.user,
             formatImagePath,
             moment: moment
@@ -260,11 +243,7 @@ router.post('/rsvp/:eventId', ensureAuthenticated, async (req, res) => {
         }
 
         // Check for existing RSVP
-        const existingRSVP = await RSVP.findOne({
-            eventId: event.eventId,
-            username: req.session.user.username
-        });
-
+        const existingRSVP = event.rsvps.find(rsvp => rsvp.username === req.session.user.username);
         if (existingRSVP) {
             console.log('User already RSVPed:', {
                 username: req.session.user.username,
@@ -296,35 +275,42 @@ router.post('/rsvp/:eventId', ensureAuthenticated, async (req, res) => {
             eventDate = new Date(); // Fallback to current date
         }
 
-        // Create new RSVP record with additional fields
-        const rsvp = new RSVP({
-            eventId: event.eventId,
+        // Create new RSVP object to add to the event
+        const newRSVP = {
             username: req.session.user.username,
             phoneNumber: phoneNumber,
             eventSummary: event.summary || 'Untitled Event',
-            eventDate: eventDate
-        });
+            eventDate: eventDate,
+            createdAt: new Date()
+        };
 
-        // Save RSVP first
-        console.log('Attempting to save RSVP:', rsvp);
-        await rsvp.save();
-        console.log('Successfully saved RSVP');
-
-        // Update event's rsvps array using findOneAndUpdate
-        if (!event.rsvps.includes(req.session.user.username)) {
-            console.log('Updating event with new RSVP');
-            const updatedEvent = await Event.findOneAndUpdate(
-                { eventId: event.eventId },
-                { $addToSet: { rsvps: req.session.user.username } },
-                { new: true, runValidators: false }
-            );
-            console.log('Successfully updated event:', updatedEvent);
+        // Update event with new RSVP
+        console.log('Adding new RSVP to event:', newRSVP);
+        const updatedEvent = await Event.findOneAndUpdate(
+            { eventId: event.eventId },
+            { $push: { rsvps: newRSVP } },
+            { new: true, runValidators: true }
+        );
+        
+        if (!updatedEvent) {
+            throw new Error('Failed to update event with RSVP');
         }
+        
+        console.log('Successfully updated event with new RSVP');
 
         // Send admin notification using centralized service
         console.log('Preparing to send RSVP notification email');
         try {
-            await sendRSVPNotification(event, rsvp, req.session.user);
+            // Create a temporary RSVP object for email compatibility
+            const tempRSVP = {
+                eventId: event.eventId,
+                username: req.session.user.username,
+                phoneNumber: phoneNumber,
+                eventSummary: event.summary || 'Untitled Event',
+                eventDate: eventDate,
+                createdAt: new Date()
+            };
+            await sendRSVPNotification(event, tempRSVP, req.session.user);
         } catch (emailError) {
             console.error('Failed to send RSVP notification:', emailError);
         }
@@ -332,7 +318,16 @@ router.post('/rsvp/:eventId', ensureAuthenticated, async (req, res) => {
         // Send confirmation email to the user
         console.log('Preparing to send RSVP confirmation email to user');
         try {
-            await sendRSVPConfirmationEmail(rsvp, req.session.user);
+            // Create a temporary RSVP object for email compatibility
+            const tempRSVP = {
+                eventId: event.eventId,
+                username: req.session.user.username,
+                phoneNumber: phoneNumber,
+                eventSummary: event.summary || 'Untitled Event',
+                eventDate: eventDate,
+                createdAt: new Date()
+            };
+            await sendRSVPConfirmationEmail(tempRSVP, req.session.user);
         } catch (emailError) {
             console.error('Failed to send RSVP confirmation email:', emailError);
         }
@@ -341,21 +336,72 @@ router.post('/rsvp/:eventId', ensureAuthenticated, async (req, res) => {
         res.status(200).json({ 
             success: true,
             message: 'Successfully RSVPed to event',
-            rsvps: event.rsvps,
-            attendeeCount: event.rsvps.length
+            rsvps: updatedEvent.rsvps,
+            attendeeCount: updatedEvent.rsvps.length
         });
     } catch (error) {
         console.error('Detailed error in RSVP route:', {
             error: error.message,
             stack: error.stack,
             eventId: req.params.eventId,
-            user: req.session.user ? req.session.user.username : 'no user',
-            body: req.body
+            user: req.session.user
         });
-        
-        res.status(500).json({ 
-            error: 'Internal server error while processing RSVP. Please try again.'
+        res.status(500).json({ error: 'Internal server error during RSVP processing' });
+    }
+});
+
+// Handle RSVP cancellation (protected)
+router.post('/rsvp/:eventId/cancel', ensureAuthenticated, async (req, res) => {
+    try {
+        console.log('RSVP cancellation attempt:', {
+            eventId: req.params.eventId,
+            user: req.session.user
         });
+
+        // Validate user session
+        if (!req.session.user) {
+            console.error('No user session found');
+            return res.status(401).json({ error: 'You must be logged in to cancel RSVP' });
+        }
+
+        // Find event
+        const event = await Event.findOne({ eventId: req.params.eventId });
+        if (!event) {
+            console.error(`Event not found with ID: ${req.params.eventId}`);
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        // Check if user has RSVPed
+        const existingRSVP = event.rsvps.find(rsvp => rsvp.username === req.session.user.username);
+        if (!existingRSVP) {
+            console.error('User has not RSVPed to this event');
+            return res.status(400).json({ error: 'You have not RSVPed to this event' });
+        }
+
+        // Remove RSVP from event
+        const updatedEvent = await Event.findOneAndUpdate(
+            { eventId: event.eventId },
+            { $pull: { rsvps: { username: req.session.user.username } } },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedEvent) {
+            throw new Error('Failed to update event when cancelling RSVP');
+        }
+
+        console.log('Successfully cancelled RSVP for user:', req.session.user.username);
+
+        // Return success response
+        res.status(200).json({
+            success: true,
+            message: 'RSVP cancelled successfully',
+            rsvps: updatedEvent.rsvps,
+            attendeeCount: updatedEvent.rsvps.length
+        });
+
+    } catch (error) {
+        console.error('Error cancelling RSVP:', error);
+        res.status(500).json({ error: 'Internal server error while cancelling RSVP' });
     }
 });
 
@@ -411,9 +457,9 @@ function createEventICS(event, req) {
 // Download full calendar (protected route)
 router.get('/calendar/download', ensureAuthenticated, async (req, res) => {
     try {
-        // Check if user has active subscription
-        if (!req.session.user || req.session.user.accountStatus !== 'active') {
-            return res.status(403).json({ error: 'This feature is only available for active members' });
+        // Check if user is authenticated
+        if (!req.session.user) {
+            return res.status(403).json({ error: 'You must be logged in to access this feature' });
         }
 
         const events = await Event.find({ 
@@ -421,7 +467,7 @@ router.get('/calendar/download', ensureAuthenticated, async (req, res) => {
         }).sort({ dtstart: 1 });
 
         const calendar = ICalGenerator();
-        calendar.name('Soda City Outdoors Events');
+        calendar.name('Cola\'s Club Events');
         calendar.timezone('America/New_York');
         const baseUrl = process.env.SITE_URL || `${req.protocol}://${req.get('host')}`;
 
@@ -448,9 +494,9 @@ router.get('/calendar/download', ensureAuthenticated, async (req, res) => {
 // Download single event (protected route)
 router.get('/event/:id/download', ensureAuthenticated, async (req, res) => {
     try {
-        // Check if user has active subscription
-        if (!req.session.user || req.session.user.accountStatus !== 'active') {
-            return res.status(403).json({ error: 'This feature is only available for active members' });
+        // Check if user is authenticated
+        if (!req.session.user) {
+            return res.status(403).json({ error: 'You must be logged in to access this feature' });
         }
 
         const event = await Event.findOne({ eventId: req.params.id });
@@ -492,23 +538,13 @@ router.post('/host/:eventId', ensureAuthenticated, async (req, res) => {
         }
 
         // Check if event already has an approved host
-        const existingApprovedHost = await Host.findOne({ 
-            eventId: event.eventId,
-            status: 'approved'
-        });
-
-        if (existingApprovedHost) {
+        if (event.host && event.host.username && event.host.status === 'approved') {
             console.error(`Event ${req.params.eventId} already has a host`);
             return res.status(400).json({ error: 'This event already has a host' });
         }
 
         // Check if user has already applied to host
-        const existingApplication = await Host.findOne({
-            eventId: event.eventId,
-            username: req.session.user.username
-        });
-
-        if (existingApplication) {
+        if (event.host && event.host.username === req.session.user.username) {
             console.error(`User ${req.session.user.username} has already applied to host event ${req.params.eventId}`);
             return res.status(400).json({ error: 'You have already applied to host this event' });
         }
@@ -537,17 +573,27 @@ router.post('/host/:eventId', ensureAuthenticated, async (req, res) => {
             eventDate = new Date();
         }
 
-        // Create new host application
-        const hostApplication = new Host({
-            eventId: event.eventId,
+        // Create new host application object
+        const hostApplication = {
             username: req.session.user.username,
+            status: 'pending',
             phoneNumber: req.body.phoneNumber,
             experience: req.body.experience,
-            eventSummary: event.summary || 'Untitled Event',
-            eventDate: eventDate
-        });
+            appliedAt: new Date()
+        };
 
-        await hostApplication.save();
+        // Update event with host application
+        const updatedEvent = await Event.findOneAndUpdate(
+            { eventId: event.eventId },
+            { host: hostApplication },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedEvent) {
+            throw new Error('Failed to update event with host application');
+        }
+
+        console.log('Successfully updated event with host application');
 
         // Send admin notification
         await sendAdminNotification(
@@ -569,7 +615,7 @@ router.post('/host/:eventId', ensureAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error in host application route:', error);
         res.status(500).json({ 
-            error: 'Internal server error while processing host application'
+            error: 'Internal server error while processing host application' 
         });
     }
 });
@@ -587,18 +633,31 @@ router.post('/host/:eventId/:username/status', ensureAdmin, async (req, res) => 
             return res.status(404).json({ error: 'Event not found' });
         }
 
-        const hostApplication = await Host.findOne({
-            eventId: req.params.eventId,
-            username: req.params.username
-        });
-
-        if (!hostApplication) {
+        if (!event.host || event.host.username !== req.params.username) {
             return res.status(404).json({ error: 'Host application not found' });
         }
 
-        // Update status
-        hostApplication.status = status;
-        await hostApplication.save();
+        // Update host status in the event
+        const updateData = {
+            'host.status': status
+        };
+
+        if (status === 'approved') {
+            updateData['host.approvedAt'] = new Date();
+            updateData['host.approvedBy'] = req.session.user.username;
+        }
+
+        const updatedEvent = await Event.findOneAndUpdate(
+            { eventId: req.params.eventId },
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedEvent) {
+            throw new Error('Failed to update event with host status');
+        }
+
+        console.log('Successfully updated host status:', status);
 
         // Send admin notification
         await sendAdminNotification(
@@ -606,13 +665,15 @@ router.post('/host/:eventId/:username/status', ensureAdmin, async (req, res) => 
             `A host application status has been updated:
             Event: ${event.summary}
             Date: ${new Date(event.dtstart).toLocaleDateString()}
-            Host Applicant: ${hostApplication.username}
-            New Status: ${status}`
+            Host Applicant: ${event.host.username}
+            New Status: ${status}
+            Updated By: ${req.session.user.username}`
         );
 
         res.json({ 
             success: true, 
-            message: `Host application ${status}` 
+            message: `Host application ${status}`,
+            host: updatedEvent.host
         });
     } catch (error) {
         console.error('Error updating host application status:', error);
@@ -620,57 +681,6 @@ router.post('/host/:eventId/:username/status', ensureAdmin, async (req, res) => 
     }
 });
 
-// Cancel RSVP (protected)
-router.delete('/rsvp/:eventId', ensureAuthenticated, async (req, res) => {
-    try {
-        console.log('RSVP cancellation attempt:', {
-            eventId: req.params.eventId,
-            username: req.session.user.username
-        });
 
-        // Find and delete the RSVP
-        const deletedRSVP = await RSVP.findOneAndDelete({
-            eventId: req.params.eventId,
-            username: req.session.user.username
-        });
-
-        if (!deletedRSVP) {
-            return res.status(404).json({ error: 'RSVP not found' });
-        }
-
-        // Update the event's rsvps array
-        const updatedEvent = await Event.findOneAndUpdate(
-            { eventId: req.params.eventId },
-            { $pull: { rsvps: req.session.user.username } },
-            { new: true }
-        );
-
-        if (!updatedEvent) {
-            console.error('Event not found during RSVP cancellation');
-            return res.status(404).json({ error: 'Event not found' });
-        }
-
-        // Send admin notification
-        try {
-            await sendRSVPNotification(
-                updatedEvent,
-                deletedRSVP,
-                req.session.user
-            );
-        } catch (emailError) {
-            console.error('Failed to send RSVP cancellation notification:', emailError);
-        }
-
-        res.json({ 
-            success: true, 
-            message: 'RSVP cancelled successfully',
-            rsvps: updatedEvent.rsvps,
-            attendeeCount: updatedEvent.rsvps.length
-        });
-    } catch (error) {
-        console.error('Error cancelling RSVP:', error);
-        res.status(500).json({ error: 'Internal server error while cancelling RSVP' });
-    }
-});
 
 module.exports = router;

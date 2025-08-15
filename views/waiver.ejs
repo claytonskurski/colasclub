@@ -1,130 +1,409 @@
-<h1 class="text-center mb-4">Soda City Outdoors Liability Waiver and Release</h1>
+<div class="waiver-container">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="waiver-card">
+                    <div class="waiver-header">
+                        <div class="header-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h1 class="waiver-title">Cola's Club Liability Waiver and Release</h1>
+                        <div class="waiver-meta">
+                            <div class="meta-item">
+                                <strong>Effective Date:</strong> August 14th, 2025
+                            </div>
+                            <div class="meta-item">
+                                <strong>Organization:</strong> Cola's Club
+                            </div>
+                            <div class="meta-item">
+                                <strong>Location:</strong> Activities may take place in various outdoor locations, including but not limited to trails, rivers, and event venues in South Carolina and surrounding areas.
+                            </div>
+                        </div>
+                    </div>
 
-<div class="container mt-5">
-    <form action="/waiver/accept" method="POST" id="waiverForm">
-        <input type="hidden" name="pendingUserId" value="<%= pendingUserId %>">
-        
-        <p><strong>Effective Date:</strong> April 17, 2025</p>
-        <p><strong>Organization:</strong> Soda City Outdoors</p>
-        <p><strong>Location:</strong> Activities may take place in various outdoor locations, including but not limited to trails, rivers, and event venues in South Carolina and surrounding areas.</p>
+                    <div class="waiver-content">
+                        <form action="/waiver/accept" method="POST" id="waiverForm">
+                            <input type="hidden" name="pendingUserId" value="<%= pendingUserId %>">
+                            
+                            <div class="waiver-section">
+                                <h2 class="section-title">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Assumption of Risk
+                                </h2>
+                                <p class="section-text">I understand that participating in outdoor activities organized by Cola's Club, including but not limited to hikes, kayaking, river trips, socials, and events coordinated with third-party outdoor providers, involves inherent risks. These risks include, but are not limited to, physical injury, illness, death, property damage, or loss due to factors such as uneven terrain, weather conditions, water hazards, wildlife, equipment failure, or actions of other participants or third parties. I acknowledge that I am voluntarily participating in these activities with full knowledge of these risks, both known and unknown, and I assume all responsibility for any resulting harm, injury, or damage.</p>
+                            </div>
 
-        <h2 class="card-title">Assumption of Risk</h2>
-        <p>I understand that participating in outdoor activities organized by Soda City Outdoors, including but not limited to hikes, kayaking, river trips, socials, and events coordinated with third-party outdoor providers, involves inherent risks. These risks include, but are not limited to, physical injury, illness, death, property damage, or loss due to factors such as uneven terrain, weather conditions, water hazards, wildlife, equipment failure, or actions of other participants or third parties. I acknowledge that I am voluntarily participating in these activities with full knowledge of these risks, both known and unknown, and I assume all responsibility for any resulting harm, injury, or damage.</p>
+                            <div class="waiver-section">
+                                <h2 class="section-title">
+                                    <i class="fas fa-file-contract me-2"></i>Release of Liability
+                                </h2>
+                                <p class="section-text">In consideration for being allowed to participate in Cola's Club activities, I hereby release, waive, and discharge Cola's Club, its officers, employees, volunteers, affiliates, and third-party providers (collectively, "Released Parties") from any and all liability, claims, demands, actions, or causes of action arising out of or related to any loss, damage, injury, or death that may be sustained by me while participating in these activities, whether caused by the negligence of the Released Parties or otherwise, to the fullest extent permitted by law.</p>
+                            </div>
 
-        <h2 class="card-title">Release of Liability</h2>
-        <p>In consideration for being allowed to participate in Soda City Outdoors activities, I hereby release, waive, and discharge Soda City Outdoors, its officers, employees, volunteers, affiliates, and third-party providers (collectively, "Released Parties") from any and all liability, claims, demands, actions, or causes of action arising out of or related to any loss, damage, injury, or death that may be sustained by me while participating in these activities, whether caused by the negligence of the Released Parties or otherwise, to the fullest extent permitted by law.</p>
+                            <div class="waiver-section">
+                                <h2 class="section-title">
+                                    <i class="fas fa-handshake me-2"></i>Indemnification
+                                </h2>
+                                <p class="section-text">I agree to indemnify and hold harmless the Released Parties from any and all liabilities or claims made as a result of my participation in these activities, including but not limited to attorney fees, damages, or settlements, whether caused by my actions, inactions, or otherwise.</p>
+                            </div>
 
-        <h2 class="card-title">Indemnification</h2>
-        <p>I agree to indemnify and hold harmless the Released Parties from any and all liabilities or claims made as a result of my participation in these activities, including but not limited to attorney fees, damages, or settlements, whether caused by my actions, inactions, or otherwise.</p>
+                            <div class="waiver-section">
+                                <h2 class="section-title">
+                                    <i class="fas fa-users me-2"></i>Third-Party Providers
+                                </h2>
+                                <p class="section-text">I acknowledge that Cola's Club may partner with third-party outdoor providers for certain activities or events. I understand that Cola's Club is not responsible for the actions, negligence, or services provided by these third-party providers, and I release Cola's Club from any liability arising from activities or events coordinated with third-party providers.</p>
+                            </div>
 
-        <h2 class="card-title">Third-Party Providers</h2>
-        <p>I acknowledge that Soda City Outdoors may partner with third-party outdoor providers for certain activities or events. I understand that Soda City Outdoors is not responsible for the actions, negligence, or services provided by these third-party providers, and I release Soda City Outdoors from any liability arising from activities or events coordinated with third-party providers.</p>
+                            <div class="waiver-section">
+                                <h2 class="section-title">
+                                    <i class="fas fa-check-circle me-2"></i>Agreement to Terms
+                                </h2>
+                                <p class="section-text">By clicking "Accept", I confirm that I have read, understood, and agree to the terms of this waiver. I acknowledge that this agreement is a legally binding contract, and I am waiving my right to hold Cola's Club liable for any injuries, damages, or losses sustained during the activities, except in cases of gross negligence or intentional misconduct.</p>
+                            </div>
 
-        <h2 class="card-title">Agreement to Terms via Payment</h2>
-        <p>By clicking "Accept" and proceeding to payment, I confirm that I have read, understood, and agree to the terms of this waiver. I acknowledge that this agreement is a legally binding contract, and I am waiving my right to hold Soda City Outdoors liable for any injuries, damages, or losses sustained during the activities, except in cases of gross negligence or intentional misconduct.</p>
+                            <div class="waiver-section">
+                                <h2 class="section-title">
+                                    <i class="fas fa-gavel me-2"></i>Governing Law
+                                </h2>
+                                <p class="section-text">This waiver and release shall be governed by and construed in accordance with the laws of the State of South Carolina, without regard to its conflict of law principles. Any disputes arising under this agreement shall be resolved in the state or federal courts located in South Carolina.</p>
+                            </div>
 
-        <h2 class="card-title">Governing Law</h2>
-        <p>This waiver and release shall be governed by and construed in accordance with the laws of the State of South Carolina, without regard to its conflict of law principles. Any disputes arising under this agreement shall be resolved in the state or federal courts located in South Carolina.</p>
+                            <div class="waiver-section">
+                                <h2 class="section-title">
+                                    <i class="fas fa-signature me-2"></i>Acknowledgment
+                                </h2>
+                                <p class="section-text">I certify that I am of legal age (18 years or older) and have the legal capacity to enter into this agreement. If signing on behalf of a minor, I certify that I am the parent or legal guardian of the minor and have the authority to bind them to this agreement. I understand that this waiver is a standalone document and is not combined with other registration materials to ensure its clarity and enforceability.</p>
+                            </div>
 
-        <h2 class="card-title">Acknowledgment</h2>
-        <p>I certify that I am of legal age (18 years or older) and have the legal capacity to enter into this agreement. If signing on behalf of a minor, I certify that I am the parent or legal guardian of the minor and have the authority to bind them to this agreement. I understand that this waiver is a standalone document and is not combined with other registration materials to ensure its clarity and enforceability.</p>
-
-        <div class="waiver-acceptance mt-5">
-            <div class="d-flex justify-content-center mb-4">
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" name="waiverAccepted" id="acceptWaiver" value="true" required>
-                    <label class="form-check-label" for="acceptWaiver">I Accept</label>
+                            <div class="waiver-acceptance">
+                                <div class="acceptance-content">
+                                    <div class="acceptance-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="waiverAccepted" id="acceptWaiver" value="true" required>
+                                        <label class="form-check-label" for="acceptWaiver">
+                                            <span class="checkbox-text">I have read, understood, and agree to all terms and conditions stated above</span>
+                                        </label>
+                                    </div>
+                                    <div class="acceptance-actions">
+                                        <button type="submit" class="btn btn-secondary btn-lg">
+                                            <i class="fas fa-check me-2"></i>Accept Terms & Continue
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary">Proceed to Payment</button>
-            </div>
         </div>
-    </form>
+    </div>
 </div>
 
 <style>
-.card-title {
-    color: var(--primary-color, #0e747c);
-    border-bottom: 2px solid var(--primary-color, #0e747c);
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+:root {
+    --primary-color: #730000;
+    --primary-dark: #5c0000;
+    --primary-hover: #8a0000;
+    --secondary-color: #f5f5f5;
+    --text-color: #333;
+    --text-muted: #666;
+    --border-color: #e0e0e0;
+    --warning-color: #ffc107;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+body {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+.waiver-container {
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.waiver-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-hover);
+    overflow: hidden;
+}
+
+.waiver-header {
+    background: var(--secondary-color);
+    padding: 3rem 2rem;
     text-align: center;
+    border-bottom: 1px solid var(--border-color);
 }
 
-p {
-    color: var(--text-color, #333);
-    font-size: 1.1em;
-    line-height: 1.6;
-    text-align: left;
-}
-
-.btn-primary {
-    padding: 12px 24px;
-    background-color: var(--primary-color, #0e747c);
+.header-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: var(--primary-color);
     color: white;
+    border-radius: 50%;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.waiver-title {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    line-height: 1.2;
+}
+
+.waiver-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: left;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.meta-item {
+    background: white;
+    padding: 1rem;
     border-radius: 8px;
-    font-size: 1.1em;
-    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
-.btn-primary:hover {
-    background-color: var(--accent-color, #da3545);
-    transform: translateY(-2px);
+.meta-item strong {
+    color: var(--primary-color);
 }
 
-.form-check-input {
-    width: 1.5em;
-    height: 1.5em;
-    margin-top: 0.25em;
-    margin-right: 0.5em;
-    vertical-align: top;
-    background-color: #fff;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    border: 1px solid rgba(0, 0, 0, 0.25);
-    appearance: none;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+.waiver-content {
+    padding: 3rem 2rem;
 }
 
-.form-check-input:checked {
-    background-color: var(--primary-color, #0e747c);
-    border-color: var(--primary-color, #0e747c);
+.waiver-section {
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: var(--secondary-color);
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
 }
 
-.form-check-label {
-    color: var(--text-color, #333);
-    font-weight: 500;
-    font-size: 1.2em;
-    margin-left: 0.5em;
+.section-title {
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.section-title i {
+    color: var(--primary-color);
+    width: 30px;
+}
+
+.section-text {
+    color: var(--text-color);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 0;
+    text-align: justify;
 }
 
 .waiver-acceptance {
-    background-color: rgba(14, 116, 124, 0.05);
-    padding: 2rem;
-    border-radius: 8px;
-    margin-top: 2rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    padding: 3rem;
+    margin: -2rem -2rem 0 -2rem;
+    color: white;
 }
 
-.form-check {
+.acceptance-content {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.acceptance-checkbox {
+    margin-bottom: 2rem;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    gap: 1rem;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.form-check-input {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0;
+    flex-shrink: 0;
+    background-color: white;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+}
+
+.form-check-label {
+    cursor: pointer;
+    flex: 1;
+}
+
+.checkbox-text {
+    color: white;
+    font-weight: 500;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+.acceptance-actions {
+    text-align: center;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 1.2rem;
+}
+
+.btn-primary {
+    background: white;
+    color: var(--primary-color);
+    border: 2px solid white;
+}
+
+.btn-primary:hover {
+    background: transparent;
+    color: white;
+    border-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .waiver-title {
+        font-size: 2rem;
+    }
+    
+    .waiver-header {
+        padding: 2rem 1.5rem;
+    }
+    
+    .waiver-content {
+        padding: 2rem 1.5rem;
+    }
+    
+    .waiver-section {
+        padding: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .acceptance-checkbox {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .waiver-acceptance {
+        padding: 2rem 1.5rem;
+        margin: -1.5rem -1.5rem 0 -1.5rem;
+    }
 }
 </style>
 
 <script>
 document.getElementById('waiverForm').addEventListener('submit', function(e) {
     const checkbox = document.getElementById('acceptWaiver');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    
     if (!checkbox.checked) {
         e.preventDefault();
-        alert('You must accept the waiver to proceed.');
+        
+        // Highlight the checkbox area
+        const checkboxContainer = checkbox.closest('.acceptance-checkbox');
+        checkboxContainer.style.animation = 'shake 0.5s ease-in-out';
+        
+        // Show alert
+        alert('You must accept the waiver terms to proceed.');
+        
+        // Remove animation after it completes
+        setTimeout(() => {
+            checkboxContainer.style.animation = '';
+        }, 500);
+        
         return;
     }
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    
     console.log('Submitting waiver form with data:', {
         pendingUserId: this.elements.pendingUserId.value,
         waiverAccepted: checkbox.checked
     });
+});
+
+// Add shake animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+`;
+document.head.appendChild(style);
+
+// Enable/disable submit button based on checkbox
+document.getElementById('acceptWaiver').addEventListener('change', function() {
+    const submitBtn = document.querySelector('button[type="submit"]');
+    submitBtn.disabled = !this.checked;
+    
+    if (this.checked) {
+        submitBtn.style.opacity = '1';
+    } else {
+        submitBtn.style.opacity = '0.6';
+    }
+});
+
+// Initialize button state
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('acceptWaiver');
+    const submitBtn = document.querySelector('button[type="submit"]');
+    submitBtn.disabled = !checkbox.checked;
+    submitBtn.style.opacity = checkbox.checked ? '1' : '0.6';
 });
 </script>

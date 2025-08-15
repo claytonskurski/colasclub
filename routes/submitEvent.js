@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true, // use SSL/TLS
     auth: {
-        user: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
+        user: process.env.EMAIL_USER || 'admin@colasclub.com',
         pass: process.env.EMAIL_PASS
     }
 });
@@ -63,8 +63,8 @@ router.post('/', async (req, res) => {
 
         // Send email notification
         const mailOptions = {
-            from: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
-            to: 'scoadmin@sodacityoutdoors.com',
+            from: process.env.EMAIL_USER || 'admin@colasclub.com',
+            to: 'admin@colasclub.com',
             subject: 'New Event Request Submitted',
             text: `A new event request has been submitted:
                 Title: ${eventRequest.summary}

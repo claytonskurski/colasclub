@@ -66,7 +66,7 @@ const rsvpConfirmationTemplate = async (rsvp, user) => {
             <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f8f9fa;">
             <div style="background:#fff;margin:0 auto;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
                 <div style="text-align:center;margin-bottom:20px;">
-                    <img src='https://sodacityoutdoors.com/static/images/SCO%20Logo.png' alt='Soda City Outdoors Logo' style='max-width:200px;width:100%;height:auto;display:block;margin:0 auto;'>
+                    <img src='https://colasclub.fun/static/images/Cola's Club Official Logo.png' alt='Cola\'s Club Logo' style='max-width:200px;width:100%;height:auto;display:block;margin:0 auto;'>
                 </div>
                 <h1 style="color:#2c3e50;margin:0 0 20px 0;">Thanks for signing up, ${user.firstName}!</h1>
                 <p style="margin:0 0 15px 0;line-height:1.6;">We're excited to have you join us for this adventure! Your RSVP has been confirmed and we can't wait to see you there.</p>
@@ -86,8 +86,8 @@ const rsvpConfirmationTemplate = async (rsvp, user) => {
                 <p style="margin:20px 0;line-height:1.6;">We're looking forward to a great time together! If you have any questions or need to make changes to your RSVP, please don't hesitate to reach out.</p>
                 
                 <div style="margin-top:30px;padding-top:20px;border-top:1px solid #eee;">
-                    <p style="color:#666;font-size:14px;margin:0;"><strong>Soda City Outdoors</strong></p>
-                    <p style="color:#666;font-size:12px;margin:5px 0 0 0;">If you have any questions, reply to this email or contact us at <a href="mailto:scoadmin@sodacityoutdoors.com" style="color:#0e747c;text-decoration:none;">scoadmin@sodacityoutdoors.com</a></p>
+                    <p style="color:#666;font-size:14px;margin:0;"><strong>Cola\'s Club</strong></p>
+                    <p style="color:#666;font-size:12px;margin:5px 0 0 0;">If you have any questions, reply to this email or contact us at <a href="mailto:admin@colasclub.com" style="color:#0e747c;text-decoration:none;">admin@colasclub.com</a></p>
                 </div>
             </div>
             </body>

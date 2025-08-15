@@ -31,9 +31,9 @@ const sendAccountPauseNotification = async (user, pauseReason, resolutionSteps) 
     }
 
     const mailOptions = {
-        from: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
+        from: process.env.EMAIL_USER || 'admin@colasclub.com',
         to: user.email,
-        subject: 'Your Soda City Outdoors Account Has Been Paused',
+        subject: 'Your Cola\'s Club Account Has Been Paused',
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
                 <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -46,25 +46,25 @@ const sendAccountPauseNotification = async (user, pauseReason, resolutionSteps) 
                     </p>
                     
                     <p style="color: #2c3e50; font-size: 16px; line-height: 1.6;">
-                        We've temporarily paused your Soda City Outdoors account due to a payment issue. 
+                        We've temporarily paused your Cola's Club account. 
                         This means you won't be able to RSVP for events or access member benefits until this is resolved.
                     </p>
                     
                     <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 6px; margin: 20px 0;">
                         <h3 style="color: #856404; margin-top: 0;">Account Status</h3>
-                        <p style="color: #856404; margin: 8px 0;"><strong>Your account has been temporarily paused due to a payment issue.</strong></p>
+                        <p style="color: #856404; margin: 8px 0;"><strong>Your account has been temporarily paused.</strong></p>
                     </div>
                     
                     <div style="background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 20px; border-radius: 6px; margin: 20px 0;">
                         <h3 style="color: #0c5460; margin-top: 0;">How to Resolve</h3>
                         <p style="color: #0c5460; margin: 8px 0; line-height: 1.6;">
-                            To resolve this payment issue and reactivate your account, please contact us directly:
+                            To reactivate your account, please contact us directly:
                         </p>
                         <p style="color: #0c5460; margin: 8px 0; line-height: 1.6;">
-                            📧 <a href="mailto:scoadmin@sodacityoutdoors.com" style="color: #007bff; font-weight: bold;">scoadmin@sodacityoutdoors.com</a>
+                            📧 <a href="mailto:admin@colasclub.com" style="color: #007bff; font-weight: bold;">admin@colasclub.com</a>
                         </p>
                         <p style="color: #0c5460; margin: 8px 0; line-height: 1.6;">
-                            We'll work with you to update your payment information in our system and get your account reactivated quickly.
+                            We'll work with you to get your account reactivated quickly.
                         </p>
                     </div>
                     
@@ -73,7 +73,7 @@ const sendAccountPauseNotification = async (user, pauseReason, resolutionSteps) 
                         <p style="color: #2d5a2d; margin: 8px 0;">
                             You can view your account status and manage your settings through your account page.
                         </p>
-                        <a href="${process.env.WEBSITE_URL || 'https://sodacityoutdoors.com'}/account" 
+                        <a href="${process.env.WEBSITE_URL || 'https://colasclub.fun'}/account" 
                            style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; font-size: 14px;">
                             Go to Account Settings
                         </a>
@@ -85,7 +85,7 @@ const sendAccountPauseNotification = async (user, pauseReason, resolutionSteps) 
                             If you have any questions or need assistance, please contact us at:
                         </p>
                         <p style="color: #6c757d; margin: 8px 0;">
-                            📧 <a href="mailto:scoadmin@sodacityoutdoors.com" style="color: #007bff;">scoadmin@sodacityoutdoors.com</a>
+                            📧 <a href="mailto:admin@colasclub.com" style="color: #007bff;">admin@colasclub.com</a>
                         </p>
                         <p style="color: #6c757d; margin: 8px 0;">
                             We're here to help you get back to enjoying outdoor adventures with our community!
@@ -93,17 +93,17 @@ const sendAccountPauseNotification = async (user, pauseReason, resolutionSteps) 
                     </div>
                     
                     <p style="color: #7f8c8d; font-size: 14px; margin-top: 20px;">
-                        Thank you for being part of Soda City Outdoors!
+                        Thank you for being part of Cola's Club!
                     </p>
                 </div>
             </div>
         `,
         text: `
-Account Paused - Soda City Outdoors
+Account Paused - Cola's Club
 
 Hi ${user.firstName},
 
-We've temporarily paused your Soda City Outdoors account due to a payment issue. 
+We've temporarily paused your Cola's Club account. 
 This means you won't be able to RSVP for events or access member benefits until this is resolved.
 
 Reason for Pause: ${pauseReason}
@@ -113,11 +113,11 @@ ${resolutionSteps.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()}
 
 Need Help?
 If you have any questions or need assistance, please contact us at:
-scoadmin@sodacityoutdoors.com
+admin@colasclub.com
 
 We're here to help you get back to enjoying outdoor adventures with our community!
 
-Thank you for being part of Soda City Outdoors!
+Thank you for being part of Cola's Club!
         `
     };
 

@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('./models/user'); // Adjust the path if needed
+require('dotenv').config();
 
 // Suppress the strictQuery deprecation warning
 mongoose.set('strictQuery', false);
 
 // Connect to MongoDB Atlas
-mongoose.connect('mongodb+srv://cskurski00:sLYt16mLQDFzfOty@sodacityoutdoors.zb3ov.mongodb.net/sodacity?retryWrites=true&w=majority&appName=sodacityoutdoors', {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => {

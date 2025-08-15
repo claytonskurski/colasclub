@@ -7,7 +7,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://* data:;">
     
     <!-- Title -->
-    <title><%= typeof title !== 'undefined' ? title + ' - Soda City Outdoors' : 'Soda City Outdoors' %></title>
+    <title><%= typeof title !== 'undefined' ? title + ' - Cola\'s Club' : 'Cola\'s Club' %></title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/images/Favicon/favicon.ico">
@@ -22,210 +22,372 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Borsok:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- External Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
     
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="/static/css/styles.css">
-    
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17058940165"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'AW-17058940165');
-    </script>
     
     <style>
-        /* CSS Variables */
+        /* ========================================
+           COLA'S CLUB REFINED BRANDING SYSTEM
+           ======================================== */
+        
         :root {
-            --primary-color: #0e747c;
-            --accent-color: #80bec0;
-            --text-color: #333;
-            --light-bg: #f8f9fa;
-            --white: #fff;
+            /* Primary Brand Colors - Garnet Theme */
+            --primary-color: #730000;          /* Main Garnet */
+            --primary-dark: #5c0000;           /* Darker Garnet */
+            --primary-hover: #8a0000;          /* Lighter Garnet for hover */
+            --primary-light: #a61e1e;          /* Light Garnet accent */
             
-            --heading-font: 'Montserrat', sans-serif;
-            --body-font: 'Open Sans', sans-serif;
+            /* Secondary/Accent - Light Gray Theme */
+            --secondary-color: #f5f5f5;        /* Light Gray */
+            --secondary-dark: #e0e0e0;         /* Medium Gray */
+            --secondary-text: #6b7280;         /* Gray text */
             
-            --font-regular: 400;
-            --font-medium: 500;
-            --font-semibold: 600;
-            --font-bold: 700;
+            /* Neutral Colors */
+            --white: #ffffff;
+            --black: #000000;
+            --text-primary: #1f2937;           /* Dark gray for readability */
+            --text-secondary: #6b7280;         /* Medium gray */
+            --border-color: #e5e7eb;           /* Light border */
             
-            --shadow-light: 0 2px 8px rgba(0,0,0,0.08);
+            /* Event Type Colors */
+            --hiking-color: #059669;
+            --water-color: #0284c7;
+            --social-color: #ea580c;
+            --sport-color: #dc2626;
+            --bike-color: #9333ea;
+            
+            /* Typography */
+            --font-family: 'Borsok', sans-serif;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            
+            /* Layout & Effects */
             --border-radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --transition: all 0.2s ease-in-out;
+            --navbar-height: 70px;
         }
 
-        /* Base Styles */
-        body, html {
-            margin: 0 !important;
-            padding: 0 !important;
-            font-family: var(--body-font);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
-
-        html {
-            margin: 0 !important;
-            padding: 0 !important;
-            height: 100%;
-        }
-
-        main {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-
-        /* Typography */
-        h1, h2, h3, h4, h5, h6 {
-            font-family: var(--heading-font);
-            font-weight: var(--font-bold);
-        }
-
-        .btn, button {
-            font-family: var(--heading-font);
-            font-weight: var(--font-medium);
-        }
-
-        a {
-            font-weight: var(--font-medium);
-        }
-
-        input, textarea, select {
-            font-family: var(--body-font);
-        }
-
-        .lead {
-            font-family: var(--heading-font);
-            font-weight: var(--font-medium);
-        }
-
-        /* Custom Typography Classes */
-        .feature-title,
-        .section-title {
-            font-family: var(--heading-font);
-            font-weight: var(--font-bold);
-        }
-
-        .section-title {
-            margin-bottom: 1.5rem;
-        }
-
-        .card-title {
-            font-family: var(--heading-font);
-            font-weight: var(--font-semibold);
-        }
-
-        /* Navigation Styles */
-        .navbar {
-            font-family: var(--heading-font);
-            font-weight: var(--font-medium);
-            background: var(--accent-color) !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            width: 100% !important;
-            z-index: 1000;
-            height: 70px;
-        }
-
-        .navbar-brand {
-            font-weight: var(--font-bold);
-        }
-
-        .navbar-brand .brand-name {
-            color: var(--white) !important;
-        }
-
-        /* Add padding to body to account for fixed navbar */
-        body {
-            padding-top: 70px !important;
-            margin: 0 !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-            padding-bottom: 0 !important;
-        }
-
-        /* Ensure main content starts right after navbar */
-        main {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-
-        /* Override Bootstrap container-fluid styles */
-        .container-fluid {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-        }
-
-        /* Override any potential conflicting styles */
+        /* ========================================
+           BASE STYLES
+           ======================================== */
+        
         * {
             box-sizing: border-box;
         }
 
-        /* Ensure no extra spacing from any source */
-        body, html, nav, .navbar, .container-fluid {
-            margin: 0 !important;
-            padding: 0 !important;
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            color: var(--text-primary);
+            line-height: 1.6;
+            height: 100%;
         }
 
-        /* Dropdown Styles */
-        .dropdown-menu {
-            background: var(--accent-color) !important;
-            backdrop-filter: none !important;
-            box-shadow: var(--shadow-light);
+        body {
+            padding-top: var(--navbar-height);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--white);
         }
 
-        .dropdown-menu .dropdown-item {
-            color: var(--white);
+        main {
+            flex: 1;
         }
 
-        .dropdown-menu .dropdown-item:hover,
-        .dropdown-menu .dropdown-item:focus {
-            background: var(--primary-color);
-            color: var(--white);
+        /* ========================================
+           TYPOGRAPHY
+           ======================================== */
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-family);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: 1rem;
         }
 
-        /* Desktop Navigation */
+        .btn {
+            font-family: var(--font-family);
+            font-weight: var(--font-weight-medium);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        /* ========================================
+           NAVIGATION SYSTEM
+           ======================================== */
+        
+        .navbar {
+            background: var(--secondary-color) !important;
+            border-bottom: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: var(--navbar-height);
+            z-index: 1030;
+            box-shadow: var(--shadow-sm);
+            font-family: var(--font-family);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .navbar-brand {
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary) !important;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .navbar-brand:hover {
+            color: var(--primary-color) !important;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-right: 0.75rem;
+        }
+
+        .nav-link {
+            color: var(--text-primary) !important;
+            font-weight: var(--font-weight-medium);
+            padding: 0.5rem 1rem !important;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            background-color: var(--secondary-dark);
+        }
+
+        .nav-link.highlight {
+            background-color: var(--primary-color) !important;
+            color: var(--white) !important;
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .nav-link.highlight:hover {
+            background-color: var(--primary-hover) !important;
+            transform: translateY(-1px);
+        }
+
+        /* Navbar Toggler */
+        .navbar-toggler {
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Desktop Navigation Centering */
         @media (min-width: 768px) {
             .navbar-nav.centered {
-                margin-left: auto;
-                margin-right: auto;
-                display: flex;
-                justify-content: center;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
             }
         }
 
         /* Mobile Navigation */
         @media (max-width: 767.98px) {
-            .dropdown-menu,
             .navbar-collapse {
-                background: var(--accent-color) !important;
+                background: var(--secondary-color);
+                border-top: 1px solid var(--border-color);
+                margin-top: 1rem;
+                padding: 1rem;
                 border-radius: 0 0 var(--border-radius) var(--border-radius);
-                box-shadow: var(--shadow-light);
+                box-shadow: var(--shadow-md);
             }
+        }
 
-            .navbar-toggler {
-                position: absolute;
-                top: 0.5rem;
-                right: 1rem;
-                z-index: 1051;
-            }
+        /* Dropdown Styles */
+        .dropdown-menu {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 0.5rem 0;
+        }
 
-            .navbar-brand {
-                margin-right: auto;
+        .dropdown-item {
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            transition: var(--transition);
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        /* ========================================
+           FOOTER SYSTEM
+           ======================================== */
+        
+        .footer {
+            background: var(--text-primary) !important;
+            border-top: 1px solid var(--border-color);
+            padding: 2rem 0;
+            margin-top: auto;
+            color: var(--white) !important;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-text {
+            margin: 0;
+            color: var(--white);
+        }
+
+        .footer-text a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: var(--font-weight-medium);
+            transition: var(--transition);
+        }
+
+        .footer-text a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .social-icons a {
+            color: var(--white);
+            font-size: 1.25rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+        }
+
+        .social-icons a:hover {
+            color: var(--primary-color);
+            background: var(--primary-color);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .footer-link {
+            color: var(--white) !important;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-link:hover {
+            color: var(--secondary-color) !important;
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-letter {
+            color: var(--white);
+            font-weight: 900;
+            font-size: 14px;
+        }
+
+        .brand-text {
+            font-weight: 900;
+            font-size: 20px;
+            color: var(--white);
+        }
+
+        .footer h5 {
+            color: var(--white) !important;
+        }
+
+        .footer p {
+            color: var(--white) !important;
+        }
+
+        .footer .text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .footer-logo {
+            width: 32px; /* Adjust size as needed */
+            height: 32px; /* Adjust size as needed */
+            object-fit: contain;
+        }
+
+        /* Mobile Footer */
+        @media (max-width: 767.98px) {
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.5rem;
             }
+        }
+
+        /* ========================================
+           UTILITY CLASSES
+           ======================================== */
+        
+        .text-primary-brand { color: var(--primary-color) !important; }
+        .text-secondary-brand { color: var(--text-secondary) !important; }
+        .bg-primary-brand { background-color: var(--primary-color) !important; }
+        .bg-secondary-brand { background-color: var(--secondary-color) !important; }
+        
+        .shadow-brand { box-shadow: var(--shadow-md); }
+        .rounded-brand { border-radius: var(--border-radius); }
+        .transition-brand { transition: var(--transition); }
+
+        /* Remove Bootstrap overrides */
+        .container-fluid {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
         }
     </style>
 </head>
@@ -233,13 +395,13 @@
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-md">
-        <div class="container-fluid" style="padding: 0 !important; margin: 0 !important;">
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="/static/images/SCO Logo.webp" alt="Soda City Outdoors Logo" class="logo me-2">
-                <span class="brand-name">Soda City Outdoors</span>
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <img src="/static/images/Cola's Club Official Logo.png" alt="Cola's Club Logo" class="logo">
+                <span>Cola's Club</span>
             </a>
             
-            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
@@ -247,26 +409,23 @@
                 <!-- Main Navigation -->
                 <ul class="navbar-nav centered mb-2 mb-md-0">
                     <li class="nav-item">
-                        <a class="nav-link nav-button" href="/rentals">Rentals</a>
+                        <a class="nav-link" href="/events">Events List</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-button" href="/events">Events List</a>
+                        <a class="nav-link" href="/calendar">Event Calendar</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-button" href="/calendar">Event Calendar</a>
+                        <a class="nav-link" href="/contact">Contact Us</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-button" href="/contact">Contact Us</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-button highlight" href="<%= user ? '/account' : '/signup' %>">Join Now!</a>
+                        <a class="nav-link highlight" href="<%= user ? '/account' : '/signup' %>">Join Now!</a>
                     </li>
                 </ul>
                 
                 <!-- User Navigation -->
                 <ul class="navbar-nav ms-auto mb-2 mb-md-0">
                     <% if (user && user.firstName) { %>
-                        <li class="nav-item dropdown welcome">
+                        <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Welcome, <%= user.firstName %>
                             </a>
@@ -276,7 +435,7 @@
                             </ul>
                         </li>
                     <% } else { %>
-                        <li class="nav-item sign-in">
+                        <li class="nav-item">
                             <a class="nav-link" href="/signin">Sign In</a>
                         </li>
                     <% } %>
@@ -291,22 +450,50 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bottom-nav">
-        <div class="bottom-content">
-            <p>&copy; 2025 - Soda City Outdoors - <a href="mailto:scoadmin@sodacityoutdoors.com">Contact us</a></p>
-            <div class="social-icons">
-                <a href="mailto:scoadmin@sodacityoutdoors.com" aria-label="Email us">
-                    <i class="fas fa-envelope"></i>
-                </a>
-                <a href="https://www.facebook.com/SodaCityOutdoor" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook">
-                    <i class="fab fa-facebook-f"></i>
-                </a>
-                <a href="https://www.instagram.com/sodacityoutdoor/" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">
-                    <i class="fab fa-instagram"></i>
-                </a>
-                <a href="https://www.reddit.com/r/SodaCityOutdoor/" target="_blank" rel="noopener noreferrer" aria-label="Join our Reddit community">
-                    <i class="fab fa-reddit-alien"></i>
-                </a>
+    <footer class="footer py-5 bg-dark text-light">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="brand-icon me-2">
+                            <img src="/static/images/Cola's Club Official Logo.png" alt="Cola's Club Logo" class="footer-logo">
+                        </div>
+                        <span class="brand-text">Cola's Club</span>
+                    </div>
+                    <p class="text-muted">
+                        Building stronger communities through shared experiences and meaningful connections in Columbia.
+                    </p>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <h5 class="mb-3">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/events" class="footer-link">Browse Events</a></li>
+                        <li><a href="/calendar" class="footer-link">Event Calendar</a></li>
+                        <li><a href="/submit_event" class="footer-link">Create Event</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <h5 class="mb-3">Account</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/signin" class="footer-link">Sign In</a></li>
+                        <li><a href="/signup" class="footer-link">Sign Up</a></li>
+                        <li><a href="/account" class="footer-link">My Profile</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <h5 class="mb-3">Support</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/contact" class="footer-link">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row text-center">
+                <div class="col-12">
+                    <p class="text-muted mb-0">
+                        © 2025 Cola's Club. All rights reserved. Built with ❤️ for our Columbia community.
+                    </p>
+                </div>
             </div>
         </div>
     </footer>

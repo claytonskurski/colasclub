@@ -1,95 +1,95 @@
-<%- contentFor('title') %><%= title %>
-
 <div class="error-container">
-    <div class="error-content">
-        <h1><%= title %></h1>
-        <p><%= message %></p>
+    <div class="error-card">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
         
-        <% if (title === 'Authentication Required' || message.includes('sign in')) { %>
-            <div class="auth-actions">
-                <p>Please sign in to access this content.</p>
-                <div class="button-group">
-                    <a href="/signin" class="btn btn-primary">Sign In</a>
-                    <span class="or-divider">or</span>
-                    <a href="/signup" class="btn btn-secondary">Sign Up</a>
-                </div>
+        <h1 class="error-title"><%= title %></h1>
+        
+        <p class="error-message"><%= message %></p>
+        
+        <a href="/" class="btn-home">
+            <i class="fas fa-home me-2"></i>Go Home
+        </a>
+
+        <% if (typeof error !== 'undefined' && error && Object.keys(error).length > 0) { %>
+            <div class="error-details">
+                <strong>Error Details:</strong><br>
+                <pre><%= JSON.stringify(error, null, 2) %></pre>
             </div>
-        <% } else { %>
-            <% if (typeof error !== 'undefined' && process.env.NODE_ENV === 'development') { %>
-                <pre class="error-details"><%= JSON.stringify(error, null, 2) %></pre>
-            <% } %>
-            <a href="/" class="btn btn-primary">Return to Home</a>
         <% } %>
     </div>
 </div>
 
 <style>
-.error-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-    text-align: center;
-}
+    .error-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
 
-.error-content {
-    background: #fff;
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+    .error-card {
+        background: white;
+        padding: 3rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+    }
 
-.error-content h1 {
-    color: #dc3545;
-    margin-bottom: 1rem;
-}
+    .error-icon {
+        font-size: 4rem;
+        color: #730000;
+        margin-bottom: 1.5rem;
+    }
 
-.error-details {
-    margin: 1rem 0;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 4px;
-    text-align: left;
-    overflow-x: auto;
-}
+    .error-title {
+        color: #730000;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
 
-.auth-actions {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
+    .error-message {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
 
-.button-group {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
-}
+    .btn-home {
+        background: linear-gradient(135deg, #730000, #8a0000);
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: white;
+        display: inline-block;
+    }
 
-.or-divider {
-    color: #666;
-}
+    .btn-home:hover {
+        background: linear-gradient(135deg, #5c0000, #730000);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        color: white;
+        text-decoration: none;
+    }
 
-.btn {
-    display: inline-block;
-    padding: 0.5rem 1.5rem;
-    border-radius: 4px;
-    text-decoration: none;
-    transition: background-color 0.3s;
-}
-
-.btn-primary {
-    background-color: #0e747c;
-    color: white;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
-
-.btn:hover {
-    opacity: 0.9;
-}
-</style> 
+    .error-details {
+        background: #f5f5f5;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1.5rem;
+        text-align: left;
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: #666;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>

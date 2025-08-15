@@ -63,8 +63,7 @@ const getEventsForNextSevenDays = async () => {
 const getAllUsers = async () => {
     try {
         const users = await User.find({
-            email: { $exists: true, $ne: '' },
-            accountStatus: { $ne: 'inactive' }
+            email: { $exists: true, $ne: '' }
         }).select('email firstName lastName');
         
         return users;
@@ -93,7 +92,7 @@ const formatEventDateTime = (event) => {
 const generateWeeklySummaryHTML = (user, events) => {
     const eventsList = events.map(event => {
         const eventDateTime = formatEventDateTime(event);
-        const eventUrl = `${process.env.WEBSITE_URL || 'https://sodacityoutdoors.com'}/events`;
+        const eventUrl = `${process.env.WEBSITE_URL || 'https://colasclub.fun'}/events`;
         
         return `
             <div style="background-color:#f8f9fa;padding:20px;border-radius:8px;margin:20px 0;border-left:4px solid #0e747c;">
@@ -118,12 +117,12 @@ const generateWeeklySummaryHTML = (user, events) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>This Week's Events - Soda City Outdoors</title>
+            <title>This Week's Events - Cola\'s Club</title>
         </head>
         <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f8f9fa;">
         <div style="background:#fff;margin:0 auto;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
             <div style="text-align:center;margin-bottom:30px;">
-                <img src='https://sodacityoutdoors.com/static/images/SCO%20Logo.png' alt='Soda City Outdoors Logo' style='max-width:200px;width:100%;height:auto;display:block;margin:0 auto;'>
+                <img src='https://colasclub.fun/static/images/Cola's Club Official Logo.png' alt='Cola\'s Club Logo' style='max-width:200px;width:100%;height:auto;display:block;margin:0 auto;'>
             </div>
             
             <h1 style="color:#2c3e50;margin:0 0 20px 0;font-size:24px;">Hello ${user.firstName}!</h1>
@@ -140,7 +139,7 @@ const generateWeeklySummaryHTML = (user, events) => {
                 <p style="color:#666;margin:0 0 20px 0;line-height:1.6;font-size:14px;">
                     Submit an event that you're passionate about, and we'll put it on the calendar and rally up some folks for a fun time!
                 </p>
-                <a href="${process.env.WEBSITE_URL || 'https://sodacityoutdoors.com'}/submit_event" 
+                <a href="${process.env.WEBSITE_URL || 'https://colasclub.fun'}/submit_event" 
                    style="background-color:#27ae60;color:white;padding:12px 24px;text-decoration:none;border-radius:5px;display:inline-block;font-weight:bold;font-size:14px;">
                     Submit an Event Idea
                 </a>
@@ -151,8 +150,8 @@ const generateWeeklySummaryHTML = (user, events) => {
             </p>
             
             <div style="margin-top:30px;padding-top:20px;border-top:1px solid #eee;">
-                <p style="color:#666;font-size:14px;margin:0;"><strong>Soda City Outdoors</strong></p>
-                <p style="color:#666;font-size:12px;margin:5px 0 0 0;">If you have any questions, reply to this email or contact us at <a href="mailto:scoadmin@sodacityoutdoors.com" style="color:#0e747c;text-decoration:none;">scoadmin@sodacityoutdoors.com</a></p>
+                <p style="color:#666;font-size:14px;margin:0;"><strong>Cola\'s Club</strong></p>
+                <p style="color:#666;font-size:12px;margin:5px 0 0 0;">If you have any questions, reply to this email or contact us at <a href="mailto:admin@colasclub.com" style="color:#0e747c;text-decoration:none;">admin@colasclub.com</a></p>
             </div>
         </div>
         </body>
@@ -185,7 +184,7 @@ const sendWeeklySummaries = async () => {
                 const html = generateWeeklySummaryHTML(user, events);
                 
                 const mailOptions = {
-                    from: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
+                    from: process.env.EMAIL_USER || 'admin@colasclub.com',
                     to: user.email,
                     subject: `🌲 This Week's Events: ${events.length} Adventure${events.length === 1 ? '' : 's'} Coming Up!`,
                     html: html

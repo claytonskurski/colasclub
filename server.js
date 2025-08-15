@@ -7,24 +7,17 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const userRoutes = require('./routes/userRoutes');
-const paymentWebhook = require('./routes/paymentWebhook');
 const eventRoutes = require('./routes/eventRoutes');
 const submitEvent = require('./routes/submitEvent');
 const contactRoutes = require('./routes/contactRoutes');
-const galleryRoutes = require('./routes/gallery');
 const { ensureAuthenticated } = require('./middleware/authMiddleware');
 const cron = require('node-cron');
 const User = require('./models/user');
 const bcrypt = require('bcryptjs');
-const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 const expressLayouts = require('express-ejs-layouts');
 const fs = require('fs');
 const moment = require('moment-timezone');
 const PendingUser = require('./models/pendingUser');
-const GalleryItem = require('./models/GalleryItem');
-const rentalLocationsRoutes = require('./routes/rentalLocations');
-const rentalItemsRoutes = require('./routes/rentalItems');
-const rentalRoutes = require('./routes/rentalRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const { sendAdminNotification } = require('./services/adminNotifications');
 
@@ -38,7 +31,7 @@ app.set('trust proxy', 1);
 
 // CORS headers middleware
 app.use((req, res, next) => {
-    const allowedOrigins = ['https://sodacityoutdoors.com'];
+    const allowedOrigins = ['https://colasclub.fun', 'http://localhost:3002'];
     const origin = req.headers.origin;
     
     if (allowedOrigins.includes(origin)) {
@@ -56,14 +49,9 @@ app.use((req, res, next) => {
     next();
 });
 
-// Mount webhook route first for raw body
-app.use('/api/payments/webhook', paymentWebhook);
-// Then add body parsers
+// Add body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// Mount the rest of the payment routes
-const paymentRoutes = require('./routes/paymentRoutes');
-app.use('/api/payments', paymentRoutes);
 
 // Validate environment variables
 if (!process.env.MONGODB_URI) {
@@ -75,15 +63,7 @@ if (!process.env.SESSION_SECRET) {
     console.warn('SESSION_SECRET not defined, using fallback secret');
 }
 
-if (!process.env.STRIPE_API_KEY) {
-    console.error('STRIPE_API_KEY is not defined in the environment variables');
-    process.exit(1);
-}
 
-if (!process.env.STRIPE_PUBLISHABLE_KEY) {
-    console.error('STRIPE_PUBLISHABLE_KEY is not defined in the environment variables');
-    process.exit(1);
-}
 
 // Session configuration with connect-mongo
 let sessionStore;
@@ -195,31 +175,17 @@ app.use((req, res, next) => {
 });
 
 app.get('/', async (req, res) => {
-    try {
-        const galleryItems = await GalleryItem.find().sort({ uploadDate: -1 }).limit(10);
-        res.render('index', { 
-            title: 'Soda City Outdoors',
-            user: req.session.user,
-            galleryItems: galleryItems
-        });
-    } catch (err) {
-        console.error('Error fetching gallery items:', err);
-        res.render('index', { 
-            title: 'Soda City Outdoors',
-            user: req.session.user,
-            galleryItems: []
-        });
-    }
+    res.render('index', { 
+        title: 'Cola\'s Club',
+        user: req.session.user
+    });
 });
 
 app.use('/api/users', userRoutes);
 app.use('/events', eventRoutes);
 app.use('/submit_event', submitEvent);
 app.use('/contact', contactRoutes);
-app.use('/gallery', galleryRoutes);
-app.use('/rentals', rentalRoutes);
-app.use('/api/rental-locations', rentalLocationsRoutes);
-app.use('/api/rental-items', rentalItemsRoutes);
+
 app.use('/api/admin', adminRoutes);
 
 // Redirect /calendar to /events/calendar
@@ -246,7 +212,8 @@ app.use('/api/protected-route', ensureAuthenticated, (req, res) => {
 // Serve EJS pages
 app.get('/signin', (req, res) => {
     const redirectUrl = req.query.redirect || '/';
-    res.render('signin', { title: 'Sign In', user: req.session.user, redirectUrl });
+    const message = req.query.message;
+    res.render('signin', { title: 'Sign In', user: req.session.user, redirectUrl, message });
 });
 
 app.get('/signup', (req, res) => {
@@ -301,6 +268,77 @@ app.get('/waiver', async (req, res) => {
     }
 });
 
+// Handle initial form submission from signup page
+app.post('/waiver', async (req, res) => {
+    try {
+        console.log('POST /waiver - Request body:', req.body);
+        
+        // Check database connection
+        if (mongoose.connection.readyState !== 1) {
+            console.error('Database not connected. Ready state:', mongoose.connection.readyState);
+            return res.status(500).render('error', { 
+                title: 'Database Error', 
+                message: 'Database connection is not available. Please try again later.',
+                user: null 
+            });
+        }
+        
+        const { username, password, email, firstName, lastName, phone } = req.body;
+        
+        // Validate required fields
+        if (!username || !password || !email || !firstName || !lastName) {
+            console.error('Missing required fields in waiver form submission:', { username, password, email, firstName, lastName, phone });
+            return res.status(400).render('error', { 
+                title: 'Missing Information', 
+                message: 'Please fill in all required fields.',
+                user: null 
+            });
+        }
+
+        // Check for existing user
+        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+        if (existingUser) {
+            console.error('User already exists:', { username, email });
+            return res.status(400).render('error', { 
+                title: 'User Already Exists', 
+                message: 'A user with this username or email already exists.',
+                user: null 
+            });
+        }
+
+        console.log('Creating pending user with data:', { username, email, firstName, lastName, phone });
+        
+        // Create pending user
+        const pendingUser = new PendingUser({
+            username,
+            password,
+            email,
+            firstName,
+            lastName,
+            phone,
+            waiver: {
+                accepted: false
+            }
+        });
+
+        console.log('PendingUser instance created, attempting to save...');
+        await pendingUser.save();
+        console.log('Pending user created successfully:', pendingUser._id);
+
+        // Redirect to waiver page with the pending user ID
+        res.redirect(`/waiver?pendingUserId=${pendingUser._id}`);
+    } catch (error) {
+        console.error('Error processing waiver form submission:', error);
+        console.error('Error stack:', error.stack);
+        res.status(500).render('error', { 
+            title: 'Error', 
+            message: 'An error occurred while processing your request. Please try again.',
+            user: null,
+            error: process.env.NODE_ENV === 'development' ? error : null
+        });
+    }
+});
+
 app.post('/waiver/accept', async (req, res) => {
     try {
         const { pendingUserId, waiverAccepted } = req.body;
@@ -318,12 +356,17 @@ app.post('/waiver/accept', async (req, res) => {
         const currentUser = await PendingUser.findById(pendingUserId);
         console.log('Current pending user before update:', currentUser);
 
+        if (!currentUser) {
+            console.error('Pending user not found');
+            return res.status(404).json({ message: 'Pending user not found' });
+        }
+
         // Update the pending user to indicate waiver acceptance
         const updateData = {
-            waiverAccepted: true,
-            waiverAcceptedDate: new Date(),
-            waiverIpAddress: req.ip,
-            waiverUserAgent: req.headers['user-agent']
+            'waiver.accepted': true,
+            'waiver.acceptedDate': new Date(),
+            'waiver.ipAddress': req.ip,
+            'waiver.userAgent': req.headers['user-agent']
         };
 
         console.log('Updating pending user with:', updateData);
@@ -341,22 +384,41 @@ app.post('/waiver/accept', async (req, res) => {
 
         console.log('Updated pending user:', pendingUser);
 
-        // Redirect to payment page with pendingUserId
-        res.redirect(`/payment?pendingUserId=${pendingUserId}`);
+        // Create the user account directly here
+        const accountType = pendingUser.username.toLowerCase() === 'claytonskurski' ? 'founder' : 'member';
+        
+        const newUser = new User({
+            username: pendingUser.username,
+            password: pendingUser.password, // This will be hashed by User model's pre-save middleware
+            email: pendingUser.email,
+            firstName: pendingUser.firstName,
+            lastName: pendingUser.lastName,
+            phone: pendingUser.phone,
+            accountType,
+            waiver: {
+                accepted: pendingUser.waiver.accepted,
+                acceptedDate: pendingUser.waiver.acceptedDate,
+                version: '2025-04-17',
+                ipAddress: pendingUser.waiver.ipAddress,
+                userAgent: pendingUser.waiver.userAgent
+            }
+        });
+
+        await newUser.save();
+        console.log('User account created successfully:', newUser._id);
+
+        // Delete the pending user
+        await PendingUser.findByIdAndDelete(pendingUserId);
+
+        // Redirect to signin page with success message
+        res.redirect('/signin?message=Account created successfully! Please sign in.');
     } catch (error) {
         console.error('Error accepting waiver:', error);
         res.status(500).json({ message: 'Error processing waiver acceptance' });
     }
 });
 
-app.get('/payment', (req, res) => {
-    res.render('payment', {
-        title: 'Payment',
-        user: req.session.user,
-        stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-        pendingUserId: req.query.pendingUserId
-    });
-});
+
 
 app.get('/about', (req, res) => {
     res.render('about', { title: 'About Us', user: req.session.user });
@@ -444,9 +506,7 @@ app.post('/account/update-profile', ensureAuthenticated, async (req, res) => {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
-            phone: user.phone,
-            accountStatus: user.accountStatus,
-            paidForCurrentMonth: user.paidForCurrentMonth
+            phone: user.phone
         };
 
         req.session.save((err) => {
@@ -514,89 +574,10 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Cron job to check subscription statuses at the start of each month (1st day at 00:00)
-cron.schedule('0 0 1 * *', async () => {
-    console.log('Running monthly subscription status check...');
-    const users = await User.find();
-    for (const user of users) {
-        if (user.stripeCustomerId && user.accountStatus === 'active') {
-            try {
-                const subscriptions = await stripe.subscriptions.list({ customer: user.stripeCustomerId });
-                let newStatus = 'inactive';
-                let paidForCurrentMonth = false;
 
-                if (subscriptions.data.length > 0) {
-                    const subscription = subscriptions.data[0];
-                    // Check if the subscription has a 100% discount
-                    if (subscription.discount && subscription.discount.coupon && subscription.discount.coupon.percent_off === 100) {
-                        console.log(`User ${user.email} has a 100% discount, preserving subscription status`);
-                        continue; // Skip updating status for 100% discounted users
-                    }
-
-                    if (subscription.status === 'active') {
-                        newStatus = 'active';
-                        paidForCurrentMonth = true;
-                    } else if (subscription.status === 'canceled' || subscription.status === 'past_due') {
-                        newStatus = 'expired';
-                        paidForCurrentMonth = false;
-                    }
-                }
-
-                if (user.accountStatus !== newStatus || user.paidForCurrentMonth !== paidForCurrentMonth) {
-                    user.accountStatus = newStatus;
-                    user.paidForCurrentMonth = paidForCurrentMonth;
-                    await user.save();
-                    console.log(`Updated subscription status for ${user.email} to ${newStatus}, paidForCurrentMonth: ${paidForCurrentMonth}`);
-                }
-            } catch (error) {
-                console.error(`Error checking subscription for ${user.email}:`, error.message);
-            }
-        }
-    }
-});
 
 // === AdminJS (AdminBro) Setup ===
-/*
-const AdminJS = require('adminjs');
-const AdminJSExpress = require('@adminjs/express');
-const AdminJSMongoose = require('@adminjs/mongoose');
-const RentalItem = require('./models/rentalItem');
-const Reservation = require('./models/reservation');
-
-AdminJS.registerAdapter(AdminJSMongoose);
-
-const adminJs = new AdminJS({
-    resources: [
-        { resource: require('./models/user'), options: { properties: { password: { isVisible: false } } } },
-        { resource: RentalItem },
-        { resource: Reservation }
-    ],
-    rootPath: '/admin',
-    branding: {
-        companyName: 'Soda City Outdoors',
-        logo: false,
-        softwareBrothers: false
-    }
-});
-
-const ADMIN = {
-    email: process.env.ADMIN_EMAIL || 'admin@sodacityoutdoors.com',
-    password: process.env.ADMIN_PASSWORD || 'admin1234',
-};
-
-const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJs, {
-    authenticate: async (email, password) => {
-        if (email === ADMIN.email && password === ADMIN.password) {
-            return ADMIN;
-        }
-        return null;
-    },
-    cookieName: 'adminjs',
-    cookiePassword: process.env.ADMIN_COOKIE_SECRET || 'supersecret',
-});
-
-app.use(adminJs.options.rootPath, adminRouter);
-*/
+// Note: AdminJS has been removed as it was related to rental management
 
 // Mount account deletion route
 app.post('/account/delete', ensureAuthenticated, async (req, res) => {
@@ -621,31 +602,8 @@ app.post('/account/delete', ensureAuthenticated, async (req, res) => {
             username: user.username,
             email: user.email,
             firstName: user.firstName,
-            lastName: user.lastName,
-            membership: user.membership,
-            stripeCustomerId: user.stripeCustomerId
+            lastName: user.lastName
         };
-
-        // Cancel Stripe subscription if it exists
-        if (user.stripeCustomerId) {
-            try {
-                const subscriptions = await stripe.subscriptions.list({
-                    customer: user.stripeCustomerId
-                });
-
-                // Cancel all active subscriptions
-                for (const subscription of subscriptions.data) {
-                    if (subscription.status === 'active' || subscription.status === 'trialing') {
-                        await stripe.subscriptions.del(subscription.id);
-                    }
-                }
-
-                // Delete the customer in Stripe
-                await stripe.customers.del(user.stripeCustomerId);
-            } catch (stripeError) {
-                console.error('Error cleaning up Stripe data:', stripeError);
-            }
-        }
 
         // Delete the user account
         await User.findByIdAndDelete(userId);
@@ -657,10 +615,8 @@ app.post('/account/delete', ensureAuthenticated, async (req, res) => {
             Username: ${userInfo.username}
             Email: ${userInfo.email}
             Name: ${userInfo.firstName} ${userInfo.lastName}
-            Membership: ${userInfo.membership}
-            Stripe Customer ID: ${userInfo.stripeCustomerId}
             
-            Please ensure their Stripe subscription and customer data are properly cleaned up.`
+            Account has been successfully removed from the system.`
         );
 
         // Clear the session
@@ -680,29 +636,9 @@ app.post('/account/delete', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// Account status pages
-app.get('/account-suspended', (req, res) => {
-    res.render('account_suspended', { title: 'Account Suspended', user: req.session.user });
-});
 
-app.get('/account-paused', (req, res) => {
-    res.render('account_paused', { title: 'Account Paused', user: req.session.user });
-});
 
-app.get('/account-pending', (req, res) => {
-    res.render('account_pending', { title: 'Account Pending Review', user: req.session.user });
-});
 
-// Admin dashboard
-app.get('/admin/payment-issues', ensureAuthenticated, async (req, res) => {
-    // Check if user is admin
-    const user = await User.findById(req.session.user._id);
-    if (!user || (user.accountType !== 'founder' && user.accountType !== 'moderator')) {
-        return res.status(403).render('error', { title: 'Access Denied', message: 'Admin access required' });
-    }
-    
-    res.render('admin_payment_issues', { title: 'Payment Issues Dashboard', user: req.session.user });
-});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -723,7 +659,7 @@ app.use((req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

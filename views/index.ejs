@@ -1,825 +1,575 @@
-<!-- Ensure these dependencies are included in your layout file or here -->
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Lightbox2 CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
 
-<!-- Preload hero image -->
-<link rel="preload" as="image" href="/static/images/Congaree NP.webp">
-
-<!-- Hero Section -->
-<div class="hero-section" style="background-image: url('/static/images/Congaree NP.webp');">
-    <div class="hero-content">
-        <div class="badge badge-primary mb-4">Columbia's Premier Adventure Community</div>
-        <h1>Discover Adventure.<br>Build Community.<br>Experience Soda City.</h1>
-        <div class="button-container">
-            <button class="cta-button primary wide-button" onclick="window.location.href='/signup'">
-                Start Your Adventure
-                <i class="fas fa-arrow-down ms-2"></i>
-            </button>
-            <div class="secondary-buttons">
-                <button class="cta-button secondary" onclick="window.location.href='/events'">
-                    Browse Events
-                </button>
-                <button class="cta-button secondary" onclick="window.location.href='/rentals'">
-                    Rent Equipment
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- What We Do Section -->
-<section id="about" class="about-section">
-    <div class="section-content text-center">
-        <h2 class="section-title">Adventure, Community & Convenience</h2>
-        <p class="section-subtitle">
-            From outdoor adventures and social connections to hassle-free equipment rentals, we make it easy
-            to experience the best of South Carolina.
-        </p>
-
-        <div class="row mt-5">
-            <!-- Adventure -->
-            <div class="col-md-4">
-                <div class="feature-block adventure">
-                    <div class="feature-icon">
-                        <i class="fas fa-mountain"></i>
-                    </div>
-                    <h3>Outdoor Adventures</h3>
-                    <p>
-                        Float the Saluda River, kayak at Congaree National Park, hike scenic trails, and paddleboard Lake
-                        Murray. Adventure is waiting in your backyard!
+    <!-- Hero Section -->
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="hero-title mb-4">
+                        Join the Fun at<br>
+                        <span class="text-primary">Cola's Club!</span>
+                    </h1>
+                    <p class="hero-subtitle mb-5">
+                        Connect, Create, Celebrate – Your Columbia Adventure Awaits!
                     </p>
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check-circle"></i> Group adventures</li>
-                        <li><i class="fas fa-check-circle"></i> All skill levels welcome</li>
-                        <li><i class="fas fa-check-circle"></i> Equipment provided</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Community -->
-            <div class="col-md-4">
-                <div class="feature-block community">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Vibrant Community</h3>
-                    <p>
-                        Trivia nights, happy hours, disc golf, and social meet-ups. We celebrate Columbia's culture
-                        while building lasting friendships.
-                    </p>
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check-circle"></i> Weekly social events</li>
-                        <li><i class="fas fa-check-circle"></i> Member-led activities</li>
-                        <li><i class="fas fa-check-circle"></i> Welcoming atmosphere</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Rentals -->
-            <div class="col-md-4">
-                <div class="feature-block rentals">
-                    <div class="feature-icon">
-                        <i class="fas fa-truck"></i>
-                    </div>
-                    <h3>Hassle-Free Rentals</h3>
-                    <p>
-                        No car? No storage? No problem! We deliver kayaks and tubes directly to your chosen location. Just
-                        show up and get on the water.
-                    </p>
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check-circle"></i> Delivery & pickup included</li>
-                        <li><i class="fas fa-check-circle"></i> Quality equipment</li>
-                        <li><i class="fas fa-check-circle"></i> Flexible scheduling</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- How It Works -->
-<section class="how-it-works-section">
-    <div class="section-content text-center">
-        <h2 class="section-title">Getting Started is Easy</h2>
-        <p class="section-subtitle">
-            Join our community in three simple steps and start your adventure today
-        </p>
-
-        <div class="row mt-5">
-            <div class="col-md-4">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Join the Adventure</h3>
-                        <p>
-                            Start with a free 30-day membership. No commitments, just pure outdoor fun and community connection.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Explore & Connect</h3>
-                        <p>
-                            Browse our calendar, RSVP to events, and meet fellow adventurers who share your passion for the
-                            outdoors.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Lead & Grow</h3>
-                        <p>
-                            Share your favorite spots, organize events, and help build the most welcoming outdoor community in
-                            Columbia.
-                        </p>
+                    <div class="hero-buttons d-flex flex-column flex-sm-row gap-3 justify-content-center align-items-center">
+                        <a href="/signup" class="btn btn-primary btn-lg px-5 py-3">
+                            Start Your Adventure
+                        </a>
+                        <a href="/events" class="btn btn-secondary btn-lg px-5 py-3">
+                            Browse Events
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+        
+        <!-- Floating Elements -->
+        <div class="floating-element floating-1"></div>
+        <div class="floating-element floating-2"></div>
+        <div class="floating-element floating-3"></div>
+        <div class="floating-element floating-4"></div>
+        <div class="floating-element floating-5"></div>
+        <div class="floating-element floating-6"></div>
+        <div class="floating-element floating-7"></div>
+        <div class="floating-element floating-8"></div>
+    </section>
 
-<!-- Photo Gallery & CTA -->
-<section id="community" class="community-section">
-    <div class="section-content">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h2 class="section-title">Real Adventures, Real Connections</h2>
-                <p class="section-subtitle">
-                    See the smiles, the friendships, and the unforgettable moments our
-                    community creates together every week.
-                </p>
-
-                <div class="activity-list">
-                    <div class="activity-item">
-                        <i class="fas fa-water"></i>
-                        <span>River adventures and lake activities</span>
-                    </div>
-                    <div class="activity-item">
-                        <i class="fas fa-tree"></i>
-                        <span>Hiking trails throughout South Carolina</span>
-                    </div>
-                    <div class="activity-item">
-                        <i class="fas fa-coffee"></i>
-                        <span>Social events and local brewery visits</span>
-                    </div>
-                    <div class="activity-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>Exploring hidden gems around Columbia</span>
-                    </div>
-                </div>
-
-                <div class="button-container mt-4">
-                    <a href="/events" class="btn btn-primary">View Upcoming Events</a>
-                    <a href="/calendar" class="btn btn-outline-primary">Browse Calendar</a>
+    <!-- Event Types Showcase -->
+    <section class="event-types-showcase py-5">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-12">
+                    <h2 class="section-title">
+                        Create and Join in Adventures
+                    </h2>
+                    <p class="section-subtitle">From outdoor exploration to social connections, find activities that match your interests</p>
                 </div>
             </div>
 
-            <!-- Right Column: Photo Album -->
-            <div class="col-lg-6">
-                <% if (galleryItems && galleryItems.length > 0) { %>
-                    <div id="photoCarousel" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
-                            <%
-                                // Flatten all image URLs from galleryItems into a single array
-                                let allImages = [];
-                                galleryItems.forEach(item => {
-                                    if (item.imageUrls && item.imageUrls.length > 0) {
-                                        item.imageUrls.forEach((url, index) => {
-                                            allImages.push({ url, title: item.title });
-                                        });
-                                    }
-                                });
-
-                                // Shuffle the array to randomize images
-                                for (let i = allImages.length - 1; i > 0; i--) {
-                                    const j = Math.floor(Math.random() * (i + 1));
-                                    [allImages[i], allImages[j]] = [allImages[j], allImages[i]];
-                                }
-
-                                // Take up to 7 images (or fewer if there aren't 7)
-                                const selectedImages = allImages.slice(0, Math.min(7, allImages.length));
-
-                                // Render carousel items
-                                selectedImages.forEach((image, index) => {
-                            %>
-                                <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                                    <a href="<%= image.url %>" data-lightbox="photo-album" data-title="<%= image.title %>">
-                                        <img src="<%= image.url %>" class="d-block w-100" alt="<%= image.title %>">
-                                    </a>
-                                </div>
-                            <% }); %>
+            <div class="row g-3 justify-content-center">
+                <!-- Hiking & Trails -->
+                <div class="col-md-3 col-lg-2">
+                    <div class="event-type-showcase-card hiking">
+                        <div class="event-type-icon">
+                            <i class="fas fa-hiking"></i>
                         </div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#photoCarousel" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#photoCarousel" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
+                        <h4>Hiking & Trails</h4>
                     </div>
-                    <!-- Title Below Carousel -->
-                    <div class="photo-album-title">
-                        <p>Take a look at some photos from our recent adventures!</p>
+                </div>
+
+                <!-- Water Adventures -->
+                <div class="col-md-3 col-lg-2">
+                    <div class="event-type-showcase-card water">
+                        <div class="event-type-icon">
+                            <i class="fas fa-water"></i>
+                        </div>
+                        <h4>Water Adventures</h4>
                     </div>
-                <% } else { %>
-                    <div class="text-center">
-                        <p>No photos available to display.</p>
+                </div>
+
+                <!-- Social Events -->
+                <div class="col-md-3 col-lg-2">
+                    <div class="event-type-showcase-card social">
+                        <div class="event-type-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Social Gatherings</h4>
                     </div>
-                <% } %>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Rental Services -->
-<section id="rentals" class="rental-section">
-    <div class="section-content text-center">
-        <h2 class="section-title">Equipment Rentals Made Simple</h2>
-        <p class="section-subtitle">
-            No transportation? No storage space? No worries! We bring the adventure to you with our convenient
-            delivery and pickup service.
-        </p>
-
-        <div class="rental-features">
-            <div class="rental-feature">
-                <div class="feature-icon">
-                    <i class="fas fa-truck"></i>
                 </div>
-                <div class="feature-content">
-                    <h3>Free Delivery & Pickup</h3>
-                    <p>We bring kayaks and tubes directly to your chosen location and pick them up when you're done.</p>
-                </div>
-            </div>
 
-            <div class="rental-feature">
-                <div class="feature-icon">
-                    <i class="fas fa-check-circle"></i>
+                <!-- Sports & Fitness -->
+                <div class="col-md-3 col-lg-2">
+                    <div class="event-type-showcase-card sport">
+                        <div class="event-type-icon">
+                            <i class="fas fa-running"></i>
+                        </div>
+                        <h4>Sports & Fitness</h4>
+                    </div>
                 </div>
-                <div class="feature-content">
-                    <h3>Quality Equipment</h3>
-                    <p>Well-maintained kayaks and tubes that are perfect for South Carolina's rivers and lakes.</p>
+
+                <!-- Cycling Adventures -->
+                <div class="col-md-3 col-lg-2">
+                    <div class="event-type-showcase-card bike">
+                        <div class="event-type-icon">
+                            <i class="fas fa-biking"></i>
+                        </div>
+                        <h4>Cycling</h4>
+                    </div>
+                </div>
+
+                <!-- Special Events -->
+                <div class="col-md-3 col-lg-2">
+                    <div class="event-type-showcase-card special">
+                        <div class="event-type-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h4>Special Events</h4>
+                    </div>
                 </div>
             </div>
 
-            <div class="rental-feature">
-                <div class="feature-icon">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <div class="feature-content">
-                    <h3>Flexible Booking</h3>
-                    <p>Easy online booking with flexible scheduling to fit your adventure plans.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="rental-cta">
-            <a href="/rentals" class="rental-btn">
-                <i class="fas fa-water"></i>
-                <span>Rent Kayaks</span>
-            </a>
-            <a href="/rentals" class="rental-btn">
-                <i class="fas fa-life-ring"></i>
-                <span>Rent Tubes</span>
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- Community Features -->
-<section class="connect-section">
-    <div class="section-content text-center">
-        <h2 class="section-title">Stay Connected</h2>
-        <p class="section-subtitle">Join the conversation and never miss an adventure</p>
-
-        <div class="row mt-5">
-            <div class="col-md-6">
-                <div class="connect-card">
-                    <i class="fas fa-calendar-alt"></i>
-                    <h3>Event Planning</h3>
-                    <p>Organize and join local adventures</p>
-                    <a href="/events" class="btn btn-outline-primary">Browse Events</a>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="connect-card">
-                    <i class="fas fa-envelope"></i>
-                    <h3>Stay Updated</h3>
-                    <p>Get the latest news and event notifications</p>
-                    <a href="/contact" class="btn btn-outline-primary">Contact Us</a>
+            <div class="row text-center mt-4">
+                <div class="col-12">
+                    <a href="/events" class="btn btn-primary btn-lg px-5 py-3">
+                        Browse All Events
+                    </a>
+                    <a href="/submit_event" class="btn btn-secondary btn-lg px-5 py-3">
+                        Create Your Own Event
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Final CTA -->
-<section class="cta-section">
-    <div class="section-content text-center">
-        <h2>Ready to Start Your Adventure?</h2>
-        <p>
-            Join Columbia's most welcoming outdoor community. Your next great adventure and lifelong friendships are
-            waiting.
-        </p>
-        <div class="button-container">
-            <a href="/signup" class="btn btn-light btn-lg">
-                Start Free 30-Day Trial
-                <i class="fas fa-arrow-right ms-2"></i>
-            </a>
-            <a href="/events" class="btn btn-outline-light btn-lg">View Upcoming Events</a>
+    <!-- CTA Section -->
+    <section class="cta-section py-5 bg-light">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h2 class="section-title">
+                        Ready to <span class="text-primary">Connect</span>?
+                    </h2>
+                    <p class="section-subtitle mb-5">
+                        Join thousands of community members who are already making meaningful connections and creating unforgettable memories in Columbia.
+                    </p>
+                    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                        <a href="/signup" class="btn btn-primary btn-lg px-5 py-3">
+                            Create Your Account
+                        </a>
+                        <a href="/contact" class="btn btn-secondary btn-lg px-5 py-3">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<style>
-:root {
-    --primary-color: #0e747c;
-    --accent-color: #80bec0;
-    --text-color: #333;
-    --light-bg: #f8f9fa;
-}
+    <style>
+    /* ========================================
+       INDEX PAGE SPECIFIC STYLES
+       ======================================== */
 
-.hero-section {
-    height: 100vh;
-    min-height: 600px;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    background-color: var(--primary-color); /* Fallback color while image loads */
-    transition: opacity 0.3s ease;
-    opacity: 0;
-}
-
-.hero-section.loaded {
-    opacity: 1;
-}
-
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-}
-
-.hero-content {
-    text-align: center;
-    color: white;
-    max-width: 800px;
-    padding: 0 20px;
-    position: relative;
-    z-index: 1;
-}
-
-.hero-content h1 {
-    font-size: 3.5em;
-    margin-bottom: 40px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    line-height: 1.2;
-}
-
-.button-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
-.wide-button {
-    min-width: 300px;
-    padding: 20px 40px;
-}
-
-.secondary-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-}
-
-.cta-button {
-    padding: 15px 40px;
-    font-size: 1.2em;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cta-button.primary {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-}
-
-.cta-button.primary:hover {
-    background-color: #0a5961;
-    transform: translateY(2px);
-}
-
-.cta-button.secondary {
-    background: transparent;
-    color: white;
-    border: 2px solid white;
-    min-width: 200px;
-}
-
-.cta-button.secondary:hover {
-    background: white;
-    color: var(--text-color);
-    transform: translateY(2px);
-}
-
-.section-content {
-    max-width: 90%;
-    width: 1400px;
-    margin: 0 auto;
-    padding: 40px 20px;
-}
-
-.section-title {
-    font-size: 2.5em;
-    color: var(--text-color);
-    margin-bottom: 20px;
-    font-weight: 700;
-}
-
-.section-subtitle {
-    font-size: 1.2em;
-    color: #666;
-    margin-bottom: 40px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.about-section {
-    background-color: var(--light-bg);
-    padding: 80px 0;
-}
-
-.feature-block {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    height: 100%;
-    transition: transform 0.3s ease;
-}
-
-.feature-block:hover {
-    transform: translateY(-5px);
-}
-
-.feature-icon {
-    width: 80px;
-    height: 80px;
-    background-color: var(--accent-color);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-}
-
-.feature-icon i {
-    font-size: 2em;
-    color: white;
-}
-
-.feature-block h3 {
-    color: var(--primary-color);
-    margin-bottom: 20px;
-    font-size: 1.5em;
-    font-weight: 700;
-}
-
-.feature-list {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-}
-
-.feature-list li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    color: #666;
-}
-
-.feature-list i {
-    color: var(--primary-color);
-    margin-right: 10px;
-}
-
-.how-it-works-section {
-    background-color: white;
-    padding: 80px 0;
-}
-
-.step {
-    text-align: center;
-    padding: 20px;
-}
-
-.step-number {
-    width: 60px;
-    height: 60px;
-    background-color: var(--primary-color);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5em;
-    font-weight: 700;
-    margin: 0 auto 20px;
-}
-
-.step-content h3 {
-    color: var(--primary-color);
-    margin-bottom: 15px;
-    font-size: 1.3em;
-}
-
-.community-section {
-    background-color: var(--light-bg);
-    padding: 80px 0;
-}
-
-.activity-list {
-    margin: 30px 0;
-}
-
-.activity-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.activity-item i {
-    color: var(--primary-color);
-    margin-right: 15px;
-    font-size: 1.2em;
-}
-
-.rental-section {
-    background-color: white;
-    padding: 80px 0;
-}
-
-.rental-features {
-    max-width: 800px;
-    margin: 0 auto 50px;
-}
-
-.rental-feature {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 30px;
-    padding: 20px;
-    background: var(--light-bg);
-    border-radius: 10px;
-    transition: transform 0.3s ease;
-}
-
-.rental-feature:hover {
-    transform: translateY(-5px);
-}
-
-.rental-feature .feature-icon {
-    width: 50px;
-    height: 50px;
-    background-color: var(--accent-color);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 20px;
-    flex-shrink: 0;
-}
-
-.rental-feature .feature-content {
-    flex: 1;
-}
-
-.rental-feature h3 {
-    color: var(--primary-color);
-    margin-bottom: 10px;
-    font-size: 1.2em;
-}
-
-.rental-cta {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 40px;
-}
-
-.rental-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    background: var(--primary-color);
-    color: white;
-    border-radius: 10px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    min-width: 200px;
-}
-
-.rental-btn:hover {
-    transform: translateY(-5px);
-    background: #0a5961;
-    color: white;
-    text-decoration: none;
-}
-
-.rental-btn i {
-    font-size: 2em;
-    margin-bottom: 10px;
-}
-
-.rental-btn span {
-    font-size: 1.1em;
-    font-weight: 500;
-}
-
-.connect-section {
-    background-color: var(--light-bg);
-    padding: 80px 0;
-}
-
-.connect-card {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    height: 100%;
-    transition: transform 0.3s ease;
-}
-
-.connect-card:hover {
-    transform: translateY(-5px);
-}
-
-.connect-card i {
-    font-size: 3em;
-    color: var(--primary-color);
-    margin-bottom: 20px;
-}
-
-.connect-card h3 {
-    color: var(--primary-color);
-    margin-bottom: 15px;
-    font-size: 1.3em;
-}
-
-.cta-section {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 80px 0;
-    text-align: center;
-    position: relative;
-}
-
-.cta-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, rgba(14, 116, 124, 0.9), rgba(128, 190, 192, 0.9));
-    z-index: 1;
-}
-
-.cta-section .section-content {
-    position: relative;
-    z-index: 2;
-}
-
-.cta-section h2 {
-    font-size: 2.5em;
-    margin-bottom: 20px;
-    color: white;
-}
-
-.cta-section p {
-    font-size: 1.2em;
-    margin-bottom: 30px;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.cta-section .btn {
-    padding: 15px 30px;
-    font-size: 1.1em;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    margin: 0 10px;
-}
-
-.cta-section .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-.cta-section .btn-light {
-    background-color: white;
-    color: var(--primary-color);
-    border: none;
-}
-
-.cta-section .btn-outline-light:hover {
-    background-color: white;
-    color: var(--primary-color);
-}
-
-@media (max-width: 768px) {
-    .hero-content h1 {
-        font-size: 2.5em;
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, rgba(115, 0, 0, 0.05) 0%, rgba(248, 249, 250, 1) 50%, rgba(115, 0, 0, 0.05) 100%);
+        position: relative;
+        overflow: hidden;
     }
-    
-    .secondary-buttons {
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        line-height: 1.1;
+        color: var(--text-primary);
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .text-primary {
+        color: var(--primary-color) !important;
+    }
+
+    .text-accent {
+        color: var(--secondary-text) !important;
+    }
+
+    /* Floating Elements */
+    .floating-element {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.4;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .floating-1 {
+        width: 64px;
+        height: 64px;
+        background: rgba(115, 0, 0, 0.3);
+        top: 20%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .floating-2 {
+        width: 48px;
+        height: 48px;
+        background: rgba(107, 114, 128, 0.4);
+        top: 40%;
+        right: 20%;
+        animation-delay: 1s;
+    }
+
+    .floating-3 {
+        width: 32px;
+        height: 32px;
+        background: rgba(31, 41, 55, 0.5);
+        bottom: 20%;
+        left: 25%;
+        animation-delay: 2s;
+    }
+
+    .floating-4 {
+        width: 56px;
+        height: 56px;
+        background: rgba(115, 0, 0, 0.25);
+        top: 15%;
+        right: 35%;
+        animation-delay: 0.5s;
+    }
+
+    .floating-5 {
+        width: 40px;
+        height: 40px;
+        background: rgba(107, 114, 128, 0.35);
+        bottom: 35%;
+        right: 15%;
+        animation-delay: 1.5s;
+    }
+
+    .floating-6 {
+        width: 72px;
+        height: 72px;
+        background: rgba(31, 41, 55, 0.3);
+        top: 60%;
+        left: 5%;
+        animation-delay: 2.5s;
+    }
+
+    .floating-7 {
+        width: 36px;
+        height: 36px;
+        background: rgba(115, 0, 0, 0.4);
+        bottom: 15%;
+        left: 60%;
+        animation-delay: 0.8s;
+    }
+
+    .floating-8 {
+        width: 52px;
+        height: 52px;
+        background: rgba(107, 114, 128, 0.45);
+        top: 25%;
+        left: 70%;
+        animation-delay: 1.8s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: var(--primary-color);
+        border-color: var(--primary-color) !important;
+        border-width: 2px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-outline-primary {
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        border-width: 2px;
+        background: transparent;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--white) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-secondary {
+        background: var(--secondary-color);
+        border-color: var(--primary-color) !important;
+        border-width: 2px;
+        color: var(--text-primary);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: var(--secondary-dark);
+        border-color: var(--primary-hover) !important;
+        color: var(--text-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-outline-accent {
+        border-color: var(--secondary-text) !important;
+        border-width: 2px;
+        color: var(--secondary-text);
+        background: transparent;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-accent:hover {
+        background: var(--secondary-text);
+        border-color: var(--secondary-text) !important;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-accent {
+        background: var(--secondary-text);
+        border-color: var(--primary-color) !important;
+        border-width: 2px;
+        color: var(--white);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-accent:hover {
+        background: var(--secondary-dark);
+        border-color: var(--primary-hover) !important;
+        color: var(--text-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Section Titles */
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin-bottom: 3rem;
+    }
+
+    /* Feature Cards */
+    .feature-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 2px solid transparent;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-hover);
+        border-color: rgba(243, 156, 18, 0.3);
+    }
+
+    .feature-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(115, 0, 0, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        transition: all 0.3s ease;
+    }
+
+    .feature-icon.accent {
+        background: rgba(243, 156, 18, 0.1);
+        color: var(--accent-color);
+    }
+
+    .feature-card:hover .feature-icon {
+        background: rgba(115, 0, 0, 0.2);
+        transform: scale(1.1);
+    }
+
+    .feature-card:hover .feature-icon.accent {
+        background: rgba(243, 156, 18, 0.2);
+    }
+
+    .feature-card h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .feature-card p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        color: white;
+    }
+
+    .stat-item {
+        padding: 1rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    /* Event Types Showcase */
+    .event-types-showcase {
+        background: var(--secondary-color);
+    }
+
+    .event-type-showcase-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+        border-top: 4px solid var(--general-color);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .event-type-showcase-card.hiking {
+        border-top-color: #dc3545;
+    }
+
+    .event-type-showcase-card.water {
+        border-top-color: #0d6efd;
+    }
+
+    .event-type-showcase-card.social {
+        border-top-color: #6f42c1;
+    }
+
+    .event-type-showcase-card.sport {
+        border-top-color: #fd7e14;
+    }
+
+    .event-type-showcase-card.bike {
+        border-top-color: #20c997;
+    }
+
+    .event-type-showcase-card.special {
+        border-top-color: var(--secondary-text);
+    }
+
+    .event-type-showcase-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .event-type-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--secondary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+    .event-type-showcase-card:hover .event-type-icon {
+        transform: scale(1.1);
+    }
+
+    .event-type-showcase-card h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+    }
+
+    .event-type-features {
+        display: flex;
         flex-direction: column;
+        gap: 0.25rem;
+        align-items: center;
+    }
+
+    .feature-tag {
+        background: var(--secondary-color);
+        color: var(--text-secondary);
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
         width: 100%;
+        text-align: center;
     }
 
-    .wide-button {
-        width: 100%;
-        min-width: auto;
+    /* Footer */
+    .footer {
+        background: var(--text-primary) !important;
     }
 
-    .cta-button.secondary {
-        width: 100%;
+    .footer-link {
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.3s ease;
+        display: block;
+        margin-bottom: 0.5rem;
     }
 
-    .section-content {
-        padding: 60px 20px;
+    .footer-link:hover {
+        color: var(--accent-color);
     }
 
-    .col-md-4 {
-        margin-bottom: 30px;
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .hero-buttons {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .event-type-showcase-card {
+            margin-bottom: 1rem;
+        }
     }
-
-    .connect-card {
-        margin-bottom: 30px;
-    }
-
-    .rental-cta {
-        flex-direction: column;
-        gap: 15px;
-        padding: 0 20px;
-    }
-
-    .rental-btn {
-        width: 100%;
-    }
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
-
-    // Handle hero image loading
-    const heroSection = document.querySelector('.hero-section');
-    const img = new Image();
-    img.src = '/static/images/Congaree NP.webp';
-    img.onload = function() {
-        heroSection.classList.add('loaded');
-    };
-});
-</script>
+    </style>

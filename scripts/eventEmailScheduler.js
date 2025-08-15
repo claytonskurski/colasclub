@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const { runEmailChecks, forceSendWeeklySummaries } = require('../services/eventEmails');
+require('dotenv').config();
 
 // MongoDB connection string
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sodacityoutdoors';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/colasclub';
 
 // Connect to MongoDB
 const connectDB = async () => {

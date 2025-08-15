@@ -220,14 +220,14 @@ router.post('/submit', contactLimiter, async (req, res) => {
                     <li>Monday - Thursday: 8am - Noon</li>
                     <li>Friday - Sunday: Closed</li>
                 </ul>
-                <p>Best regards,<br>The Soda City Outdoors Team</p>
+                <p>Best regards,<br>The Cola\'s Club Team</p>
             </div>
         `;
 
         // Send email using Nodemailer
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: 'scoadmin@sodacityoutdoors.com',
+            to: 'admin@colasclub.com',
             subject: `New Contact Form Submission from ${name}`,
             html: emailContent,
             replyTo: email

@@ -3,11 +3,11 @@
         <!-- Contact Form Section -->
         <div class="col-md-6">
             <div class="contact-section">
-                <h2>Contact Us!</h2>
+                <h2 class="section-title">Contact Us!</h2>
                 <p class="lead mb-4">Hey there! Ready to join the adventure? We're here to help you connect with nature and amazing people!</p>
-                <p class="text-muted mb-4">Submit the form below and we'll be in touch via email during our office hours.</p>
+                <p class="text-muted mb-4">Submit the form below and we'll get back to you as soon as possible.</p>
                 
-                <form id="contactForm" action="/contact/submit" method="POST">
+                <form id="contactForm" action="/contact/submit" method="POST" class="contact-form">
                     <div class="form-group mb-3">
                         <input type="text" class="form-control" id="name" name="name" 
                             placeholder="Your name" required
@@ -23,7 +23,7 @@
                             title="Please enter a valid email address">
                     </div>
                     
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-4">
                         <textarea class="form-control" id="message" name="message" 
                             rows="5" placeholder="Your message" required
                             minlength="10" maxlength="5000"></textarea>
@@ -34,7 +34,9 @@
                         <input type="text" name="honeypot" id="honeypot" tabindex="-1" autocomplete="off">
                     </div>
                     
-                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Send</button>
+                    <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                        <i class="fas fa-paper-plane me-2"></i>Send Message
+                    </button>
                 </form>
             </div>
         </div>
@@ -42,28 +44,31 @@
         <!-- Info Section -->
         <div class="col-md-6">
             <div class="info-section">
-                <div class="mb-5">
+                <div class="info-card mb-4">
+                    <div class="info-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
                     <h3>Questions about a specific event?</h3>
                     <p>For event-specific questions, please use the contact form on the left. Be sure to mention the event name in your message.</p>
-                    <p>Note: You'll need to be logged into your member account to view event details, unless it's a public event.</p>
+                    <p class="text-muted">Note: You'll need to be logged into your member account to view event details, unless it's a public event.</p>
                 </div>
 
-                <div class="mb-5">
-                    <h3>Office Hours:</h3>
-                    <ul class="list-unstyled">
-                        <li>Monday - Thursday: 8am - Noon</li>
-                        <li>Friday - Sunday: Closed</li>
-                    </ul>
+                <div class="info-card mb-4">
+                    <div class="info-icon">
+                        <i class="fas fa-hiking"></i>
+                    </div>
+                    <h3>Get in Touch</h3>
+                    <p>We're often out leading events or scouting for new adventures, but we'll respond to your email as soon as we can!</p>
                 </div>
 
-                <div class="mb-4">
-                    <p>We are often out leading events or scouting for new events.<br>
-                    Therefore, we have limited office hours. We will respond to your email as soon as we're back in the office.</p>
-                </div>
-
-                <div>
-                    <h3>Available via email:</h3>
-                    <a href="mailto:scoadmin@sodacityoutdoors.com" class="email-link">scoadmin@sodacityoutdoors.com</a>
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h3>Direct Email Contact:</h3>
+                    <a href="mailto:admin@colasclub.com" class="email-link">
+                        <i class="fas fa-external-link-alt me-2"></i>admin@colasclub.com
+                    </a>
                 </div>
             </div>
         </div>
@@ -71,63 +76,174 @@
 </div>
 
 <style>
-.contact-section h2 {
-    color: #0e747c;
+:root {
+    --primary-color: #730000;
+    --primary-dark: #5c0000;
+    --primary-hover: #8a0000;
+    --secondary-color: #f5f5f5;
+    --text-color: #333;
+    --text-muted: #666;
+    --border-color: #e0e0e0;
+    --success-color: #28a745;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.section-title {
+    color: var(--primary-color);
     margin-bottom: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 2rem;
 }
 
-.info-section h3 {
-    color: #0e747c;
-    margin-bottom: 1rem;
-    font-weight: 600;
-}
-
-.form-control {
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    width: 100%;
-}
-
-.form-control:focus {
-    border-color: #0e747c;
-    box-shadow: 0 0 0 0.2rem rgba(14, 116, 124, 0.25);
-}
-
-.btn-primary {
-    background-color: #0e747c;
-    border-color: #0e747c;
-    padding: 0.75rem 2rem;
-    font-weight: 500;
-}
-
-.btn-primary:hover {
-    background-color: #0a5961;
-    border-color: #0a5961;
-}
-
-.email-link {
-    color: #0e747c;
-    text-decoration: none;
-    font-size: 1.1rem;
-}
-
-.email-link:hover {
-    text-decoration: underline;
+.contact-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    height: fit-content;
 }
 
 .info-section {
-    background-color: #f8f9fa;
+    padding: 1rem;
+}
+
+.info-card {
+    background: var(--secondary-color);
     padding: 2rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-color);
+}
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.info-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.info-card p {
+    color: var(--text-color);
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.contact-form .form-control {
+    padding: 1rem;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.contact-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(115, 0, 0, 0.25);
+    outline: none;
+}
+
+.contact-form .form-control:hover:not(:focus) {
+    border-color: var(--primary-hover);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    border: none;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.email-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.email-link:hover {
+    color: var(--primary-hover);
+    text-decoration: none;
+    transform: translateX(5px);
+}
+
+.lead {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
 }
 
 /* Anti-spam measure: Hide honeypot field */
 #honeypot {
     position: absolute;
     left: -9999px;
+}
+
+@media (max-width: 768px) {
+    .contact-section, .info-card {
+        padding: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+    }
+    
+    .info-card {
+        margin-bottom: 1.5rem;
+    }
 }
 </style>
 
@@ -137,8 +253,9 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
     
     // Disable submit button to prevent double submission
     const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = 'Sending...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
     
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
@@ -155,18 +272,27 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
         const result = await response.json();
         
         if (result.success) {
-            alert('Thank you for your message! We will get back to you soon.');
-            e.target.reset();
+            // Success feedback
+            submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Message Sent!';
+            submitBtn.classList.remove('btn-primary');
+            submitBtn.classList.add('btn-success');
+            
+            // Reset form after delay
+            setTimeout(() => {
+                e.target.reset();
+                submitBtn.innerHTML = originalText;
+                submitBtn.classList.remove('btn-success');
+                submitBtn.classList.add('btn-primary');
+                submitBtn.disabled = false;
+            }, 3000);
         } else {
-            alert(result.message || 'There was an error sending your message. Please try again.');
+            throw new Error(result.message || 'There was an error sending your message. Please try again.');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('There was an error sending your message. Please try again.');
-    } finally {
-        // Re-enable submit button
+        alert(error.message);
         submitBtn.disabled = false;
-        submitBtn.innerHTML = 'Send';
+        submitBtn.innerHTML = originalText;
     }
 });
 
@@ -174,7 +300,7 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     // Add a small delay before enabling the form (catches some automated submissions)
     const form = document.getElementById('contactForm');
-    form.style.opacity = '0.5';
+    form.style.opacity = '0.7';
     form.style.pointerEvents = 'none';
     
     setTimeout(() => {
@@ -182,4 +308,4 @@ document.addEventListener('DOMContentLoaded', () => {
         form.style.pointerEvents = 'auto';
     }, 1000);
 });
-</script> 
+</script>

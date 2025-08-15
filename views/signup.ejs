@@ -1,122 +1,410 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Soda City Outdoors</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/images/Favicon/favicon.ico">
-</head>
-<body>
-    <div class="container my-5">
-        <div class="text-center mb-5">
-            <img src="/static/images/SCO Logo.webp" alt="Logo" class="mb-4" style="width: 120px;">
-            <h1 class="mb-3">Join Soda City Outdoors</h1>
-            <p class="text-muted">Choose your membership type to get started</p>
-        </div>
 
-        <!-- Free Trial Information -->
-        <div class="text-center my-4 px-3">
-            <h2 class="h4 fw-bold text-success mb-3">Try Us Out, Risk-Free!</h2>
-            <p class="lead mb-3">
-                Not sure which plan is right for you? Start with our <strong class="text-primary">30-Day Free Trial</strong> of the Monthly Membership!
-            </p>
-            <p>
-                Explore all member benefits, join events, and connect with the community. 
-                If you love it, your paid membership will begin automatically after 30 days. Cancel anytime before the trial ends, no questions asked.
-            </p>
-            <p class="text-muted">Select the Monthly Plan below to start your free trial.</p>
-        </div>
-        <!-- End Free Trial Information -->
+    <div class="signup-container">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="signup-header text-center mb-5">
+                        <img src="/static/images/Cola's Club Official Logo.png" alt="Cola's Club Logo" class="logo mb-4">
+                        <h1 class="signup-title">Join Cola's Club</h1>
+                        <p class="signup-subtitle">Create your free account and start your adventure today!</p>
+                    </div>
 
-        <div class="row justify-content-center g-4">
-            <!-- Monthly Membership -->
-            <div class="col-md-5">
-                <div class="card h-100 border-primary">
-                    <div class="card-body p-4">
-                        <span class="badge bg-primary position-absolute top-0 end-0 mt-3 me-3">RECOMMENDED</span>
-                        <h3 class="mb-3">Monthly Membership</h3>
-                        <h2 class="card-title pricing-card-title mb-4">$24<small class="text-muted fw-light">/month</small></h2>
-                        <ul class="list-unstyled mb-4">
-                            <li class="mb-3">✓ 30-day free trial</li>
-                            <li class="mb-3">✓ Access to ALL events</li>
-                            <li class="mb-3">✓ Free gear rentals</li>
-                        </ul>
-                        <button type="button" class="btn btn-primary w-100" onclick="showSignupForm('monthly')">SELECT MONTHLY PLAN</button>
+                    <div class="benefits-section mb-4">
+                        <h5 class="benefits-title">What you'll get with your free account:</h5>
+                        <div class="benefits-grid">
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <span>RSVP to events</span>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <span>Connect with members</span>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-plus-circle"></i>
+                                </div>
+                                <span>Create your own events</span>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <span>Event notifications</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="signup-card">
+                        <form action="/waiver" method="POST" class="signup-form">
+                            <div class="form-group mb-4">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Username
+                                </label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                                <div class="form-help">Choose a unique username for your profile</div>
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock me-2"></i>Password
+                                </label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <div class="form-help">
+                                    <strong>Password Requirements:</strong>
+                                    <ul class="password-requirements mt-2 mb-0">
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>At least 6 characters long</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Should be unique and secure</li>
+                                        <li><i class="fas fa-info-circle text-info me-2"></i>Consider using a mix of letters, numbers, and symbols</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-2"></i>Email Address
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                                <div class="form-help">We'll use this to send you event updates and notifications</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="firstName" class="form-label">
+                                            <i class="fas fa-id-card me-2"></i>First Name
+                                        </label>
+                                        <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="lastName" name="lastName" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone me-2"></i>Phone Number <span class="optional">(Optional)</span>
+                                </label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                                <div class="form-help">Helpful for event organizers to contact you about changes</div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 btn-lg signup-btn">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </form>
+                        
+                        <div class="signin-link">
+                            <p>Already have an account? <a href="/signin">Sign In</a></p>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Annual Membership -->
-            <div class="col-md-5">
-                <div class="card h-100">
-                    <div class="card-body p-4">
-                        <h3 class="mb-3">Annual Membership</h3>
-                        <h2 class="card-title pricing-card-title mb-4">$230<small class="text-muted fw-light">/year</small></h2>
-                        <p class="text-success fw-bold mb-4">Save 20% compared to monthly!</p>
-                        <ul class="list-unstyled mb-4">
-                            <li class="mb-3">✓ All benefits from monthly access</li>
-                            <li class="mb-3">✓ 20% discount applied</li>
-                        </ul>
-                        <button type="button" class="btn btn-outline-primary w-100" onclick="showSignupForm('annual')">SELECT ANNUAL PLAN</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center mt-4">
-            <p>Already have an account? <a href="/signin">Sign In</a></p>
         </div>
     </div>
 
+    <script>
+        // Password validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const passwordRequirements = document.querySelectorAll('.password-requirements li');
+            
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                
+                // Check minimum length (6 characters)
+                if (password.length >= 6) {
+                    passwordRequirements[0].innerHTML = '<i class="fas fa-check-circle text-success me-2"></i>At least 6 characters long ✓';
+                    passwordRequirements[0].classList.add('text-success');
+                } else {
+                    passwordRequirements[0].innerHTML = '<i class="fas fa-times-circle text-danger me-2"></i>At least 6 characters long';
+                    passwordRequirements[0].classList.remove('text-success');
+                }
+                
+                // Check if password is not too common
+                const commonPasswords = ['password', '123456', 'qwerty', 'admin', 'letmein'];
+                if (!commonPasswords.includes(password.toLowerCase())) {
+                    passwordRequirements[1].innerHTML = '<i class="fas fa-check-circle text-success me-2"></i>Should be unique and secure ✓';
+                    passwordRequirements[1].classList.add('text-success');
+                } else {
+                    passwordRequirements[1].innerHTML = '<i class="fas fa-times-circle text-danger me-2"></i>Should be unique and secure (avoid common passwords)';
+                    passwordRequirements[1].classList.remove('text-success');
+                }
+                
+                // Check for complexity (mix of letters, numbers, symbols)
+                const hasLetter = /[a-zA-Z]/.test(password);
+                const hasNumber = /\d/.test(password);
+                const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+                
+                if (hasLetter && hasNumber && hasSymbol) {
+                    passwordRequirements[2].innerHTML = '<i class="fas fa-check-circle text-success me-2"></i>Excellent complexity with letters, numbers, and symbols ✓';
+                    passwordRequirements[2].classList.add('text-success');
+                } else if (hasLetter && hasNumber) {
+                    passwordRequirements[2].innerHTML = '<i class="fas fa-check-circle text-warning me-2"></i>Good complexity with letters and numbers';
+                    passwordRequirements[2].classList.remove('text-success');
+                } else {
+                    passwordRequirements[2].innerHTML = '<i class="fas fa-info-circle text-info me-2"></i>Consider using a mix of letters, numbers, and symbols';
+                    passwordRequirements[2].classList.remove('text-success');
+                }
+            });
+        });
+    </script>
+
     <style>
-    .card {
-        border-radius: 15px;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-        transition: transform 0.2s;
+    :root {
+        --primary-color: #730000;
+        --primary-dark: #5c0000;
+        --primary-hover: #8a0000;
+        --secondary-color: #f5f5f5;
+        --text-color: #333;
+        --text-muted: #666;
+        --border-color: #e0e0e0;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
     }
-    .card:hover {
-        transform: translateY(-5px);
+
+    body {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, #ffffff 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .btn {
-        padding: 12px 20px;
-        font-weight: 500;
-        border-radius: 8px;
+
+    .signup-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
     }
-    .badge {
-        font-size: 0.75rem;
-        padding: 0.5em 1em;
-        border-radius: 20px;
+
+    .logo {
+        width: 120px;
+        height: auto;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
     }
-    h1 {
-        color: #333;
-        font-weight: 600;
-    }
-    h3 {
-        color: #444;
-        font-weight: 600;
-    }
-    .pricing-card-title {
+
+    .signup-title {
+        color: var(--primary-color);
+        font-weight: 700;
         font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .signup-subtitle {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+
+    .signup-card {
+        background: white;
+        padding: 3rem;
+        border-radius: 16px;
+        box-shadow: var(--shadow-hover);
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
         font-weight: 600;
-        color: #333;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
     }
-    .text-muted {
-        color: #6c757d !important;
+
+    .form-label i {
+        color: var(--primary-color);
+        width: 20px;
     }
-    ul li {
-        color: #444;
+
+    .optional {
+        color: var(--text-muted);
+        font-weight: 400;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        padding: 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
         font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(115, 0, 0, 0.25);
+        outline: none;
+    }
+
+    .form-control:hover:not(:focus) {
+        border-color: var(--primary-hover);
+    }
+
+    .form-help {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+        line-height: 1.4;
+    }
+
+    .signup-btn {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+        border: none;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 1rem;
+    }
+
+    .signup-btn:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .signin-link {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .signin-link p {
+        margin: 0;
+        color: var(--text-muted);
+    }
+
+    .signin-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .signin-link a:hover {
+        color: var(--primary-hover);
+        text-decoration: underline;
+    }
+
+    .benefits-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+    }
+
+    .benefits-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: var(--secondary-color);
+        border-radius: 8px;
+        transition: transform 0.3s ease;
+    }
+
+    .benefit-item:hover {
+        transform: translateY(-2px);
+    }
+
+    .benefit-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 35px;
+        height: 35px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        font-size: 0.9rem;
+    }
+
+    .benefit-item span {
+        color: var(--text-color);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .password-requirements {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 0.5rem;
+    }
+
+    .password-requirements li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .password-requirements li i {
+        font-size: 0.8rem;
+        margin-right: 0.5rem;
+        min-width: 16px;
+    }
+
+    .password-requirements li.text-success {
+        color: #28a745;
+    }
+
+    .password-requirements li .text-success {
+        color: #28a745;
+    }
+
+    .password-requirements li .text-danger {
+        color: #dc3545;
+    }
+
+    .password-requirements li .text-warning {
+        color: #ffc107;
+    }
+
+    .password-requirements li .text-info {
+        color: #17a2b8;
+    }
+
+    .password-requirements li:last-child {
+        margin-bottom: 0;
+    }
+
+    @media (max-width: 768px) {
+        .signup-card {
+            padding: 2rem;
+        }
+        
+        .signup-title {
+            font-size: 2rem;
+        }
+        
+        .benefits-grid {
+            grid-template-columns: 1fr;
+        }
     }
     </style>
-
-    <script>
-    function showSignupForm(membershipType) {
-        // Store the selected membership type and redirect to the registration form
-        localStorage.setItem('selectedMembership', membershipType);
-        window.location.href = '/register';
-    }
-    </script>
-</body>
-</html>

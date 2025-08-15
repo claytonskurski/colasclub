@@ -4,7 +4,7 @@ const User = require('../models/user');
 const PendingUser = require('../models/pendingUser');
 const bcrypt = require('bcryptjs');
 const { ensureAuthenticated, ensureAdmin } = require('../middleware/authMiddleware');
-const stripe = require('stripe')(process.env.STRIPE_API_KEY);
+
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -44,94 +44,84 @@ const upload = multer({
     }
 });
 
-// Middleware to initialize Stripe dynamically
-router.use((req, res, next) => {
-    if (!req.stripe) {
-        if (!process.env.STRIPE_API_KEY) {
-            console.error('STRIPE_API_KEY is undefined, Stripe initialization failed');
-            return res.status(500).json({ message: 'Stripe configuration error' });
-        }
-        req.stripe = require('stripe')(process.env.STRIPE_API_KEY);
-    }
-    next();
-});
+
 
 // Registration page route
-router.get('/register', (req, res) => {
-    res.render('register', { title: 'Create Account', user: req.session.user });
-});
-
-// Handle sign-up form submission and redirect to waiver
-router.post('/submit-sign-up', async (req, res) => {
-    const { username, password, firstName, lastName, email, phone, membership } = req.body;
+router.get('/register', async (req, res) => {
+    const { pendingUserId } = req.query;
+    
+    if (!pendingUserId) {
+        return res.render('register', { title: 'Create Account', user: req.session.user });
+    }
 
     try {
-        // Validate all required fields
-        if (!username || !password || !email || !firstName || !lastName || !phone || !membership) {
-            console.error('Missing fields in /submit-sign-up:', { username, password, email, firstName, lastName, phone, membership });
-            return res.status(400).json({ message: 'All fields are required' });
+        // Handle registration completion after waiver acceptance
+        const pendingUser = await PendingUser.findById(pendingUserId);
+        if (!pendingUser) {
+            console.error('Pending user not found in GET /register:', pendingUserId);
+            return res.status(404).render('error', { 
+                title: 'Not Found', 
+                message: 'User data not found',
+                user: null 
+            });
         }
 
-        // Additional validation for password
-        if (password.length < 6) {
-            console.error('Password too short in /submit-sign-up:', password);
-            return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+        // Check if waiver was accepted
+        if (!pendingUser.waiver.accepted) {
+            return res.status(400).render('error', { 
+                title: 'Waiver Not Accepted', 
+                message: 'Please accept the waiver before completing registration.',
+                user: null 
+            });
         }
 
-        // Check for existing user
-        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-        if (existingUser) {
-            return res.status(400).json({ message: 'Username or email already exists' });
-        }
-
-        if (!req.stripe) {
-            return res.status(500).json({ message: 'Stripe initialization failed' });
-        }
-
-        // Create a Stripe customer
-        const customer = await req.stripe.customers.create({
-            email: email,
-            name: `${firstName} ${lastName}`,
-            phone: phone,
-        });
-        console.log('Stripe customer created:', customer.id);
-
-        // Save all user data to PendingUser collection
-        const pendingUser = new PendingUser({
-            stripeCustomerId: customer.id,
-            membership,
-            username,
-            password,
-            email,
-            firstName,
-            lastName,
-            phone,
-            waiverAccepted: false
+        // Create the user account
+        const accountType = pendingUser.username.toLowerCase() === 'claytonskurski' ? 'founder' : 'member';
+        
+        const newUser = new User({
+            username: pendingUser.username,
+            password: pendingUser.password,
+            email: pendingUser.email,
+            firstName: pendingUser.firstName,
+            lastName: pendingUser.lastName,
+            phone: pendingUser.phone,
+            accountType,
+            waiver: {
+                accepted: pendingUser.waiver.accepted,
+                acceptedDate: pendingUser.waiver.acceptedDate,
+                version: '2025-04-17',
+                ipAddress: pendingUser.waiver.ipAddress,
+                userAgent: pendingUser.waiver.userAgent
+            }
         });
 
-        await pendingUser.save();
-        console.log('Pending user saved to MongoDB:', pendingUser);
+        await newUser.save();
+        console.log('User account created successfully:', newUser._id);
 
-        // Restore backup behavior: do NOT set anything in the session, just redirect
-        res.redirect(`/waiver?pendingUserId=${pendingUser._id}`);
+        // Delete the pending user
+        await PendingUser.findByIdAndDelete(pendingUserId);
+
+        // Redirect to signin page
+        res.redirect('/signin?message=Account created successfully! Please sign in.');
     } catch (error) {
-        console.error('Error in /submit-sign-up:', error);
-        res.status(500).json({ message: 'Error processing signup', error: error.message });
+        console.error('Error completing registration:', error);
+        res.status(500).render('error', { 
+            title: 'Error', 
+            message: 'An error occurred while completing your registration. Please try again.',
+            user: null 
+        });
     }
 });
 
-// Register user (called programmatically after payment)
+
+
+// Register user (called programmatically after waiver acceptance)
 router.post('/register', async (req, res) => {
-    console.log('==== /api/users/register called ====');
+    console.log('==== /api/users/register called via POST ====');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     console.log('Request headers:', req.headers);
     
-    if (!req.stripe) {
-        console.error('Stripe initialization failed');
-        return res.status(500).json({ message: 'Stripe initialization failed' });
-    }
-
-    const { stripeCustomerId, paidForCurrentMonth, pendingUserId } = req.body;
+    const { pendingUserId } = req.body;
 
     // Log the incoming request body
     console.log('Register request body:', JSON.stringify(req.body, null, 2));
@@ -148,10 +138,10 @@ router.post('/register', async (req, res) => {
 
         // Log waiver information from pending user
         console.log('Waiver information from pending user:', {
-            waiverAccepted: pendingUser.waiverAccepted,
-            waiverAcceptedDate: pendingUser.waiverAcceptedDate,
-            waiverIpAddress: pendingUser.waiverIpAddress,
-            waiverUserAgent: pendingUser.waiverUserAgent
+            waiverAccepted: pendingUser.waiver.accepted,
+            waiverAcceptedDate: pendingUser.waiver.acceptedDate,
+            waiverIpAddress: pendingUser.waiver.ipAddress,
+            waiverUserAgent: pendingUser.waiver.userAgent
         });
 
     } catch (error) {
@@ -159,11 +149,11 @@ router.post('/register', async (req, res) => {
         return res.status(500).json({ message: 'Error retrieving user data', error: error.message });
     }
 
-    const { username, password, email, firstName, lastName, phone, membership } = pendingUser;
+    const { username, password, email, firstName, lastName, phone } = pendingUser;
 
     // Check for missing fields
-    if (!username || !password || !email || !firstName || !lastName || !phone || !stripeCustomerId || paidForCurrentMonth === undefined) {
-        console.error('Missing fields in register request:', { username, password, email, firstName, lastName, phone, stripeCustomerId, paidForCurrentMonth });
+    if (!username || !password || !email || !firstName || !lastName) {
+        console.error('Missing fields in register request:', { username, password, email, firstName, lastName });
         return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -186,16 +176,13 @@ router.post('/register', async (req, res) => {
             firstName,
             lastName,
             phone,
-            stripeCustomerId,
-            paidForCurrentMonth,
-            membership,
             accountType, // Add the determined account type
             waiver: {
-                accepted: pendingUser.waiverAccepted || false,
-                acceptedDate: pendingUser.waiverAcceptedDate,
+                accepted: pendingUser.waiver.accepted || false,
+                acceptedDate: pendingUser.waiver.acceptedDate,
                 version: '2025-04-17',
-                ipAddress: pendingUser.waiverIpAddress,
-                userAgent: pendingUser.waiverUserAgent
+                ipAddress: pendingUser.waiver.ipAddress,
+                userAgent: pendingUser.waiver.userAgent
             }
         });
 
@@ -214,8 +201,6 @@ router.post('/register', async (req, res) => {
             lastName: newUser.lastName,
             email: newUser.email,
             phone: newUser.phone,
-            paidForCurrentMonth: newUser.paidForCurrentMonth,
-            membership: newUser.membership,
             accountType: newUser.accountType
         };
 
@@ -280,10 +265,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid username or password' });
         }
 
-        if (user.membership === 'monthly' && !user.paidForCurrentMonth) {
-            console.log('Payment required for user:', username);
-            return res.status(403).json({ message: 'Payment required for the current month' });
-        }
+
 
         req.session.user = {
             _id: user._id,
@@ -292,8 +274,6 @@ router.post('/login', async (req, res) => {
             lastName: user.lastName,
             email: user.email,
             phone: user.phone,
-            paidForCurrentMonth: user.paidForCurrentMonth,
-            membership: user.membership,
             accountType: user.accountType
         };
         console.log('Session data before saving:', req.session);
@@ -311,8 +291,7 @@ router.post('/login', async (req, res) => {
                     username: user.username,
                     firstName: user.firstName,
                     lastName: user.lastName,
-                    email: user.email,
-                    paidForCurrentMonth: user.paidForCurrentMonth
+                    email: user.email
                 },
                 redirectUrl: redirectUrl || '/' // Include redirectUrl in response
             });
@@ -347,30 +326,10 @@ router.post('/account/delete', ensureAuthenticated, async (req, res) => {
             username: user.username,
             email: user.email,
             firstName: user.firstName,
-            lastName: user.lastName,
-            membership: user.membership
+            lastName: user.lastName
         };
 
-        // Cancel Stripe subscription if it exists
-        if (user.stripeCustomerId) {
-            try {
-                const subscriptions = await stripe.subscriptions.list({
-                    customer: user.stripeCustomerId
-                });
 
-                // Cancel all active subscriptions
-                for (const subscription of subscriptions.data) {
-                    if (subscription.status === 'active' || subscription.status === 'trialing') {
-                        await stripe.subscriptions.del(subscription.id);
-                    }
-                }
-
-                // Delete the customer in Stripe
-                await stripe.customers.del(user.stripeCustomerId);
-            } catch (stripeError) {
-                console.error('Error cleaning up Stripe data:', stripeError);
-            }
-        }
 
         // Delete the user account
         await User.findByIdAndDelete(userId);
@@ -483,45 +442,6 @@ router.get('/account', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// Request account reinstatement
-router.post('/request-reinstatement', ensureAuthenticated, async (req, res) => {
-    try {
-        const user = await User.findById(req.session.user._id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
 
-        // Check if user can request reinstatement
-        if (user.accountStatus !== 'suspended' && user.accountStatus !== 'paused') {
-            return res.status(400).json({ message: 'Account reinstatement not needed' });
-        }
-
-        if (user.reinstatementRequested) {
-            return res.status(400).json({ message: 'Reinstatement already requested' });
-        }
-
-        await user.requestReinstatement();
-        
-        // Send admin notification
-        const subject = `Account Reinstatement Request - ${user.email}`;
-        const text = `
-Account Reinstatement Request:
-User: ${user.firstName} ${user.lastName} (${user.email})
-Account Status: ${user.accountStatus}
-Request Date: ${new Date().toISOString()}
-Action Required: Review account and approve/reject reinstatement
-        `;
-        
-        await sendNewUserNotification(user, subject, text); // Changed sendAdminNotification to sendNewUserNotification
-        
-        res.json({ 
-            message: 'Reinstatement request submitted successfully',
-            status: 'pending_reinstatement'
-        });
-    } catch (error) {
-        console.error('Error requesting reinstatement:', error);
-        res.status(500).json({ message: 'Error requesting reinstatement' });
-    }
-});
 
 module.exports = router;

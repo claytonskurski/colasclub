@@ -42,8 +42,8 @@ async function sendAdminNotification(subject, content, isHtml = false) {
     }
 
     const mailOptions = {
-        from: process.env.EMAIL_USER || 'scoadmin@sodacityoutdoors.com',
-        to: 'scoadmin@sodacityoutdoors.com',
+        from: process.env.EMAIL_USER || 'admin@colasclub.com',
+        to: 'admin@colasclub.com',
         subject: subject
     };
 
@@ -91,7 +91,7 @@ const sendNewUserNotification = async (user) => {
                         <p style="margin: 8px 0;"><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
                         <p style="margin: 8px 0;"><strong>Registration Date:</strong> ${new Date().toLocaleDateString()}</p>
                         <p style="margin: 8px 0;"><strong>Account Type:</strong> ${user.accountType || 'member'}</p>
-                        <p style="margin: 8px 0;"><strong>Membership:</strong> ${user.membership || 'monthly'}</p>
+
                     </div>
                     <p style="color: #7f8c8d; font-size: 14px; margin-top: 20px;">
                         This user has successfully completed registration and is now active in the system.
@@ -151,58 +151,11 @@ const sendRSVPNotification = async (event, rsvp, user) => {
     }
 };
 
-// Send rental notification to admin
-const sendRentalNotification = async (reservation) => {
-    try {
-        const subject = 'New Rental Booking';
-        const htmlContent = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-                <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                    <h2 style="color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
-                        🏕️ New Rental Booking
-                    </h2>
-                    <div style="background-color: #ecf0f1; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
-                        <h3 style="color: #e74c3c; margin-top: 0;">Customer Information</h3>
-                        <p style="margin: 8px 0;"><strong>Name:</strong> ${reservation.name}</p>
-                        <p style="margin: 8px 0;"><strong>Email:</strong> ${reservation.email}</p>
-                        <p style="margin: 8px 0;"><strong>Phone:</strong> ${reservation.phone}</p>
-                        
-                        <h3 style="color: #e74c3c; margin-top: 20px;">Booking Details</h3>
-                        <p style="margin: 8px 0;"><strong>Location:</strong> ${reservation.locationName}</p>
-                        <p style="margin: 8px 0;"><strong>Equipment:</strong> ${reservation.equipmentType}</p>
-                        <p style="margin: 8px 0;"><strong>Quantity:</strong> ${reservation.quantity}</p>
-                        <p style="margin: 8px 0;"><strong>Date:</strong> ${reservation.date.toISOString().split('T')[0]}</p>
-                        <p style="margin: 8px 0;"><strong>Time:</strong> ${reservation.interval === 'half-day' 
-                            ? `Half Day (${reservation.timeBlock === 'AM' ? '10AM - 2PM' : reservation.timeBlock === 'PM' ? '2PM - 6PM' : ''})` 
-                            : 'Full Day (10AM - 6PM)'}</p>
-                        
-                        <h3 style="color: #e74c3c; margin-top: 20px;">Payment Information</h3>
-                        <p style="margin: 8px 0;"><strong>Total Amount:</strong> $${reservation.total.toFixed(2)}</p>
-                        <p style="margin: 8px 0;"><strong>Payment Status:</strong> 
-                            <span style="color: ${reservation.paymentStatus === 'paid' ? '#27ae60' : '#e74c3c'}; font-weight: bold;">
-                                ${reservation.paymentStatus === 'paid' ? '✅ Paid' : '❌ Unpaid'}
-                            </span>
-                        </p>
-                        <p style="margin: 8px 0;"><strong>Payment Method:</strong> 
-                            ${reservation.paymentMethod === 'stripe' ? '💳 Credit Card' : 
-                              reservation.paymentMethod === 'member' ? '👥 Member (Free)' : '💵 Cash'}
-                        </p>
-                    </div>
-                    <p style="color: #7f8c8d; font-size: 14px; margin-top: 20px;">
-                        This rental booking has been automatically recorded in the system.
-                    </p>
-                </div>
-            </div>
-        `;
-        await sendAdminNotification(subject, htmlContent, true);
-    } catch (error) {
-        console.error('Error sending rental notification:', error);
-    }
-};
+
+
 
 module.exports = {
     sendNewUserNotification,
     sendAdminNotification,
-    sendRSVPNotification,
-    sendRentalNotification
+    sendRSVPNotification
 };
