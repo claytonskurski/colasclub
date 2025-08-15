@@ -30,8 +30,19 @@
                         <i class="far fa-calendar"></i>
                         <% 
                             const timeZone = event.timezone || 'America/New_York';
-                            const startDate = moment.tz(event.dtstart, timeZone);
-                            const endDate = moment.tz(event.dtend, timeZone);
+                            let startDate, endDate;
+                            try {
+                                if (moment.tz) {
+                                    startDate = moment.tz(event.dtstart, timeZone);
+                                    endDate = moment.tz(event.dtend, timeZone);
+                                } else {
+                                    startDate = moment(event.dtstart);
+                                    endDate = moment(event.dtend);
+                                }
+                            } catch (error) {
+                                startDate = moment(event.dtstart);
+                                endDate = moment(event.dtend);
+                            }
                         %>
                         <%= startDate.format('dddd, MMMM D, YYYY') %>
                     </div>
@@ -138,8 +149,8 @@
             <div class="rsvp-section">
                 <div class="section-header">
                     <h3>RSVP to this Event</h3>
-                    <% if (user && !event.rsvps.some(rsvp => rsvp.username === user.username)) { %>
-                        <% if (!event.maxRSVPs || event.rsvps.length < event.maxRSVPs) { %>
+                    <% if (user && typeof rsvps !== 'undefined' && rsvps && !rsvps.some(rsvp => rsvp && rsvp.username === user.username)) { %>
+                        <% if (!event.maxRSVPs || (typeof rsvps !== 'undefined' && rsvps && rsvps.length < event.maxRSVPs)) { %>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rsvpModal">
                                 <i class="fas fa-check"></i> RSVP Now
                             </button>
@@ -156,7 +167,7 @@
                     <% } %>
                 </div>
 
-                <% if (user && event.rsvps.some(rsvp => rsvp.username === user.username)) { %>
+                <% if (user && typeof rsvps !== 'undefined' && rsvps && rsvps.some(rsvp => rsvp && rsvp.username === user.username)) { %>
                     <div class="alert alert-success">
                         <i class="fas fa-check-circle"></i>
                         You are RSVPed to this event!
@@ -168,17 +179,23 @@
 
                 <!-- Attendees List -->
                 <div class="attendees-section">
-                    <h4>Attendees (<span id="attendeeCount"><%= event.rsvps.length %></span><% if (event.maxRSVPs) { %>/<%= event.maxRSVPs %><% } %>)</h4>
+                    <h4>Attendees (<span id="attendeeCount"><%= typeof rsvps !== 'undefined' && rsvps ? rsvps.length : 0 %></span><% if (event.maxRSVPs) { %>/<%= event.maxRSVPs %><% } %>)</h4>
                     
-                    <% if (event.rsvps && event.rsvps.length > 0) { %>
+
+                    
+                    <% if (typeof rsvps !== 'undefined' && rsvps && rsvps.length > 0) { %>
                         <div class="attendees-list">
-                            <% event.rsvps.forEach(function(rsvp) { %>
-                                <div class="attendee-item">
-                                    <div class="attendee-info">
-                                        <span class="attendee-name"><%= rsvp.username %></span>
-                                        <small class="attendee-date">RSVPed on <%= moment(rsvp.createdAt).format('MMM D, YYYY') %></small>
+                            <% rsvps.forEach(function(rsvp) { %>
+                                <% if (rsvp && rsvp.username) { %>
+                                    <div class="attendee-item">
+                                        <div class="attendee-info">
+                                            <span class="attendee-name">
+                                                <i class="fas fa-user" style="color: var(--primary-color); margin-right: 8px;"></i>
+                                                <%= rsvp.username %>
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
+                                <% } %>
                             <% }); %>
                         </div>
                     <% } else { %>
@@ -186,7 +203,7 @@
                     <% } %>
                 </div>
 
-                <% if (event.maxRSVPs && event.rsvps.length >= event.maxRSVPs) { %>
+                <% if (event.maxRSVPs && typeof rsvps !== 'undefined' && rsvps && rsvps.length >= event.maxRSVPs) { %>
                     <div class="alert alert-warning">
                         <i class="fas fa-users"></i>
                         This event has reached its maximum capacity.

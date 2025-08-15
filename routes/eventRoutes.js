@@ -173,6 +173,36 @@ router.get('/event/:id', ensureAuthenticated, async (req, res) => {
 
         console.log('Fetched event for /event/:id:', event);
 
+        // Fetch RSVPs for this event from the RSVP collection
+        let rsvps = [];
+        try {
+            // Check if RSVP model is available
+            if (RSVP && typeof RSVP.find === 'function') {
+                rsvps = await RSVP.find({ eventId: req.params.id });
+                console.log('Fetched RSVPs for event:', rsvps);
+                console.log('Event rsvps array:', event.rsvps);
+
+                // Also ensure the event's rsvps array is in sync
+                if (event.rsvps && event.rsvps.length !== rsvps.length) {
+                    console.log('RSVP count mismatch detected, updating event...');
+                    const validUsernames = rsvps.map(rsvp => rsvp.username);
+                    await Event.findOneAndUpdate(
+                        { eventId: req.params.id },
+                        { $set: { rsvps: validUsernames } },
+                        { new: true }
+                    );
+                    console.log('Updated event rsvps array with:', validUsernames);
+                }
+            } else {
+                console.warn('RSVP model not available, using empty array');
+                rsvps = [];
+            }
+        } catch (rsvpError) {
+            console.error('Error fetching RSVPs:', rsvpError);
+            // Continue with empty rsvps array if there's an error
+            rsvps = [];
+        }
+
         // Helper function for formatting image paths
         const formatImagePath = (imagePath) => {
             if (!imagePath) return '';
@@ -188,21 +218,42 @@ router.get('/event/:id', ensureAuthenticated, async (req, res) => {
             }
         };
 
-        res.render('event_details', { 
-            title: `Event: ${event.summary}`, 
-            event,
-            user: req.session.user,
-            formatImagePath,
-            moment: moment
+        console.log('About to render event_details with data:', {
+            eventId: event.eventId,
+            eventSummary: event.summary,
+            rsvpsCount: rsvps ? rsvps.length : 'undefined',
+            user: req.session.user ? req.session.user.username : 'not logged in'
         });
+
+        // Ensure all required variables are defined
+        const templateData = {
+            title: `Event: ${event.summary || 'Untitled Event'}`, 
+            event: event || {},
+            rsvps: rsvps || [], // Ensure rsvps is always an array
+            user: req.session.user || null,
+            formatImagePath: formatImagePath || ((path) => path || ''),
+            moment: moment || require('moment')
+        };
+
+        console.log('Template data prepared:', Object.keys(templateData));
+
+        res.render('event_details', templateData);
     } catch (error) {
         console.error('Error fetching event details:', error);
-        res.status(500).render('error', { 
-            title: 'Error', 
-            error: 'Error fetching event details', 
-            user: req.session.user,
-            moment: moment
-        });
+        console.error('Error stack:', error.stack);
+        
+        // Try to render error page with safe fallbacks
+        try {
+            res.status(500).render('error', { 
+                title: 'Error', 
+                error: 'Error fetching event details', 
+                user: req.session.user || null,
+                moment: moment || require('moment')
+            });
+        } catch (renderError) {
+            console.error('Error rendering error page:', renderError);
+            res.status(500).send('Internal Server Error - Could not render error page');
+        }
     }
 });
 
